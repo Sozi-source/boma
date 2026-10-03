@@ -43,8 +43,8 @@ export default function MobileNav() {
   const isDashboard = pathname === '/dashboard';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 select-none border-t border-neutral-200 bg-white px-3 py-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] transition-colors md:hidden">
-      <div className="flex items-center justify-around max-w-md mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 select-none border-t border-neutral-200 bg-white h-[calc(5rem+env(safe-area-inset-bottom))] px-3 pb-[env(safe-area-inset-bottom)] transition-colors md:hidden">
+      <div className="flex items-center justify-around max-w-md mx-auto h-full">
         {/* Vault / Home */}
         <Link
           href="/"
@@ -74,7 +74,7 @@ export default function MobileNav() {
         {/* Create (Elevated Action) */}
         <Link
           href="/bomas/create"
-          className="group flex flex-col items-center justify-center rounded-xl px-3 py-1"
+          className="group flex flex-col items-center justify-center rounded-xl px-3 py-0.5"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-700/20 transition-transform group-active:scale-95">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />

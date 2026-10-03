@@ -113,7 +113,7 @@ export default function BomaDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-lg md:max-w-2xl lg:max-w-4xl px-3 sm:px-6 py-3 sm:py-6 pb-28 md:pb-6 space-y-3 sm:space-y-5">
+    <div className="mx-auto max-w-lg md:max-w-2xl lg:max-w-4xl px-3 sm:px-6 py-3 sm:py-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))] md:pb-6 space-y-3 sm:space-y-5">
       
       {/* Top Breadcrumb & Share */}
       <div className="flex items-center justify-between text-[11px] text-neutral-400">
@@ -470,7 +470,7 @@ export default function BomaDetailPage({ params }: PageProps) {
       </div>
 
       {/* Floating Sticky Mobile Action Bar (Above Mobile Nav) */}
-      <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-neutral-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md shadow-md">
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-neutral-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md shadow-md">
         <button
           type="button"
           onClick={() => setIsContributeModalOpen(true)}
