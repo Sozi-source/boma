@@ -498,6 +498,31 @@ class BomaService {
   }
 
   async getPlatformStats(): Promise<PlatformStats> {
+    if (this.isBrowser() && isSupabaseConfigured) {
+      try {
+        const supabase = createClient();
+        const [{ data: bomas }, { data: disbursements }, { count: txCount }] = await Promise.all([
+          supabase.from('bomas').select('current_amount, contributors_count, status').eq('is_public', true),
+          supabase.from('disbursements').select('id'),
+          supabase.from('transactions').select('*', { count: 'exact', head: true }),
+        ]);
+
+        const list = bomas || [];
+        const totalVolume = list.reduce((acc, b) => acc + (Number(b.current_amount) || 0), 0);
+        const totalCount = list.reduce((acc, b) => acc + (Number(b.contributors_count) || 0), 0);
+
+        return {
+          total_volume_kes: totalVolume,
+          total_contributions: totalCount || txCount || 0,
+          active_bomas: list.filter((b) => b.status === 'active').length,
+          successful_payouts: disbursements?.length || 0,
+          transparency_score: 100,
+        };
+      } catch (err) {
+        console.warn('Failed to query Supabase platform stats:', err);
+      }
+    }
+
     const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
     const transactions = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
     const disbursements = this.getStore<Disbursement>(STORAGE_KEYS.DISBURSEMENTS, INITIAL_DISBURSEMENTS);

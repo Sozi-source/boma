@@ -126,7 +126,8 @@ export default function HomePage() {
     setTimeout(() => setCopiedRef(null), 2000);
   };
 
-  const totalVaultBalance = bomas.reduce((acc, b) => acc + (b.current_amount || 0), 0);
+  const totalVaultBalance = bomas.reduce((acc, b) => acc + (Number(b.current_amount) || 0), 0);
+  const totalMembers = bomas.reduce((acc, b) => acc + (Number(b.contributors_count) || 0), 0) || transactions.length;
 
   return (
     <div className="mx-auto w-full max-w-lg md:max-w-3xl lg:max-w-6xl px-3 sm:px-6 pt-3 sm:pt-5 lg:pt-8 lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-8 lg:items-start relative">
@@ -194,7 +195,7 @@ export default function HomePage() {
           <div>
             <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-emerald-800">
               {showBalance ? (
-                formatCurrency(stats?.total_volume_kes ?? totalVaultBalance, 'KES')
+                formatCurrency(totalVaultBalance, 'KES')
               ) : (
                 '••••••••••'
               )}
@@ -209,7 +210,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <span>{bomas.length} Funds</span>
               <span>•</span>
-              <span>{stats?.total_contributions ?? transactions.length} Members</span>
+              <span>{totalMembers} Members</span>
             </div>
             <span className="inline-flex items-center gap-1 uppercase tracking-wider">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
@@ -405,7 +406,7 @@ export default function HomePage() {
           <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
             <span className="text-[10px] font-semibold text-neutral-400 block">Total Volume</span>
             <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
-              {stats ? formatCurrency(stats.total_volume_kes, 'KES') : 'KES 0'}
+              {formatCurrency(stats?.total_volume_kes || totalVaultBalance, 'KES')}
             </span>
             <span className="text-[9px] text-emerald-700 font-medium mt-1 flex items-center gap-0.5">
               <TrendingUpIcon className="w-2.5 h-2.5" />
@@ -416,7 +417,7 @@ export default function HomePage() {
           <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
             <span className="text-[10px] font-semibold text-neutral-400 block">Contributors</span>
             <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
-              {stats ? stats.total_contributions.toLocaleString() : '0'}
+              {(stats?.total_contributions || totalMembers).toLocaleString()}
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 flex items-center gap-0.5">
               <UsersIcon className="w-2.5 h-2.5" />
