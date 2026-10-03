@@ -1,6 +1,6 @@
 /**
  * Pure TypeScript QR Code Generator (Zero external dependencies)
- * Generates audit-compliant SVG QR codes for Boma Pay campaign links.
+ * Generates audit-compliant SVG QR codes for Boma campaign links.
  * Implements ISO/IEC 18004 QR Code Model 2 (Byte mode with Error Correction).
  */
 

@@ -69,7 +69,7 @@ export function formatContributorName(name: string, isAnonymous: boolean): strin
   if (!isAnonymous) return name;
   const parts = name.trim().split(' ');
   if (parts.length === 1) {
-    return parts[0][0] + '*** (Well-wisher)';
+    return parts[0][0] + '*** (Member)';
   }
   return `${parts[0][0]}*** ${parts[1][0]}*** (Anonymous Friend)`;
 }

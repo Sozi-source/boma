@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const transfer = await paystackService.initiateTransfer({
       recipient_code: recipient.recipient_code,
       amount: paystackService.toSubUnits(numericAmount),
-      reason: purpose || 'Boma Cause Disbursement',
+      reason: purpose || 'Boma Mchango Payout',
       reference,
       currency,
     });

@@ -125,13 +125,13 @@ export default function HomePage() {
       {/* 1. Fintech App Header Greeting */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-2xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center font-black text-sm shadow-xs">
+          <div className="h-9 w-9 rounded-2xl bg-emerald-700 text-white flex items-center justify-center font-black text-sm shadow-xs">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'B'}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="text-xs sm:text-sm font-black text-neutral-900 dark:text-white leading-none">
-                {user?.name ? `Hi, ${user.name}` : 'Boma Treasury Vault'}
+              <h1 className="text-xs sm:text-sm font-black text-neutral-900 leading-none">
+                {user?.name ? `Hi, ${user.name}` : 'Boma'}
               </h1>
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             </div>
@@ -142,24 +142,24 @@ export default function HomePage() {
         <div className="flex items-center gap-1">
           <Link
             href="/bomas"
-            className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900 transition-colors"
-            title="Search causes"
+            className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
+            title="Search michango"
           >
             <SearchIcon className="w-4 h-4" />
           </Link>
           <Link
             href="/dashboard"
-            className="relative p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900 transition-colors"
+            className="relative p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
             title="Activity Notifications"
           >
             <BellIcon className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-950" />
+            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white " />
           </Link>
         </div>
       </div>
 
       {/* 2. Signature Fintech Obsidian Vault Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-neutral-900 text-white p-5 sm:p-6 shadow-xl border border-neutral-800">
+      <div className="relative overflow-hidden rounded-3xl bg-emerald-700 text-white p-5 sm:p-6 shadow-xl border border-neutral-800">
         {/* Subtle Ambient Glows */}
         <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
         <div className="absolute -left-8 -bottom-8 h-36 w-36 rounded-full bg-teal-500/10 blur-2xl pointer-events-none" />
@@ -199,7 +199,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <span>{bomas.length} Active Pools</span>
               <span>•</span>
-              <span>{stats?.total_contributions ?? transactions.length} Donors</span>
+              <span>{stats?.total_contributions ?? transactions.length} Members</span>
             </div>
             <span className="text-neutral-500 uppercase tracking-wider">Paystack STK</span>
           </div>
@@ -210,37 +210,37 @@ export default function HomePage() {
       <div className="grid grid-cols-4 gap-2 sm:gap-3 py-1">
         <Link
           href="/bomas/create"
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
           <div className="h-11 w-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
-            New Cause
+          <span className="text-[11px] font-bold text-neutral-800 ">
+            New Mchango
           </span>
         </Link>
 
         <Link
           href="/bomas"
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
-          <div className="h-11 w-11 rounded-2xl bg-neutral-900 text-white dark:bg-neutral-800 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+          <div className="h-11 w-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
             <SmartphoneIcon className="w-5 h-5 text-emerald-400" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
-            Contribute
+          <span className="text-[11px] font-bold text-neutral-800 ">
+            Changia
           </span>
         </Link>
 
         <button
           type="button"
           onClick={handleOpenStatement}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
-          <div className="h-11 w-11 rounded-2xl bg-neutral-900 text-white dark:bg-neutral-800 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+          <div className="h-11 w-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
             <DocumentTextIcon className="w-5 h-5 text-teal-400" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
+          <span className="text-[11px] font-bold text-neutral-800 ">
             Statement
           </span>
         </button>
@@ -248,26 +248,26 @@ export default function HomePage() {
         <button
           type="button"
           onClick={handleOpenShare}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
-          <div className="h-11 w-11 rounded-2xl bg-neutral-900 text-white dark:bg-neutral-800 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+          <div className="h-11 w-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
             <QrCodeIcon className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
+          <span className="text-[11px] font-bold text-neutral-800 ">
             Scan & Share
           </span>
         </button>
       </div>
 
       {/* 4. Fintech Segmented Switcher Tabs */}
-      <div className="flex items-center gap-1 rounded-2xl bg-neutral-200/70 p-1 dark:bg-neutral-900">
+      <div className="flex items-center gap-1 rounded-2xl bg-neutral-200/70 p-1 ">
         <button
           type="button"
           onClick={() => setActiveTab('pools')}
           className={`flex-1 py-1.5 text-center text-xs font-bold rounded-xl transition-all ${
             activeTab === 'pools'
-              ? 'bg-white text-neutral-900 shadow-xs dark:bg-neutral-800 dark:text-white'
-              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+              ? 'bg-white text-neutral-900 shadow-xs '
+              : 'text-neutral-500 hover:text-neutral-900 '
           }`}
         >
           Active Pools ({bomas.length})
@@ -277,8 +277,8 @@ export default function HomePage() {
           onClick={() => setActiveTab('activity')}
           className={`flex-1 py-1.5 text-center text-xs font-bold rounded-xl transition-all ${
             activeTab === 'activity'
-              ? 'bg-white text-neutral-900 shadow-xs dark:bg-neutral-800 dark:text-white'
-              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+              ? 'bg-white text-neutral-900 shadow-xs '
+              : 'text-neutral-500 hover:text-neutral-900 '
           }`}
         >
           Live Activity
@@ -288,8 +288,8 @@ export default function HomePage() {
           onClick={() => setActiveTab('stats')}
           className={`flex-1 py-1.5 text-center text-xs font-bold rounded-xl transition-all ${
             activeTab === 'stats'
-              ? 'bg-white text-neutral-900 shadow-xs dark:bg-neutral-800 dark:text-white'
-              : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+              ? 'bg-white text-neutral-900 shadow-xs '
+              : 'text-neutral-500 hover:text-neutral-900 '
           }`}
         >
           Treasury Stats
@@ -300,12 +300,12 @@ export default function HomePage() {
       {activeTab === 'pools' && (
         <div className="space-y-3">
           {bomas.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 p-8 text-center bg-white/70 dark:border-neutral-800 dark:bg-neutral-900/60 space-y-3">
-              <div className="h-10 w-10 mx-auto rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+            <div className="rounded-3xl border border-dashed border-neutral-200 p-8 text-center bg-white/70 space-y-3">
+              <div className="h-10 w-10 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <SparklesIcon className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-neutral-900 dark:text-white">No active pools deployed</h4>
+                <h4 className="text-xs font-bold text-neutral-900 ">No active pools deployed</h4>
                 <p className="text-[11px] text-neutral-400 mt-0.5">Start a Chama savings pool, medical fund, or community drive.</p>
               </div>
               <Link
@@ -328,9 +328,9 @@ export default function HomePage() {
 
       {/* 6. Tab Content: Live Activity Ledger */}
       {activeTab === 'activity' && (
-        <div className="rounded-3xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900 space-y-3">
+        <div className="rounded-3xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
+            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
               Real-Time Receipts Feed
             </h3>
             <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-mono font-semibold">
@@ -340,11 +340,11 @@ export default function HomePage() {
           </div>
 
           {transactions.length === 0 ? (
-            <div className="py-8 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
+            <div className="py-8 text-center border border-dashed border-neutral-200 rounded-2xl">
               <p className="text-xs text-neutral-400">No transactions recorded yet. Incoming Paystack receipts will stream here live.</p>
             </div>
           ) : (
-            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            <div className="divide-y divide-neutral-100 ">
               {transactions.slice(0, 10).map((t) => (
                 <div key={t.id} className="py-2.5 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -352,7 +352,7 @@ export default function HomePage() {
                       <ArrowDownLeftIcon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-bold text-neutral-900 dark:text-white block truncate">
+                      <span className="text-xs font-bold text-neutral-900 block truncate">
                         {t.is_anonymous ? 'Anonymous Friend' : t.contributor_name}
                       </span>
                       <div className="flex items-center gap-1 font-mono text-[9px] text-neutral-400">
@@ -370,10 +370,10 @@ export default function HomePage() {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="text-xs font-black font-mono text-emerald-600 dark:text-emerald-400 block">
+                    <span className="text-xs font-black font-mono text-emerald-600 block">
                       +{formatCurrency(t.amount, t.currency)}
                     </span>
-                    <span className="rounded bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 text-[9px] font-bold text-neutral-500 uppercase">
+                    <span className="rounded bg-neutral-100 px-1 py-0.5 text-[9px] font-bold text-neutral-500 uppercase">
                       {t.payment_method}
                     </span>
                   </div>
@@ -387,9 +387,9 @@ export default function HomePage() {
       {/* 7. Tab Content: Treasury Analytics */}
       {activeTab === 'stats' && (
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
             <span className="text-[10px] font-semibold text-neutral-400 block">Total Volume</span>
-            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 dark:text-white mt-1 block">
+            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
               {stats ? formatCurrency(stats.total_volume_kes, 'KES') : 'KES 0'}
             </span>
             <span className="text-[9px] text-emerald-600 font-medium mt-1 flex items-center gap-0.5">
@@ -398,9 +398,9 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
             <span className="text-[10px] font-semibold text-neutral-400 block">Contributors</span>
-            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 dark:text-white mt-1 block">
+            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
               {stats ? stats.total_contributions.toLocaleString() : '0'}
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 flex items-center gap-0.5">
@@ -409,9 +409,9 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
             <span className="text-[10px] font-semibold text-neutral-400 block">Ledger Integrity</span>
-            <span className="text-base sm:text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+            <span className="text-base sm:text-lg font-black font-mono text-emerald-600 mt-1 block">
               100% Verified
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 block">
@@ -419,13 +419,13 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
             <span className="text-[10px] font-semibold text-neutral-400 block">Active Pools</span>
-            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 dark:text-white mt-1 block">
+            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
               {bomas.length}
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 block">
-              Segregated Vaults
+              Michango
             </span>
           </div>
         </div>

@@ -63,7 +63,7 @@ export default function SignUpPage() {
         <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-mono font-black text-xl shadow-xs mb-2">
           B
         </div>
-        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
+        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 ">
           Create Organizer Account
         </h1>
         <p className="text-xs text-neutral-500">
@@ -71,15 +71,15 @@ export default function SignUpPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+      <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-900">
+          <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
             {error}
           </div>
         )}
 
         {successMessage ? (
-          <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 space-y-2 text-center">
+          <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800 border border-emerald-200 space-y-2 text-center">
             <p className="font-semibold">{successMessage}</p>
             <Link
               href="/auth/login"
@@ -91,7 +91,7 @@ export default function SignUpPage() {
         ) : (
           <form onSubmit={handleSignUp} className="space-y-3">
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
                 Full Legal Name *
               </label>
               <input
@@ -100,12 +100,12 @@ export default function SignUpPage() {
                 placeholder="e.g. Kelvin Mutiso"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
                 M-Pesa / Mobile Phone *
               </label>
               <input
@@ -114,12 +114,12 @@ export default function SignUpPage() {
                 placeholder="0712 345 678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
                 Email Address *
               </label>
               <input
@@ -128,12 +128,12 @@ export default function SignUpPage() {
                 placeholder="you@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
                 Password (min 6 chars) *
               </label>
               <input
@@ -142,7 +142,7 @@ export default function SignUpPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
               />
             </div>
 

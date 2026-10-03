@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Boma Pay — Transparent Cause & Community Banking",
-  description: "A seamless way to contribute toward a common cause with confidence, verified double-entry ledgers, and absolute financial transparency.",
+  title: "Boma — Michango, wazi kwa kila mwanachama",
+  description: "Collect and track contributions for family, events and needs. Every member sees every shilling.",
 };
 
 export const viewport: Viewport = {
@@ -36,13 +36,13 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 selection:bg-emerald-500 selection:text-white font-sans">
+      <body className="min-h-full flex flex-col bg-neutral-50 text-neutral-900 selection:bg-emerald-500 selection:text-white font-sans">
         <Navbar />
         <main className="flex-1 pb-20 md:pb-6">{children}</main>
         <MobileNav />
 
         {/* Desktop App Status Bar */}
-        <footer className="hidden md:flex border-t border-neutral-200/60 bg-white/50 dark:border-neutral-800/60 dark:bg-neutral-950/50 backdrop-blur-xs py-1.5 px-6 items-center justify-between text-[10px] text-neutral-400 font-mono transition-colors">
+        <footer className="hidden md:flex border-t border-neutral-200/60 bg-white/50 backdrop-blur-xs py-1.5 px-6 items-center justify-between text-[10px] text-neutral-400 font-mono transition-colors">
           <div className="flex items-center gap-2">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
             <span>Segregated Escrow Active</span>

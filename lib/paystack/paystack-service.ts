@@ -150,7 +150,7 @@ class PaystackService {
           paid_at: new Date().toISOString(),
           customer: {
             email: 'contributor@bomapay.com',
-            first_name: 'Well-wisher',
+            first_name: 'Member',
           },
         },
       };

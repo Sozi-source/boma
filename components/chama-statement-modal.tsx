@@ -52,18 +52,18 @@ export default function ChamaStatementModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-emerald-950/50 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto">
       
       {/* Modal Dialog Card */}
-      <div className="relative w-full max-w-3xl rounded-2xl bg-white p-4 sm:p-6 shadow-2xl dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 my-8 space-y-4 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:m-0 print:p-0 print:border-none print:shadow-none">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white p-4 sm:p-6 shadow-2xl border border-neutral-200 my-8 space-y-4 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:m-0 print:p-0 print:border-none print:shadow-none">
         
         {/* Screen Action Bar (Hidden during print) */}
-        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 print:hidden">
+        <div className="flex items-center justify-between border-b border-neutral-200 pb-3 print:hidden">
           <div className="flex items-center gap-2">
             <PrinterIcon className="w-4 h-4 text-emerald-600" />
             <div>
-              <h2 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
-                Official Chama & Cause Statement
+              <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
+                Official Chama & Mchango Statement
               </h2>
               <p className="text-[10px] text-neutral-400">
                 Audit-compliant report for committee, bank, or community review.
@@ -83,7 +83,7 @@ export default function ChamaStatementModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 "
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -100,7 +100,7 @@ export default function ChamaStatementModal({
           <div className="border-b border-neutral-900 pb-3 flex flex-col sm:flex-row justify-between items-start gap-3">
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-base sm:text-lg font-black tracking-tight uppercase">BOMA PAY</span>
+                <span className="text-base sm:text-lg font-black tracking-tight uppercase">BOMA</span>
                 <span className="rounded bg-neutral-100 text-neutral-800 px-1.5 py-0.2 text-[9px] font-bold uppercase">
                   Statement
                 </span>
@@ -197,7 +197,7 @@ export default function ChamaStatementModal({
                 <tr className="border-b border-neutral-200 text-neutral-500 font-semibold uppercase text-[8px]">
                   <th className="py-1">Date</th>
                   <th className="py-1">Type</th>
-                  <th className="py-1">Description / Donor</th>
+                  <th className="py-1">Description / Member</th>
                   <th className="py-1">Ref Code</th>
                   <th className="py-1 text-right">Amount</th>
                   <th className="py-1 text-right">Balance</th>
@@ -243,7 +243,7 @@ export default function ChamaStatementModal({
               Trustee & Committee Authorization Sign-off
             </h4>
             <p className="text-[9px] text-neutral-500 leading-normal">
-              We, the undersigned committee members / trustees of this cause, certify that this financial statement accurately reflects all funds raised, segregated, and disbursed under Boma Pay trust rules.
+              We, the undersigned committee members / trustees of this mchango, certify that this financial statement accurately reflects all funds raised, segregated, and disbursed under Boma trust rules.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-3">
@@ -266,7 +266,7 @@ export default function ChamaStatementModal({
                   </div>
                   <div className="space-y-1">
                     <div className="border-b border-neutral-400 h-8" />
-                    <p className="font-bold text-[10px] text-neutral-900">Boma Pay Trust Escrow</p>
+                    <p className="font-bold text-[10px] text-neutral-900">Boma</p>
                     <p className="text-[8px] text-neutral-500 uppercase">System Reconciled</p>
                     <p className="text-[8px] text-neutral-400">Date: {statementDate}</p>
                   </div>
@@ -277,7 +277,7 @@ export default function ChamaStatementModal({
 
           {/* Footer */}
           <div className="text-[8px] text-neutral-400 text-center pt-2 border-t border-neutral-100">
-            Official Boma Pay Statement · ID: {boma.id} · Powered by Double-Entry Ledger Architecture
+            Official Boma Statement · ID: {boma.id} · Powered by Double-Entry Ledger Architecture
           </div>
         </div>
 

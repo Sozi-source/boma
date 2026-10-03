@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       callback_url: callbackUrl,
       metadata: {
         boma_id,
-        contributor_name: contributor_name || 'Well-wisher',
+        contributor_name: contributor_name || 'Member',
         contributor_phone,
         is_anonymous: Boolean(is_anonymous),
         note,

@@ -24,7 +24,7 @@ export default function QrCode({ value, size = 180, className = '', label }: QrC
     return (
       <div
         style={{ width: size, height: size }}
-        className="flex items-center justify-center rounded-xl bg-neutral-100 text-[10px] text-neutral-400 dark:bg-neutral-800"
+        className="flex items-center justify-center rounded-xl bg-neutral-100 text-[10px] text-neutral-400 "
       >
         QR unavailable
       </div>
@@ -36,7 +36,7 @@ export default function QrCode({ value, size = 180, className = '', label }: QrC
 
   return (
     <div className={`inline-flex flex-col items-center ${className}`}>
-      <div className="relative rounded-xl bg-white p-2.5 shadow-xs border border-neutral-100 dark:border-neutral-800">
+      <div className="relative rounded-xl bg-white p-2.5 shadow-xs border border-neutral-100 ">
         <svg
           viewBox={`-2 -2 ${viewBoxSize} ${viewBoxSize}`}
           width={size}

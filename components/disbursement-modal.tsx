@@ -109,21 +109,21 @@ export default function DisbursementModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-neutral-950/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-emerald-950/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-md max-h-[92vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl dark:bg-neutral-900 border-t sm:border border-neutral-200 dark:border-neutral-800"
+        className="relative w-full max-w-md max-h-[92vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl border-t sm:border border-neutral-200 "
         role="dialog"
       >
-        <div className="w-10 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto mt-2 sm:hidden" />
+        <div className="w-10 h-1 bg-neutral-300 rounded-full mx-auto mt-2 sm:hidden" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700 ">
               <ShieldCheckIcon className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white leading-tight">
+              <h2 className="text-sm font-bold text-neutral-900 leading-tight">
                 {completedDisbursement ? 'Disbursement Voucher' : 'Request Payout'}
               </h2>
               <p className="text-[10px] text-neutral-500">
@@ -134,7 +134,7 @@ export default function DisbursementModal({
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 "
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -142,33 +142,33 @@ export default function DisbursementModal({
 
         {completedDisbursement ? (
           <div className="p-4 space-y-4 text-center">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400 mb-1">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-1">
               <CheckCircleIcon className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-base font-bold text-neutral-900 ">
                 Payout Dispatched
               </h3>
               <p className="text-[10px] text-neutral-400 mt-0.5">
                 Debited on public ledger
               </p>
-              <div className="mt-1.5 inline-block rounded-lg bg-neutral-100 dark:bg-neutral-800 px-3 py-1 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="mt-1.5 inline-block rounded-lg bg-neutral-100 px-3 py-1 font-mono text-xs font-bold text-emerald-600 ">
                 {completedDisbursement.reference}
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 p-3 text-left text-xs space-y-1.5">
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-left text-xs space-y-1.5">
               <div className="flex justify-between">
                 <span className="text-neutral-500 text-[11px]">Payee:</span>
-                <span className="font-semibold text-neutral-900 dark:text-white">{completedDisbursement.recipient_name}</span>
+                <span className="font-semibold text-neutral-900 ">{completedDisbursement.recipient_name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500 text-[11px]">Amount:</span>
-                <span className="font-bold text-neutral-900 dark:text-white">{formatCurrency(completedDisbursement.amount, completedDisbursement.currency)}</span>
+                <span className="font-bold text-neutral-900 ">{formatCurrency(completedDisbursement.amount, completedDisbursement.currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500 text-[11px]">Reason:</span>
-                <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]">{completedDisbursement.purpose}</span>
+                <span className="font-medium text-neutral-700 truncate max-w-[200px]">{completedDisbursement.purpose}</span>
               </div>
             </div>
 
@@ -182,11 +182,11 @@ export default function DisbursementModal({
           </div>
         ) : approvalRequested ? (
           <div className="p-4 space-y-4 text-center">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 ">
               <ShieldCheckIcon className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-base font-bold text-neutral-900 ">
                 Sent for Committee Approval
               </h3>
               <p className="text-[11px] text-neutral-500 mt-1">
@@ -207,13 +207,13 @@ export default function DisbursementModal({
         ) : (
           <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto">
             {error && (
-              <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-900">
+              <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+              <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                 Amount ({boma.currency})
               </label>
               <input
@@ -223,12 +223,12 @@ export default function DisbursementModal({
                 placeholder={`Up to ${availableBalance}`}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+              <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                 Destination
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -237,8 +237,8 @@ export default function DisbursementModal({
                   onClick={() => setRecipientType('mpesa')}
                   className={`flex items-center justify-center gap-1.5 p-2 rounded-lg border text-xs font-bold ${
                     recipientType === 'mpesa'
-                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-800'
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-1 ring-emerald-500'
+                      : 'border-neutral-200 bg-white '
                   }`}
                 >
                   <SmartphoneIcon className="w-3.5 h-3.5 text-emerald-600" />
@@ -250,8 +250,8 @@ export default function DisbursementModal({
                   onClick={() => setRecipientType('bank')}
                   className={`flex items-center justify-center gap-1.5 p-2 rounded-lg border text-xs font-bold ${
                     recipientType === 'bank'
-                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-800'
+                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-1 ring-emerald-500'
+                      : 'border-neutral-200 bg-white '
                   }`}
                 >
                   <BuildingLibraryIcon className="w-3.5 h-3.5 text-neutral-600" />
@@ -261,7 +261,7 @@ export default function DisbursementModal({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+              <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                 Payee Legal Name / Vendor
               </label>
               <input
@@ -270,13 +270,13 @@ export default function DisbursementModal({
                 placeholder="e.g. Nairobi Hospital / Supplier Ltd"
                 value={recipientName}
                 onChange={(e) => setRecipientName(e.target.value)}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
               />
             </div>
 
             {recipientType === 'mpesa' ? (
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+                <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                   M-Pesa Phone Number
                 </label>
                 <input
@@ -285,13 +285,13 @@ export default function DisbursementModal({
                   placeholder="0712 345 678"
                   value={recipientPhone}
                   onChange={(e) => setRecipientPhone(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
                 />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+                  <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                     Bank
                   </label>
                   <input
@@ -299,11 +299,11 @@ export default function DisbursementModal({
                     required
                     value={recipientBankName}
                     onChange={(e) => setRecipientBankName(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs text-neutral-900 "
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+                  <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                     Account #
                   </label>
                   <input
@@ -312,14 +312,14 @@ export default function DisbursementModal({
                     placeholder="0110..."
                     value={recipientAccountNumber}
                     onChange={(e) => setRecipientAccountNumber(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs text-neutral-900 "
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+              <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                 Purpose / Invoice Note
               </label>
               <textarea
@@ -328,7 +328,7 @@ export default function DisbursementModal({
                 placeholder="e.g. Hospital invoice #INV-8392..."
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white resize-none"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 resize-none"
               />
             </div>
 

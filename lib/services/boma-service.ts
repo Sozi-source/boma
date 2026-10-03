@@ -307,7 +307,7 @@ class BomaService {
     const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
     const bomaIndex = bomas.findIndex((b) => b.id === payload.boma_id);
     if (bomaIndex === -1) {
-      throw new Error('Target Boma cause does not exist.');
+      throw new Error('Target Mchango does not exist.');
     }
 
     if (payload.reference) {
@@ -337,7 +337,7 @@ class BomaService {
       boma_id: boma.id,
       reference,
       idempotency_key: idempotencyKey,
-      contributor_name: payload.contributor_name || 'Generous Contributor',
+      contributor_name: payload.contributor_name || 'Member',
       contributor_phone: payload.contributor_phone,
       contributor_email: payload.contributor_email,
       is_anonymous: payload.is_anonymous,

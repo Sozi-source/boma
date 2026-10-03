@@ -20,9 +20,9 @@ const ROLES: { id: CommitteeRole; label: string }[] = [
 ];
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
-  executed: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
-  rejected: 'bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+  pending: 'bg-amber-50 text-amber-700 ',
+  executed: 'bg-emerald-50 text-emerald-700 ',
+  rejected: 'bg-red-50 text-red-700 ',
 };
 
 export default function GovernancePanel({ bomaId, onPayoutExecuted }: GovernancePanelProps) {
@@ -96,12 +96,12 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
   const memberCount = committee.members.length;
   const approvalActive = memberCount >= 2 && committee.threshold >= 2;
   const inputCls =
-    'w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white';
+    'w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 ';
 
   return (
     <div className="space-y-3 sm:space-y-4">
       {error && (
-        <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-900">
+        <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
           {error}
         </div>
       )}
@@ -110,8 +110,8 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
       <div
         className={`rounded-xl border p-3 flex items-center gap-2 text-[11px] ${
           approvalActive
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
-            : 'border-neutral-200 bg-white text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-800 '
+            : 'border-neutral-200 bg-white text-neutral-600 '
         }`}
       >
         <ShieldCheckIcon className="w-4 h-4 shrink-0" />
@@ -123,9 +123,9 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
       </div>
 
       {/* Committee */}
-      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 dark:border-neutral-800 dark:bg-neutral-900 space-y-3">
+      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 flex items-center gap-1.5">
             <UsersIcon className="w-4 h-4 text-emerald-600" />
             Committee ({memberCount})
           </h3>
@@ -136,7 +136,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
               <select
                 value={committee.threshold}
                 onChange={(e) => changeThreshold(Number(e.target.value))}
-                className="rounded-md border border-neutral-300 bg-white px-1.5 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="rounded-md border border-neutral-300 bg-white px-1.5 py-0.5 text-xs "
               >
                 {Array.from({ length: memberCount }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>
@@ -149,11 +149,11 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
         </div>
 
         {memberCount > 0 && (
-          <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <ul className="divide-y divide-neutral-100 ">
             {committee.members.map((m) => (
               <li key={m.id} className="py-2 flex items-center justify-between text-xs">
                 <div className="min-w-0">
-                  <span className="font-semibold text-neutral-900 dark:text-white">{m.name}</span>
+                  <span className="font-semibold text-neutral-900 ">{m.name}</span>
                   <span className="ml-1.5 text-[10px] uppercase text-neutral-400">{m.role}</span>
                   {m.phone && <span className="block text-[10px] text-neutral-400">{m.phone}</span>}
                 </div>
@@ -205,9 +205,9 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
       </div>
 
       {/* Payout requests */}
-      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 dark:border-neutral-800 dark:bg-neutral-900 space-y-3">
+      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
+          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
             Payout Requests ({requests.length})
           </h3>
 
@@ -217,7 +217,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
               <select
                 value={voterId}
                 onChange={(e) => setVoterId(e.target.value)}
-                className="rounded-md border border-neutral-300 bg-white px-1.5 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="rounded-md border border-neutral-300 bg-white px-1.5 py-0.5 text-xs "
               >
                 {committee.members.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -241,11 +241,11 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
               return (
                 <div
                   key={r.id}
-                  className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-3 text-xs space-y-2"
+                  className="rounded-lg border border-neutral-200 p-3 text-xs space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-bold text-neutral-900 dark:text-white truncate">
+                      <p className="font-bold text-neutral-900 truncate">
                         {r.recipient_name}
                       </p>
                       <p className="text-[11px] text-neutral-500">{r.purpose}</p>
@@ -254,7 +254,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-extrabold text-amber-600 dark:text-amber-400">
+                      <p className="font-extrabold text-amber-600 ">
                         {formatCurrency(r.amount, r.currency)}
                       </p>
                       <span
@@ -290,7 +290,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
                           type="button"
                           disabled={hasVoted || busyId === r.id}
                           onClick={() => vote(r.id, 'reject')}
-                          className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                          className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 "
                         >
                           Reject
                         </button>

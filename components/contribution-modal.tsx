@@ -77,7 +77,7 @@ export default function ContributionModal({
         body: JSON.stringify({
           boma_id: boma.id,
           amount: selectedAmount,
-          contributor_name: contributorName.trim() || 'Well-wisher',
+          contributor_name: contributorName.trim() || 'Member',
           contributor_phone: contributorPhone,
           is_anonymous: isAnonymous,
           payment_method: paymentMethod,
@@ -114,7 +114,7 @@ export default function ContributionModal({
       const finalResult = await bomaService.contribute({
         boma_id: boma.id,
         amount: selectedAmount,
-        contributor_name: contributorName.trim() || 'Well-wisher',
+        contributor_name: contributorName.trim() || 'Member',
         contributor_phone: contributorPhone,
         is_anonymous: isAnonymous,
         payment_method: paymentMethod,
@@ -147,23 +147,23 @@ export default function ContributionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-neutral-950/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-emerald-950/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-md max-h-[92vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl dark:bg-neutral-900 border-t sm:border border-neutral-200 dark:border-neutral-800"
+        className="relative w-full max-w-md max-h-[92vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl border-t sm:border border-neutral-200 "
         role="dialog"
       >
         {/* Mobile handle indicator */}
-        <div className="w-10 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full mx-auto mt-2 sm:hidden" />
+        <div className="w-10 h-1 bg-neutral-300 rounded-full mx-auto mt-2 sm:hidden" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 ">
               <ShieldCheckIcon className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white leading-tight">
-                {step === 'receipt' ? 'Receipt' : 'Contribute'}
+              <h2 className="text-sm font-bold text-neutral-900 leading-tight">
+                {step === 'receipt' ? 'Receipt' : 'Changia'}
               </h2>
               <p className="text-[10px] text-neutral-500 truncate max-w-[220px]">
                 {boma.title}
@@ -173,7 +173,7 @@ export default function ContributionModal({
           <button
             type="button"
             onClick={handleResetAndClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 "
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -183,7 +183,7 @@ export default function ContributionModal({
         {step === 'input' && (
           <form onSubmit={handleSubmit} className="p-4 space-y-3.5 overflow-y-auto">
             {errorMessage && (
-              <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-900">
+              <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
                 {errorMessage}
               </div>
             )}
@@ -202,7 +202,7 @@ export default function ContributionModal({
                     className={`rounded-lg py-1.5 px-1 text-center text-xs font-bold transition-all ${
                       amount === val && !customAmount
                         ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-200'
+                        : 'border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 '
                     }`}
                   >
                     {val >= 1000 ? `${val / 1000}k` : val}
@@ -215,7 +215,7 @@ export default function ContributionModal({
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
                 min="10"
-                className="mt-1.5 w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:outline-hidden dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="mt-1.5 w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:outline-hidden "
               />
             </div>
 
@@ -230,8 +230,8 @@ export default function ContributionModal({
                   onClick={() => setPaymentMethod('mpesa')}
                   className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                     paymentMethod === 'mpesa'
-                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-800'
+                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 ring-1 ring-emerald-500'
+                      : 'border-neutral-200 bg-white '
                   }`}
                 >
                   <SmartphoneIcon className="w-4 h-4 text-emerald-600 mb-0.5" />
@@ -244,8 +244,8 @@ export default function ContributionModal({
                   onClick={() => setPaymentMethod('card')}
                   className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                     paymentMethod === 'card'
-                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-800'
+                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 ring-1 ring-emerald-500'
+                      : 'border-neutral-200 bg-white '
                   }`}
                 >
                   <CreditCardIcon className="w-4 h-4 text-teal-600 mb-0.5" />
@@ -258,8 +258,8 @@ export default function ContributionModal({
                   onClick={() => setPaymentMethod('bank_transfer')}
                   className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all ${
                     paymentMethod === 'bank_transfer'
-                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-800'
+                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 ring-1 ring-emerald-500'
+                      : 'border-neutral-200 bg-white '
                   }`}
                 >
                   <BuildingLibraryIcon className="w-4 h-4 text-neutral-500 mb-0.5" />
@@ -272,7 +272,7 @@ export default function ContributionModal({
             {/* Inputs */}
             <div className="space-y-2">
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+                <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                   Your Name
                 </label>
                 <input
@@ -281,13 +281,13 @@ export default function ContributionModal({
                   placeholder="e.g. Kelvin Mutiso"
                   value={contributorName}
                   onChange={(e) => setContributorName(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
                 />
               </div>
 
               {paymentMethod === 'mpesa' && (
                 <div>
-                  <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+                  <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                     M-Pesa Phone
                   </label>
                   <input
@@ -296,13 +296,13 @@ export default function ContributionModal({
                     placeholder="0712 345 678"
                     value={contributorPhone}
                     onChange={(e) => setContributorPhone(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 mb-0.5">
+                <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
                   Message (Optional)
                 </label>
                 <input
@@ -310,7 +310,7 @@ export default function ContributionModal({
                   placeholder="Quick word of support..."
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
                 />
               </div>
 
@@ -322,7 +322,7 @@ export default function ContributionModal({
                   onChange={(e) => setIsAnonymous(e.target.checked)}
                   className="h-3.5 w-3.5 rounded-sm border-neutral-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                <span className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                <span className="text-[11px] text-neutral-600 ">
                   Stay anonymous on public ledger
                 </span>
               </label>
@@ -348,10 +348,10 @@ export default function ContributionModal({
         {/* Processing State */}
         {step === 'processing' && (
           <div className="p-8 text-center space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 ">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
             </div>
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+            <h3 className="text-sm font-bold text-neutral-900 ">
               Processing Payment
             </h3>
             <p className="text-xs text-neutral-500">
@@ -364,10 +364,10 @@ export default function ContributionModal({
         {step === 'receipt' && receiptData && (
           <div className="p-4 space-y-4">
             <div className="text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400 mb-1.5">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-1.5">
                 <CheckCircleIcon className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-base font-bold text-neutral-900 ">
                 Payment Confirmed
               </h3>
               <p className="text-[11px] text-neutral-400">
@@ -375,10 +375,10 @@ export default function ContributionModal({
               </p>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-800/60 space-y-2 text-xs">
-              <div className="flex justify-between items-center pb-1.5 border-b border-neutral-200 dark:border-neutral-700">
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 space-y-2 text-xs">
+              <div className="flex justify-between items-center pb-1.5 border-b border-neutral-200 ">
                 <span className="text-neutral-500 text-[11px]">Ref:</span>
-                <div className="flex items-center gap-1 font-mono font-bold text-neutral-900 dark:text-white">
+                <div className="flex items-center gap-1 font-mono font-bold text-neutral-900 ">
                   <span>{receiptData.transaction.reference}</span>
                   <button
                     type="button"
@@ -392,14 +392,14 @@ export default function ContributionModal({
 
               <div className="flex justify-between items-center">
                 <span className="text-neutral-500 text-[11px]">Amount:</span>
-                <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                <span className="font-extrabold text-emerald-600 ">
                   {formatCurrency(receiptData.transaction.amount, receiptData.transaction.currency)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-neutral-500 text-[11px]">Donor:</span>
-                <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                <span className="text-neutral-500 text-[11px]">Member:</span>
+                <span className="font-medium text-neutral-800 ">
                   {receiptData.transaction.is_anonymous ? 'Anonymous' : receiptData.transaction.contributor_name}
                 </span>
               </div>
@@ -416,10 +416,10 @@ export default function ContributionModal({
                 type="button"
                 onClick={() => {
                   const url = typeof window !== 'undefined' ? window.location.href : '';
-                  const msg = `I just contributed ${formatCurrency(receiptData.transaction.amount, receiptData.transaction.currency)} to *${boma.title}* on Boma Pay! Join me in supporting:\n👉 ${url}`;
+                  const msg = `I just contributed ${formatCurrency(receiptData.transaction.amount, receiptData.transaction.currency)} to *${boma.title}* on Boma! Join me in supporting:\n👉 ${url}`;
                   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
                 }}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 transition-colors"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 py-2.5 text-xs font-bold text-emerald-800 transition-colors"
               >
                 <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Share</span>

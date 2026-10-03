@@ -12,14 +12,14 @@ interface BomaCardProps {
 }
 
 const CATEGORY_META: Record<string, { bg: string; text: string; icon: string; label: string }> = {
-  medical: { bg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20', icon: '🏥', label: 'Medical' },
-  education: { bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: '🎓', label: 'Education' },
-  chama: { bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: '🤝', label: 'Chama' },
-  community: { bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: '🌿', label: 'Community' },
-  wedding: { bg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: '💍', label: 'Wedding' },
-  funeral: { bg: 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-400 border-neutral-500/20', icon: '🕊️', label: 'Welfare' },
-  emergency: { bg: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: '⚡', label: 'Urgent' },
-  business: { bg: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20', icon: '💼', label: 'Enterprise' },
+  medical: { bg: 'bg-rose-500/10 text-rose-600 border-rose-500/20', icon: '🏥', label: 'Medical' },
+  education: { bg: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: '🎓', label: 'Education' },
+  chama: { bg: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: '🤝', label: 'Chama' },
+  community: { bg: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: '🌿', label: 'Community' },
+  wedding: { bg: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: '💍', label: 'Wedding' },
+  funeral: { bg: 'bg-neutral-500/10 text-neutral-600 border-neutral-500/20', icon: '🕊️', label: 'Funeral' },
+  emergency: { bg: 'bg-red-500/10 text-red-600 border-red-500/20', icon: '⚡', label: 'Urgent' },
+  business: { bg: 'bg-teal-500/10 text-teal-600 border-teal-500/20', icon: '💼', label: 'Enterprise' },
 };
 
 export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
@@ -36,7 +36,7 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
   );
 
   return (
-    <div className="group flex flex-col justify-between rounded-2xl border border-neutral-200/80 bg-white p-3 sm:p-4 shadow-xs hover:border-emerald-500/40 hover:shadow-md transition-all duration-200 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="group flex flex-col justify-between rounded-2xl border border-neutral-200/80 bg-white p-3 sm:p-4 shadow-xs hover:border-emerald-500/40 hover:shadow-md transition-all duration-200 ">
       
       {/* Top Meta Bar */}
       <div>
@@ -46,7 +46,7 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
             <span>{category.label}</span>
           </span>
 
-          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 font-mono">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             LIVE POOL
           </span>
@@ -54,7 +54,7 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
 
         {/* Optional Cover Banner */}
         {boma.image_url && (
-          <div className="h-20 w-full overflow-hidden rounded-xl mb-2.5 bg-neutral-100 dark:bg-neutral-800">
+          <div className="h-20 w-full overflow-hidden rounded-xl mb-2.5 bg-neutral-100 ">
             <img
               src={boma.image_url}
               alt={boma.title}
@@ -65,8 +65,8 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
         )}
 
         {/* Title */}
-        <Link href={`/bomas/${boma.id}`} className="block group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-          <h3 className="text-xs sm:text-sm font-black text-neutral-900 dark:text-white line-clamp-1 leading-snug">
+        <Link href={`/bomas/${boma.id}`} className="block group-hover:text-emerald-600 transition-colors">
+          <h3 className="text-xs sm:text-sm font-black text-neutral-900 line-clamp-1 leading-snug">
             {boma.title}
           </h3>
           <p className="mt-0.5 text-[10px] text-neutral-400 line-clamp-1">
@@ -76,11 +76,11 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
       </div>
 
       {/* Financial Numbers & Progress */}
-      <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
+      <div className="mt-3 pt-3 border-t border-neutral-100 space-y-2">
         <div className="flex justify-between items-baseline">
           <div>
             <span className="text-[10px] text-neutral-400 font-medium block">Raised</span>
-            <span className="text-xs sm:text-sm font-black font-mono tracking-tight text-neutral-900 dark:text-white">
+            <span className="text-xs sm:text-sm font-black font-mono tracking-tight text-neutral-900 ">
               {formatCurrency(boma.current_amount, boma.currency)}
             </span>
           </div>
@@ -94,15 +94,15 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
 
         {/* Micro Progress Bar */}
         <div className="space-y-1">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 ">
             <div
               className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
               style={{ width: `${percentage}%` }}
             />
           </div>
           <div className="flex justify-between items-center text-[9px] text-neutral-400 font-medium">
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{percentage}% Funded</span>
-            <span>{boma.contributors_count} donors • {daysLeft}d left</span>
+            <span className="text-emerald-600 font-bold">{percentage}% Funded</span>
+            <span>{boma.contributors_count} members • {daysLeft}d left</span>
           </div>
         </div>
 
@@ -113,12 +113,12 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
             onClick={() => onContributeClick?.(boma)}
             className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-1.5 text-center text-[11px] font-bold text-white shadow-xs transition-all active:scale-95"
           >
-            Contribute
+            Changia
           </button>
           
           <Link
             href={`/bomas/${boma.id}`}
-            className="rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 px-2.5 py-1.5 text-center text-[11px] font-bold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 transition-colors"
+            className="rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 px-2.5 py-1.5 text-center text-[11px] font-bold text-neutral-700 transition-colors"
           >
             View
           </Link>

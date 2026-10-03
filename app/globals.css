@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbfbfb;
-  --foreground: #121212;
+  color-scheme: light;
+  --background: #f6faf5;
+  --foreground: #14201a;
 }
 
 @theme inline {
@@ -10,13 +11,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-  }
+  /* Boma green ramp: replaces Tailwind's emerald and teal everywhere */
+  --color-emerald-50: #f0faed;  --color-emerald-100: #dcf4d5; --color-emerald-200: #b9e8ab;
+  --color-emerald-300: #8dd777; --color-emerald-400: #62c24a; --color-emerald-500: #3fae2a;
+  --color-emerald-600: #2f9420; --color-emerald-700: #267619; --color-emerald-800: #205d17;
+  --color-emerald-900: #1c4c15; --color-emerald-950: #0c2a09;
+  --color-teal-50: #f0faed;  --color-teal-100: #dcf4d5; --color-teal-200: #b9e8ab;
+  --color-teal-300: #8dd777; --color-teal-400: #62c24a; --color-teal-500: #3fae2a;
+  --color-teal-600: #2f9420; --color-teal-700: #267619; --color-teal-800: #205d17;
+  --color-teal-900: #1c4c15; --color-teal-950: #0c2a09;
 }
 
 body {

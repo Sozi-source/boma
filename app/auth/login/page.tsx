@@ -66,24 +66,24 @@ export default function LoginPage() {
         <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-mono font-black text-xl shadow-xs mb-2">
           B
         </div>
-        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white">
-          Welcome to Boma Pay
+        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 ">
+          Welcome to Boma
         </h1>
         <p className="text-xs text-neutral-500">
-          Sign in to manage your causes and inspect ledger activity.
+          Sign in to manage your michango and inspect ledger activity.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+      <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-900">
+          <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-3">
           <div>
-            <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
               Email Address
             </label>
             <input
@@ -92,13 +92,13 @@ export default function LoginPage() {
               placeholder="you@domain.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
             />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-[11px] font-semibold text-neutral-700 dark:text-neutral-300">
+              <label className="block text-[11px] font-semibold text-neutral-700 ">
                 Password
               </label>
             </div>
@@ -108,7 +108,7 @@ export default function LoginPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
             />
           </div>
 
@@ -122,8 +122,8 @@ export default function LoginPage() {
         </form>
 
         <div className="relative flex items-center justify-center my-3">
-          <div className="border-t border-neutral-100 dark:border-neutral-800 w-full" />
-          <span className="bg-white dark:bg-neutral-900 px-2 text-[10px] text-neutral-400 uppercase font-semibold absolute">
+          <div className="border-t border-neutral-100 w-full" />
+          <span className="bg-white px-2 text-[10px] text-neutral-400 uppercase font-semibold absolute">
             or instant test
           </span>
         </div>
@@ -132,13 +132,13 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={handleDemoLogin}
-          className="w-full rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 py-2 text-xs font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 transition-colors"
+          className="w-full rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 py-2 text-xs font-semibold text-neutral-700 transition-colors"
         >
           Quick Demo Organizer Sign In
         </button>
 
         <p className="text-center text-xs text-neutral-500 pt-2">
-          New to Boma Pay?{' '}
+          New to Boma?{' '}
           <Link href="/auth/signup" className="font-bold text-emerald-600 hover:text-emerald-500">
             Create an Account
           </Link>

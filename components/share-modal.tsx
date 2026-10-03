@@ -44,10 +44,10 @@ export default function ShareModal({ boma, isOpen, onClose }: ShareModalProps) {
 
   const whatsappMessage = 
 `*Support: ${boma.title}*
-${boma.verified ? '✅ Verified on Boma Pay\n' : ''}
+${boma.verified ? '✅ Verified on Boma\n' : ''}
 🎯 *Target:* ${formatCurrency(boma.target_amount, boma.currency)}
 💰 *Raised:* ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%)
-👥 *Donors:* ${boma.contributors_count} contributors${defaultNote}
+👥 *Members:* ${boma.contributors_count} contributors${defaultNote}
 
 Every contribution counts! Give transparently via M-Pesa or Card:
 👉 ${shareUrl}`;
@@ -79,7 +79,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
       try {
         await navigator.share({
           title: boma.title,
-          text: `Support ${boma.title} on Boma Pay. Raised: ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%).`,
+          text: `Support ${boma.title} on Boma. Raised: ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%).`,
           url: shareUrl,
         });
       } catch {
@@ -106,34 +106,34 @@ Every contribution counts! Give transparently via M-Pesa or Card:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 sm:p-5 shadow-2xl dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3.5 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/40 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 sm:p-5 shadow-2xl border border-neutral-200 space-y-3.5 max-h-[92vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2.5">
+        <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
           <div className="flex items-center gap-1.5">
             <ShareIcon className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
               Share Campaign
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 transition-colors"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800 text-xs font-semibold">
+        <div className="grid grid-cols-2 gap-1 rounded-xl bg-neutral-100 p-1 text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveTab('whatsapp')}
             className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors ${
               activeTab === 'whatsapp'
-                ? 'bg-white text-emerald-700 shadow-xs dark:bg-neutral-900 dark:text-emerald-400'
+                ? 'bg-white text-emerald-700 shadow-xs '
                 : 'text-neutral-500 hover:text-neutral-700'
             }`}
           >
@@ -146,7 +146,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
             onClick={() => setActiveTab('qrcode')}
             className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 transition-colors ${
               activeTab === 'qrcode'
-                ? 'bg-white text-neutral-900 shadow-xs dark:bg-neutral-900 dark:text-white'
+                ? 'bg-white text-neutral-900 shadow-xs '
                 : 'text-neutral-500 hover:text-neutral-700'
             }`}
           >
@@ -157,8 +157,8 @@ Every contribution counts! Give transparently via M-Pesa or Card:
         {activeTab === 'whatsapp' ? (
           <div className="space-y-3">
             {/* WhatsApp Message Preview Bubble */}
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs dark:border-emerald-900/60 dark:bg-emerald-950/30 space-y-2">
-              <div className="flex items-center justify-between text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold uppercase tracking-wider">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs space-y-2">
+              <div className="flex items-center justify-between text-[10px] text-emerald-800 font-semibold uppercase tracking-wider">
                 <span>WhatsApp Preview</span>
                 {boma.verified && (
                   <span className="flex items-center gap-0.5">
@@ -169,19 +169,19 @@ Every contribution counts! Give transparently via M-Pesa or Card:
               </div>
 
               {/* Simulated Card */}
-              <div className="rounded-lg bg-white p-2.5 shadow-xs dark:bg-neutral-850 border border-emerald-100 dark:border-neutral-800 space-y-1.5">
-                <p className="font-bold text-neutral-900 dark:text-white text-xs leading-snug">
+              <div className="rounded-lg bg-white p-2.5 shadow-xs border border-emerald-100 space-y-1.5">
+                <p className="font-bold text-neutral-900 text-xs leading-snug">
                   {boma.title}
                 </p>
                 <div className="flex justify-between text-[11px]">
-                  <span className="font-extrabold text-emerald-700 dark:text-emerald-400">
+                  <span className="font-extrabold text-emerald-700 ">
                     {formatCurrency(boma.current_amount, boma.currency)}
                   </span>
                   <span className="text-neutral-400">
                     {percentage}% of {formatCurrency(boma.target_amount, boma.currency)}
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-700">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 ">
                   <div
                     className="h-full rounded-full bg-emerald-500"
                     style={{ width: `${percentage}%` }}
@@ -194,7 +194,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
               </div>
 
               {/* Message text area preview */}
-              <div className="rounded-lg bg-white/80 p-2 font-mono text-[10px] text-neutral-700 dark:bg-neutral-900/80 dark:text-neutral-300 whitespace-pre-line leading-relaxed max-h-28 overflow-y-auto border border-neutral-100 dark:border-neutral-800">
+              <div className="rounded-lg bg-white/80 p-2 font-mono text-[10px] text-neutral-700 whitespace-pre-line leading-relaxed max-h-28 overflow-y-auto border border-neutral-100 ">
                 {whatsappMessage}
               </div>
             </div>
@@ -209,7 +209,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 value={customNote}
                 onChange={(e) => setCustomNote(e.target.value)}
                 placeholder="e.g. Urgent: hospital bill due tomorrow, please share!"
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:bg-white "
               />
             </div>
 
@@ -228,7 +228,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 <button
                   type="button"
                   onClick={handleCopyText}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 "
                 >
                   {copiedText ? (
                     <>
@@ -246,7 +246,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 <button
                   type="button"
                   onClick={handleNativeShare}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 "
                 >
                   <ShareIcon className="w-3.5 h-3.5" />
                   <span>More Apps</span>
@@ -265,7 +265,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
               />
             </div>
 
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 px-4">
+            <p className="text-[11px] text-neutral-500 px-4">
               Display this QR code at Chama meetings, family gatherings, or print it on event flyers. Anyone can scan with their phone camera to donate instantly.
             </p>
 
@@ -282,7 +282,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 "
               >
                 {copiedLink ? (
                   <>

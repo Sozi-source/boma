@@ -82,7 +82,7 @@ export default function BomaDetailPage({ params }: PageProps) {
           await bomaService.contribute({
             boma_id: (meta.boma_id as string) || bomaId,
             amount: data.amount,
-            contributor_name: (meta.contributor_name as string) || 'Well-wisher',
+            contributor_name: (meta.contributor_name as string) || 'Member',
             contributor_phone: meta.contributor_phone as string | undefined,
             is_anonymous: Boolean(meta.is_anonymous),
             payment_method: data.channel === 'mobile_money' ? 'mpesa' : 'card',
@@ -116,12 +116,12 @@ export default function BomaDetailPage({ params }: PageProps) {
   if (!boma || !account) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Cause Not Found</h2>
+        <h2 className="text-lg font-bold text-neutral-900 ">Mchango Not Found</h2>
         <Link
           href="/bomas"
           className="mt-4 inline-flex rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white"
         >
-          Back to Causes
+          Back to Michango
         </Link>
       </div>
     );
@@ -148,7 +148,7 @@ export default function BomaDetailPage({ params }: PageProps) {
           <button
             type="button"
             onClick={() => setIsStatementModalOpen(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
           >
             <PrinterIcon className="w-3 h-3 text-emerald-600" />
             <span>Statement</span>
@@ -157,7 +157,7 @@ export default function BomaDetailPage({ params }: PageProps) {
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
           >
             <ShareIcon className="w-3 h-3" />
             <span>Share & QR</span>
@@ -166,8 +166,8 @@ export default function BomaDetailPage({ params }: PageProps) {
           <button
             type="button"
             onClick={handleDeleteBoma}
-            title="Delete this cause"
-            className="inline-flex items-center rounded-lg border border-neutral-200 bg-white p-1 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-red-950/40 transition-colors"
+            title="Delete this mchango"
+            className="inline-flex items-center rounded-lg border border-neutral-200 bg-white p-1 text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-colors"
           >
             <TrashIcon className="w-3.5 h-3.5" />
           </button>
@@ -179,8 +179,8 @@ export default function BomaDetailPage({ params }: PageProps) {
         <div
           className={`rounded-xl p-3 text-xs font-semibold flex items-center justify-between shadow-xs ${
             paymentNotice.ok
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-              : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 '
+              : 'bg-rose-50 text-rose-800 border border-rose-200 '
           }`}
         >
           <span>{paymentNotice.text}</span>
@@ -202,7 +202,7 @@ export default function BomaDetailPage({ params }: PageProps) {
           
           {/* Cover Media */}
           {boma.image_url ? (
-            <div className="relative h-44 sm:h-72 w-full overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+            <div className="relative h-44 sm:h-72 w-full overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-100 ">
               <img
                 src={boma.image_url}
                 alt={boma.title}
@@ -238,18 +238,18 @@ export default function BomaDetailPage({ params }: PageProps) {
 
           {/* Title & Organizer Info */}
           <div>
-            <h1 className="text-lg sm:text-2xl font-black text-neutral-900 dark:text-white leading-snug">
+            <h1 className="text-lg sm:text-2xl font-black text-neutral-900 leading-snug">
               {boma.title}
             </h1>
             <p className="text-[11px] text-neutral-400 mt-1">
-              Organized by <strong className="text-neutral-700 dark:text-neutral-300">{boma.creator_name}</strong>
+              Organized by <strong className="text-neutral-700 ">{boma.creator_name}</strong>
             </p>
           </div>
 
           {/* Mobile-Only Progress Strip (shown on mobile above tabs) */}
-          <div className="block lg:hidden rounded-xl border border-neutral-200 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900 space-y-2">
+          <div className="block lg:hidden rounded-xl border border-neutral-200 bg-white p-3.5 space-y-2">
             <div className="flex justify-between items-baseline text-xs">
-              <span className="text-lg font-black text-neutral-900 dark:text-white">
+              <span className="text-lg font-black text-neutral-900 ">
                 {formatCurrency(boma.current_amount, boma.currency)}
               </span>
               <span className="text-neutral-500 font-semibold text-[11px]">
@@ -257,7 +257,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               </span>
             </div>
 
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 ">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
                 style={{ width: `${percentage}%` }}
@@ -271,14 +271,14 @@ export default function BomaDetailPage({ params }: PageProps) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="border-b border-neutral-200 dark:border-neutral-800">
+          <div className="border-b border-neutral-200 ">
             <nav className="flex space-x-4">
               <button
                 type="button"
                 onClick={() => setActiveTab('story')}
                 className={`py-2 text-xs font-bold border-b-2 transition-colors ${
                   activeTab === 'story'
-                    ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
+                    ? 'border-emerald-600 text-emerald-600 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -290,12 +290,12 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('ledger')}
                 className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
                   activeTab === 'ledger'
-                    ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
+                    ? 'border-emerald-600 text-emerald-600 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
                 <span>Ledger</span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] ">
                   {ledgerEntries.length}
                 </span>
               </button>
@@ -305,12 +305,12 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('disbursements')}
                 className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
                   activeTab === 'disbursements'
-                    ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
+                    ? 'border-emerald-600 text-emerald-600 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
                 <span>Payouts</span>
-                <span className="rounded-full bg-neutral-100 text-neutral-800 px-1.5 py-0.2 text-[9px] dark:bg-neutral-800 dark:text-neutral-300">
+                <span className="rounded-full bg-neutral-100 text-neutral-800 px-1.5 py-0.2 text-[9px] ">
                   {disbursements.length}
                 </span>
               </button>
@@ -320,12 +320,12 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('governance')}
                 className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
                   activeTab === 'governance'
-                    ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
+                    ? 'border-emerald-600 text-emerald-600 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
                 <span>Governance</span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] ">
                   Multi-Sig
                 </span>
               </button>
@@ -334,12 +334,12 @@ export default function BomaDetailPage({ params }: PageProps) {
 
           {/* Tab Contents */}
           {activeTab === 'story' && (
-            <div className="space-y-4 text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="space-y-4 text-xs text-neutral-700 leading-relaxed rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 ">
               <p className="whitespace-pre-line text-xs sm:text-sm">
                 {boma.description}
               </p>
 
-              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 p-2.5 border border-emerald-200 dark:border-emerald-900/60 flex items-center gap-2 text-[11px] text-emerald-800 dark:text-emerald-300">
+              <div className="rounded-lg bg-emerald-50 p-2.5 border border-emerald-200 flex items-center gap-2 text-[11px] text-emerald-800 ">
                 <ShieldCheckIcon className="w-4 h-4 shrink-0 text-emerald-600" />
                 <span>All funds are held in segregated trust accounts and audited in real time.</span>
               </div>
@@ -356,9 +356,9 @@ export default function BomaDetailPage({ params }: PageProps) {
           )}
 
           {activeTab === 'disbursements' && (
-            <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900 space-y-3">
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2">
-                <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
+            <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+                <h3 className="text-xs font-bold text-neutral-900 ">
                   Documented Payouts
                 </h3>
                 <span className="text-[11px] text-neutral-400">
@@ -375,10 +375,10 @@ export default function BomaDetailPage({ params }: PageProps) {
                   {disbursements.map((d) => (
                     <div
                       key={d.id}
-                      className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-2.5 flex justify-between items-center text-xs"
+                      className="rounded-lg border border-neutral-200 p-2.5 flex justify-between items-center text-xs"
                     >
                       <div>
-                        <span className="font-bold text-neutral-900 dark:text-white block">
+                        <span className="font-bold text-neutral-900 block">
                           {d.recipient_name}
                         </span>
                         <p className="text-[11px] text-neutral-500">
@@ -387,7 +387,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                       </div>
 
                       <div className="text-right">
-                        <span className="font-bold text-amber-600 dark:text-amber-400">
+                        <span className="font-bold text-amber-600 ">
                           -{formatCurrency(d.amount, d.currency)}
                         </span>
                         <span className="block font-mono text-[9px] text-neutral-400">
@@ -408,19 +408,19 @@ export default function BomaDetailPage({ params }: PageProps) {
 
         {/* Right Column (Financial Progress Card - Desktop Sticky) */}
         <div className="space-y-4">
-          <div className="hidden lg:block sticky top-20 rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900 space-y-5">
+          <div className="hidden lg:block sticky top-20 rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs space-y-5">
             
             {/* Amount Stats */}
             <div>
               <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
                 Raised of {formatCurrency(boma.target_amount, boma.currency)}
               </span>
-              <div className="mt-1 text-2xl font-black text-neutral-900 dark:text-white">
+              <div className="mt-1 text-2xl font-black text-neutral-900 ">
                 {formatCurrency(boma.current_amount, boma.currency)}
               </div>
 
               {/* Progress Bar */}
-              <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+              <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-neutral-100 ">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
                   style={{ width: `${percentage}%` }}
@@ -434,21 +434,21 @@ export default function BomaDetailPage({ params }: PageProps) {
             </div>
 
             {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-2 border-y border-neutral-100 dark:border-neutral-800 py-3 text-xs">
+            <div className="grid grid-cols-2 gap-2 border-y border-neutral-100 py-3 text-xs">
               <div className="flex items-center gap-1.5">
                 <UsersIcon className="w-4 h-4 text-emerald-600" />
                 <div>
-                  <span className="font-bold text-neutral-900 dark:text-white">
+                  <span className="font-bold text-neutral-900 ">
                     {boma.contributors_count}
                   </span>
-                  <span className="block text-[10px] text-neutral-400">Donors</span>
+                  <span className="block text-[10px] text-neutral-400">Members</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <WalletIcon className="w-4 h-4 text-teal-600" />
                 <div>
-                  <span className="font-bold text-neutral-900 dark:text-white truncate">
+                  <span className="font-bold text-neutral-900 truncate">
                     {formatCurrency(account.available_balance, boma.currency)}
                   </span>
                   <span className="block text-[10px] text-neutral-400">Available</span>
@@ -463,13 +463,13 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setIsContributeModalOpen(true)}
                 className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs font-bold text-white shadow-xs transition-colors active:scale-98"
               >
-                Contribute Now (M-Pesa / Card)
+                Changia Now (M-Pesa / Card)
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsDisburseModalOpen(true)}
-                className="w-full rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 py-2 text-xs font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                className="w-full rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 py-2 text-xs font-semibold text-neutral-700 "
               >
                 Request Payout
               </button>
@@ -478,7 +478,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 <button
                   type="button"
                   onClick={() => setIsShareModalOpen(true)}
-                  className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 flex items-center justify-center gap-1.5"
+                  className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 flex items-center justify-center gap-1.5"
                 >
                   <ShareIcon className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Share & QR</span>
@@ -487,7 +487,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 <button
                   type="button"
                   onClick={() => setIsStatementModalOpen(true)}
-                  className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 flex items-center justify-center gap-1.5"
+                  className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 flex items-center justify-center gap-1.5"
                 >
                   <PrinterIcon className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Statement</span>
@@ -499,19 +499,19 @@ export default function BomaDetailPage({ params }: PageProps) {
       </div>
 
       {/* Floating Sticky Mobile Action Bar (Above Mobile Nav) */}
-      <div className="fixed bottom-12 left-0 right-0 z-30 md:hidden bg-white/95 dark:bg-neutral-950/95 border-t border-neutral-200 dark:border-neutral-800 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md">
+      <div className="fixed bottom-12 left-0 right-0 z-30 md:hidden bg-white/95 border-t border-neutral-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md">
         <button
           type="button"
           onClick={() => setIsContributeModalOpen(true)}
           className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-sm transition-colors active:scale-98"
         >
-          Contribute Now
+          Changia Now
         </button>
 
         <button
           type="button"
           onClick={() => setIsDisburseModalOpen(true)}
-          className="rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-3 py-2.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+          className="rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-2.5 text-xs font-semibold text-neutral-700 "
         >
           Payout
         </button>
@@ -519,7 +519,7 @@ export default function BomaDetailPage({ params }: PageProps) {
         <button
           type="button"
           onClick={() => setIsShareModalOpen(true)}
-          className="rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 p-2.5 text-neutral-700 dark:text-neutral-300"
+          className="rounded-xl border border-neutral-300 bg-neutral-50 p-2.5 text-neutral-700 "
           aria-label="Share & QR"
         >
           <ShareIcon className="w-4 h-4" />

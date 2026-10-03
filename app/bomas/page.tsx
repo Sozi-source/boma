@@ -48,11 +48,11 @@ export default function ExploreBomasPage() {
       {/* App Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-base sm:text-lg font-black tracking-tight text-neutral-900 dark:text-white">
+          <h1 className="text-base sm:text-lg font-black tracking-tight text-neutral-900 ">
             Discover Pools
           </h1>
           <p className="text-[10px] sm:text-[11px] text-neutral-400 font-mono">
-            Verified Community Escrow Vaults ({bomas.length})
+            Michango ({bomas.length})
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default function ExploreBomasPage() {
           className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95"
         >
           <PlusIcon className="w-3.5 h-3.5" />
-          <span>New Cause</span>
+          <span>New Mchango</span>
         </Link>
       </div>
 
@@ -75,7 +75,7 @@ export default function ExploreBomasPage() {
             placeholder="Search pools by keyword or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-neutral-200 bg-white pl-8 pr-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:outline-hidden dark:border-neutral-800 dark:bg-neutral-900 dark:text-white font-medium"
+            className="w-full rounded-xl border border-neutral-200 bg-white pl-8 pr-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:outline-hidden font-medium"
           />
         </div>
 
@@ -88,8 +88,8 @@ export default function ExploreBomasPage() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition-all active:scale-95 ${
                 selectedCategory === cat.id
-                  ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-xs'
-                  : 'bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300'
+                  ? 'bg-emerald-700 text-white shadow-xs'
+                  : 'bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50 '
               }`}
             >
               <span>{cat.icon}</span>
@@ -99,17 +99,17 @@ export default function ExploreBomasPage() {
         </div>
       </div>
 
-      {/* Causes Grid (2 cols on mobile, up to 4 cols on desktop) */}
+      {/* Michango Grid (2 cols on mobile, up to 4 cols on desktop) */}
       {bomas.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 p-8 sm:p-12 text-center space-y-2.5 bg-white/60 dark:bg-neutral-900/60">
+        <div className="rounded-2xl border border-dashed border-neutral-200 p-8 sm:p-12 text-center space-y-2.5 bg-white/60 ">
           <SparklesIcon className="mx-auto h-7 w-7 text-neutral-400" />
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
-            {searchQuery || selectedCategory !== 'all' ? 'No matching causes found' : 'No causes yet'}
+          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
+            {searchQuery || selectedCategory !== 'all' ? 'No matching michango found' : 'No michango yet'}
           </h3>
           <p className="text-[11px] text-neutral-400 max-w-xs mx-auto">
             {searchQuery || selectedCategory !== 'all'
               ? 'Try changing your search terms or category filter.'
-              : 'Create your first cause to start pooling funds transparently.'}
+              : 'Create your first mchango to start pooling funds transparently.'}
           </p>
           <div>
             <Link
@@ -117,7 +117,7 @@ export default function ExploreBomasPage() {
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-500 transition-colors"
             >
               <PlusIcon className="w-3.5 h-3.5" />
-              <span>Create Cause</span>
+              <span>Start a Mchango</span>
             </Link>
           </div>
         </div>
