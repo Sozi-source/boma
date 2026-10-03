@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/navbar";
 import MobileNav from "@/components/mobile-nav";
+import PwaRegister from "@/components/pwa-register";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,13 +18,31 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Boma — Contributions, transparent to every member",
   description: "Collect and track contributions for family, events and needs. Every member sees every shilling.",
+  applicationName: "Boma",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Boma",
+  },
+  icons: {
+    icon: [
+      { url: "/assets/icons/favicon.ico" },
+      { url: "/assets/icons/icon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/assets/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/assets/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/assets/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/assets/icons/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#0f8579",
 };
 
 export default function RootLayout({
@@ -46,6 +65,9 @@ export default function RootLayout({
           <span>Boma — Contributions, open to every member</span>
           <span>Pay with M-Pesa or card</span>
         </footer>
+
+        {/* PWA Service Worker & Install Prompt */}
+        <PwaRegister />
       </body>
     </html>
   );
