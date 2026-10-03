@@ -54,10 +54,17 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
             <span>{category.label}</span>
           </span>
 
-          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 font-mono">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Active
-          </span>
+          {boma.verified ? (
+            <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 font-mono">
+              <ShieldCheckIcon className="w-2.5 h-2.5 text-amber-600" />
+              Verified
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 font-mono">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Active
+            </span>
+          )}
         </div>
 
         {/* Optional Cover Banner */}

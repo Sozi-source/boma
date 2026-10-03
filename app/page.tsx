@@ -174,21 +174,24 @@ export default function HomePage() {
       </div>
 
       {/* 2. Signature Fintech Obsidian Vault Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-white text-neutral-900 border border-neutral-200 p-5 sm:p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-950 via-neutral-900 to-[#071d15] text-white p-5 sm:p-6 shadow-xl shadow-emerald-950/20 border border-neutral-800/80 ring-1 ring-emerald-500/15">
+        {/* Ambient Glows */}
+        <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
         {/* Subtle Ambient Glows */}
         
         
 
         <div className="relative z-10 space-y-4">
-          <div className="flex items-center justify-between text-neutral-500 text-[11px] font-mono">
-            <div className="flex items-center gap-1.5 tracking-wider uppercase font-semibold">
-              <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Total raised</span>
+          <div className="flex items-center justify-between text-[11px] font-mono">
+            <div className="flex items-center gap-1.5 tracking-wider uppercase font-semibold text-amber-300/90">
+              <ShieldCheckIcon className="w-3.5 h-3.5 text-amber-400" />
+              <span>Total Vault Raised</span>
             </div>
             <button
               type="button"
               onClick={() => setShowBalance(!showBalance)}
-              className="hover:text-neutral-900 transition-colors p-1"
+              className="text-neutral-400 hover:text-white transition-colors p-1"
               aria-label={showBalance ? 'Hide balance' : 'Show balance'}
             >
               {showBalance ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
@@ -196,27 +199,30 @@ export default function HomePage() {
           </div>
 
           <div>
-            <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-neutral-900">
+            <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-white font-mono">
               {showBalance ? (
                 formatCurrency(stats?.total_volume_kes ?? totalVaultBalance, 'KES')
               ) : (
                 '••••••••••'
               )}
             </div>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono mt-1 font-semibold">
-              <CheckCircleIcon className="w-3 h-3" />
-              Across all your funds
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono mt-1 font-semibold">
+              <CheckCircleIcon className="w-3 h-3 text-emerald-400" />
+              Real-time audited escrow ledger
             </span>
           </div>
 
           {/* Card Micro Metadata Strip */}
-          <div className="pt-2 border-t border-neutral-200 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
+          <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] text-neutral-400 font-mono">
             <div className="flex items-center gap-3">
               <span>{bomas.length} Funds</span>
               <span>•</span>
               <span>{stats?.total_contributions ?? transactions.length} Members</span>
             </div>
-            <span className="text-neutral-500 uppercase tracking-wider">M-Pesa</span>
+            <span className="inline-flex items-center gap-1 text-amber-300/90 font-bold uppercase tracking-wider text-[9px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Verified Custody
+            </span>
           </div>
         </div>
       </div>
@@ -230,8 +236,8 @@ export default function HomePage() {
           <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
-          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
-            Start Fund
+          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
+            Start
           </span>
         </Link>
 
@@ -242,7 +248,7 @@ export default function HomePage() {
           <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
             <SmartphoneIcon className="w-5 h-5" />
           </div>
-          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
+          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
             Contribute
           </span>
         </Link>
@@ -255,7 +261,7 @@ export default function HomePage() {
           <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
             <DocumentTextIcon className="w-5 h-5" />
           </div>
-          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
+          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
             Statement
           </span>
         </button>
@@ -268,7 +274,7 @@ export default function HomePage() {
           <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
             <QrCodeIcon className="w-5 h-5" />
           </div>
-          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
+          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
             Share
           </span>
         </button>

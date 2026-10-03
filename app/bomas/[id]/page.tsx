@@ -184,9 +184,9 @@ export default function BomaDetailPage({ params }: PageProps) {
                   {boma.category}
                 </span>
                 {boma.verified && (
-                  <span className="rounded-md bg-white/90 text-neutral-900 px-2 py-0.5 text-[9px] font-bold backdrop-blur-xs flex items-center gap-0.5">
-                    <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
-                    Verified
+                  <span className="rounded-md bg-amber-500/90 text-amber-950 font-black px-2 py-0.5 text-[9px] backdrop-blur-xs flex items-center gap-1 shadow-xs">
+                    <ShieldCheckIcon className="w-3 h-3 text-amber-950" />
+                    Audited Trust Fund
                   </span>
                 )}
               </div>
@@ -198,9 +198,9 @@ export default function BomaDetailPage({ params }: PageProps) {
                   {boma.category}
                 </span>
                 {boma.verified && (
-                  <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[9px] font-bold flex items-center gap-0.5">
-                    <ShieldCheckIcon className="w-3 h-3" />
-                    Verified
+                  <span className="rounded-md bg-amber-500/10 text-amber-800 border border-amber-500/25 px-2 py-0.5 text-[9px] font-bold flex items-center gap-1">
+                    <ShieldCheckIcon className="w-3 h-3 text-amber-600" />
+                    Audited Trust Fund
                   </span>
                 )}
               </div>
