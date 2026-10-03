@@ -35,7 +35,7 @@ function polyMul(p1: Uint8Array, p2: Uint8Array): Uint8Array {
 }
 
 function getGeneratorPoly(ecLength: number): Uint8Array {
-  let g = new Uint8Array([1]);
+  let g: Uint8Array = new Uint8Array([1]);
   for (let i = 0; i < ecLength; i++) {
     g = polyMul(g, new Uint8Array([1, GF_EXP[i]]));
   }
