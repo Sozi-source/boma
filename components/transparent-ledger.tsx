@@ -73,9 +73,9 @@ export default function TransparentLedger({
           <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
             Public Ledger
           </h3>
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 text-[9px] font-bold text-amber-800 ">
-            <ShieldCheckIcon className="w-3 h-3 text-amber-600" />
-            Audited Ledger
+          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 ">
+            <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
+            Verified
           </span>
         </div>
 

@@ -173,25 +173,18 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 2. Signature Fintech Obsidian Vault Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-950 via-neutral-900 to-[#071d15] text-white p-5 sm:p-6 shadow-xl shadow-emerald-950/20 border border-neutral-800/80 ring-1 ring-emerald-500/15">
-        {/* Ambient Glows */}
-        <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
-        {/* Subtle Ambient Glows */}
-        
-        
-
+      {/* 2. Vault Card */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-emerald-100/70 text-neutral-900 border border-emerald-200 p-5 sm:p-6 shadow-sm">
         <div className="relative z-10 space-y-4">
-          <div className="flex items-center justify-between text-[11px] font-mono">
-            <div className="flex items-center gap-1.5 tracking-wider uppercase font-semibold text-amber-300/90">
-              <ShieldCheckIcon className="w-3.5 h-3.5 text-amber-400" />
-              <span>Total Vault Raised</span>
+          <div className="flex items-center justify-between text-neutral-500 text-[11px] font-mono">
+            <div className="flex items-center gap-1.5 tracking-wider uppercase font-semibold">
+              <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Total raised</span>
             </div>
             <button
               type="button"
               onClick={() => setShowBalance(!showBalance)}
-              className="text-neutral-400 hover:text-white transition-colors p-1"
+              className="hover:text-neutral-900 transition-colors p-1"
               aria-label={showBalance ? 'Hide balance' : 'Show balance'}
             >
               {showBalance ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
@@ -199,29 +192,28 @@ export default function HomePage() {
           </div>
 
           <div>
-            <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-white font-mono">
+            <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-emerald-800">
               {showBalance ? (
                 formatCurrency(stats?.total_volume_kes ?? totalVaultBalance, 'KES')
               ) : (
                 '••••••••••'
               )}
             </div>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono mt-1 font-semibold">
-              <CheckCircleIcon className="w-3 h-3 text-emerald-400" />
-              Real-time audited escrow ledger
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono mt-1 font-semibold">
+              <CheckCircleIcon className="w-3 h-3" />
+              Across all your funds
             </span>
           </div>
 
-          {/* Card Micro Metadata Strip */}
-          <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] text-neutral-400 font-mono">
+          <div className="pt-2 border-t border-emerald-200 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
             <div className="flex items-center gap-3">
               <span>{bomas.length} Funds</span>
               <span>•</span>
               <span>{stats?.total_contributions ?? transactions.length} Members</span>
             </div>
-            <span className="inline-flex items-center gap-1 text-amber-300/90 font-bold uppercase tracking-wider text-[9px]">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-              Verified Custody
+            <span className="inline-flex items-center gap-1 uppercase tracking-wider">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              M-Pesa
             </span>
           </div>
         </div>

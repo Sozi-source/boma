@@ -12,15 +12,21 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Boma green ramp: replaces Tailwind's emerald and teal everywhere */
-  --color-emerald-50: #f0faed;  --color-emerald-100: #dcf4d5; --color-emerald-200: #b9e8ab;
-  --color-emerald-300: #8dd777; --color-emerald-400: #62c24a; --color-emerald-500: #3fae2a;
-  --color-emerald-600: #2a8a1d; --color-emerald-700: #236f17; --color-emerald-800: #205d17;
-  --color-emerald-900: #1c4c15; --color-emerald-950: #0c2a09;
-  --color-teal-50: #f0faed;  --color-teal-100: #dcf4d5; --color-teal-200: #b9e8ab;
-  --color-teal-300: #8dd777; --color-teal-400: #62c24a; --color-teal-500: #3fae2a;
-  --color-teal-600: #2a8a1d; --color-teal-700: #236f17; --color-teal-800: #205d17;
-  --color-teal-900: #1c4c15; --color-teal-950: #0c2a09;
+  /* Boma teal-green ramp: replaces Tailwind's emerald and teal everywhere */
+  --color-emerald-50: #effaf8;  --color-emerald-100: #d5f3ee; --color-emerald-200: #aee7de;
+  --color-emerald-300: #7ad4c8; --color-emerald-400: #3fb9ab; --color-emerald-500: #1a9d90;
+  --color-emerald-600: #0f8579; --color-emerald-700: #0d6b62; --color-emerald-800: #0f554f;
+  --color-emerald-900: #10463f; --color-emerald-950: #052b28;
+  --color-teal-50: #effaf8;  --color-teal-100: #d5f3ee; --color-teal-200: #aee7de;
+  --color-teal-300: #7ad4c8; --color-teal-400: #3fb9ab; --color-teal-500: #1a9d90;
+  --color-teal-600: #0f8579; --color-teal-700: #0d6b62; --color-teal-800: #0f554f;
+  --color-teal-900: #10463f; --color-teal-950: #052b28;
+
+  /* Golden yellow accent (use sparingly) */
+  --color-amber-50: #fff9e6;  --color-amber-100: #fff0bf; --color-amber-200: #fee38a;
+  --color-amber-300: #fbd24f; --color-amber-400: #f5bd1f; --color-amber-500: #e6a912;
+  --color-amber-600: #c88a0b; --color-amber-700: #a06b0b; --color-amber-800: #82550f;
+  --color-amber-900: #6b4510; --color-amber-950: #3d2406;
 }
 
 body {
