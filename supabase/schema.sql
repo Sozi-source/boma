@@ -1,5 +1,5 @@
 -- ==========================================================
--- BOMA PAY — FINTECH ARCHITECTURE POSTGRESQL SCHEMA v2
+-- BOMA — FINTECH ARCHITECTURE POSTGRESQL SCHEMA v2
 -- Profiles, Auth Linkage, Double-entry ledger, and Audit trail
 -- ==========================================================
 
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 2. BOMAS (Causes / Group Pools)
+-- 2. BOMAS (Michango / Group Pools)
 CREATE TABLE IF NOT EXISTS public.bomas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
@@ -141,7 +141,7 @@ CREATE POLICY "Users can insert their own profile" ON public.profiles
 CREATE POLICY "Users can update own profile" ON public.profiles
     FOR UPDATE USING (auth.uid() = id);
 
--- Bomas: Public read for public causes or creator
+-- Bomas: Public read for public michango or creator
 CREATE POLICY "Allow public read on bomas" ON public.bomas
     FOR SELECT USING (is_public = true OR auth.uid()::text = creator_id);
 
