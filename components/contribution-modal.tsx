@@ -33,13 +33,15 @@ export default function ContributionModal({
   const [customAmount, setCustomAmount] = useState<string>('');
   const [contributorEmail, setContributorEmail] = useState<string>('');
   const [contributorPhone, setContributorPhone] = useState<string>('');
+  const [contributorName, setContributorName] = useState<string>('');
+  const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mpesa');
   const [copied, setCopied] = useState<boolean>(false);
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [receiptData, setReceiptData] = useState<{ transaction: Transaction; ledgerEntry: LedgerEntry } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Members have accounts: use the signed-in email (and saved phone) instead of asking.
+  // Members have accounts: use the signed-in identity instead of asking.
   useEffect(() => {
     if (!isOpen) return;
     let active = true;
@@ -49,6 +51,8 @@ export default function ContributionModal({
         const { data: { user } } = await supabase.auth.getUser();
         if (!active || !user) return;
         setContributorEmail(user.email || '');
+        const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Member';
+        setContributorName(name);
         const savedPhone = user.user_metadata?.phone;
         if (typeof savedPhone === 'string' && savedPhone) {
           setContributorPhone((prev) => prev || savedPhone);
@@ -94,10 +98,10 @@ export default function ContributionModal({
         body: JSON.stringify({
           boma_id: boma.id,
           amount: selectedAmount,
-          contributor_name: 'Member',
+          contributor_name: contributorName || 'Member',
           contributor_email: contributorEmail,
           contributor_phone: contributorPhone,
-          is_anonymous: true,
+          is_anonymous: isAnonymous,
           payment_method: paymentMethod,
           currency: boma.currency,
         }),
@@ -274,9 +278,36 @@ export default function ContributionModal({
                 </div>
               )}
 
-              <div className="flex items-center gap-1.5 pt-1 text-[11px] text-neutral-500">
+              {/* Contributor Account Attribution */}
+              <div className="rounded-xl bg-neutral-50 border border-neutral-200 p-2.5 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-700 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    {contributorName ? contributorName.charAt(0).toUpperCase() : 'M'}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="font-bold text-neutral-900 block truncate text-[11px]">
+                      {isAnonymous ? 'Anonymous' : (contributorName || 'Member')}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block truncate font-mono">
+                      {contributorEmail}
+                    </span>
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-1.5 cursor-pointer text-[10px] text-neutral-500 hover:text-neutral-800 select-none">
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={(e) => setIsAnonymous(e.target.checked)}
+                    className="rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>Anonymous</span>
+                </label>
+              </div>
+
+              <div className="flex items-center gap-1.5 pt-0.5 text-[11px] text-neutral-500">
                 <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                <span>Private &amp; secure contribution</span>
+                <span>Audited double-entry ledger • Instant receipt</span>
               </div>
             </div>
 

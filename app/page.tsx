@@ -9,6 +9,7 @@ import BomaCard from '@/components/boma-card';
 import ContributionModal from '@/components/contribution-modal';
 import ShareModal from '@/components/share-modal';
 import ChamaStatementModal from '@/components/chama-statement-modal';
+import ContributorTracker from '@/components/contributor-tracker';
 import { 
   ShieldCheckIcon, 
   PlusIcon, 
@@ -36,6 +37,7 @@ export default function HomePage() {
   // Fintech Card View State
   const [showBalance, setShowBalance] = useState(true);
   const [activeTab, setActiveTab] = useState<'pools' | 'activity' | 'stats'>('pools');
+  const [activityView, setActivityView] = useState<'contributors' | 'stream'>('contributors');
   const [copiedRef, setCopiedRef] = useState<string | null>(null);
 
   // Modals
@@ -210,7 +212,17 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <span>{bomas.length} Funds</span>
               <span>•</span>
-              <span>{totalMembers} Members</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('activity');
+                  setActivityView('contributors');
+                }}
+                className="hover:text-emerald-800 font-bold transition-colors underline decoration-emerald-300 underline-offset-2"
+                title="View contributor register"
+              >
+                {totalMembers} Members
+              </button>
             </div>
             <span className="inline-flex items-center gap-1 uppercase tracking-wider">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
@@ -342,59 +354,105 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* 6. Tab Content: Activity Ledger */}
+      {/* 6. Tab Content: Activity & Contributor Register */}
       {activeTab === 'activity' && (
-        <div className="rounded-3xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
-              Recent contributions
-            </h3>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono font-semibold">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live Ledger
-            </span>
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3 sm:p-4 shadow-xs flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-neutral-900">
+                Payment &amp; Contributor Register
+              </h3>
+              <p className="text-[10px] text-neutral-400 font-mono">
+                Track payments per contributor across all your funds
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setActivityView('contributors')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activityView === 'contributors'
+                    ? 'bg-white text-neutral-900 shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                }`}
+              >
+                By Contributor
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivityView('stream')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activityView === 'stream'
+                    ? 'bg-white text-neutral-900 shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-800'
+                }`}
+              >
+                Recent Receipts ({transactions.length})
+              </button>
+            </div>
           </div>
 
-          {transactions.length === 0 ? (
-            <div className="py-8 text-center border border-dashed border-neutral-200 rounded-2xl">
-              <p className="text-xs text-neutral-400">No transactions recorded yet. Incoming Paystack receipts will stream here live.</p>
-            </div>
+          {activityView === 'contributors' ? (
+            <ContributorTracker
+              transactions={transactions}
+              currency="KES"
+              bomaTitle="Boma Portfolio"
+            />
           ) : (
-            <div className="divide-y divide-neutral-100 ">
-              {transactions.slice(0, 10).map((t) => (
-                <div key={t.id} className="py-2.5 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
-                      <ArrowDownLeftIcon className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-neutral-900 block truncate">
-                        {t.is_anonymous ? 'Anonymous Friend' : t.contributor_name}
-                      </span>
-                      <div className="flex items-center gap-1 font-mono text-[9px] text-neutral-400">
-                        <span>{t.reference}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(t.reference)}
-                          className="hover:text-emerald-700"
-                        >
-                          <CopyIcon className="w-3 h-3" />
-                        </button>
-                        {copiedRef === t.reference && <span className="text-emerald-700 font-sans">Copied</span>}
+            <div className="rounded-3xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs sm:text-sm font-bold text-neutral-900">
+                  Recent contributions
+                </h3>
+                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live Ledger
+                </span>
+              </div>
+
+              {transactions.length === 0 ? (
+                <div className="py-8 text-center border border-dashed border-neutral-200 rounded-2xl">
+                  <p className="text-xs text-neutral-400">No transactions recorded yet. Incoming Paystack receipts will stream here live.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-neutral-100">
+                  {transactions.slice(0, 15).map((t) => (
+                    <div key={t.id || t.reference} className="py-2.5 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
+                          <ArrowDownLeftIcon className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-xs font-bold text-neutral-900 block truncate">
+                            {t.is_anonymous ? 'Anonymous Friend' : t.contributor_name}
+                          </span>
+                          <div className="flex items-center gap-1 font-mono text-[9px] text-neutral-400">
+                            <span>{t.reference}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(t.reference)}
+                              className="hover:text-emerald-700"
+                            >
+                              <CopyIcon className="w-3 h-3" />
+                            </button>
+                            {copiedRef === t.reference && <span className="text-emerald-700 font-sans">Copied</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="text-xs font-black font-mono text-emerald-700 block">
+                          +{formatCurrency(t.amount, t.currency)}
+                        </span>
+                        <span className="rounded bg-neutral-100 px-1 py-0.5 text-[9px] font-bold text-neutral-500 uppercase">
+                          {t.payment_method}
+                        </span>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <span className="text-xs font-black font-mono text-emerald-700 block">
-                      +{formatCurrency(t.amount, t.currency)}
-                    </span>
-                    <span className="rounded bg-neutral-100 px-1 py-0.5 text-[9px] font-bold text-neutral-500 uppercase">
-                      {t.payment_method}
-                    </span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

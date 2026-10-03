@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Boma, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
+import ContributorTracker from '@/components/contributor-tracker';
 import { 
   ShieldCheckIcon, 
   WalletIcon, 
@@ -19,6 +20,7 @@ import {
 export default function DashboardPage() {
   const [bomas, setBomas] = useState<Boma[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [viewMode, setViewMode] = useState<'contributors' | 'receipts'>('contributors');
   const [copiedRef, setCopiedRef] = useState<string | null>(null);
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
 
@@ -244,24 +246,68 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Verified Receipts Feed (Compact Mobile Row View + Desktop Table) */}
-      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
-            Recent Receipts
-          </h2>
-          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-semibold">
-            <CheckCircleIcon className="w-3 h-3" />
-            Live
-          </span>
+      {/* Verified Receipts & Contributor Register */}
+      <div className="space-y-3">
+        <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 shadow-xs flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
+              Contributions &amp; Contributor Register
+            </h2>
+            <p className="text-[10px] text-neutral-400 font-mono">
+              Live audit and payment tracking by member
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setViewMode('contributors')}
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                viewMode === 'contributors'
+                  ? 'bg-white text-neutral-900 shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              }`}
+            >
+              By Contributor
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('receipts')}
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                viewMode === 'receipts'
+                  ? 'bg-white text-neutral-900 shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              }`}
+            >
+              Receipts Feed ({transactions.length})
+            </button>
+          </div>
         </div>
 
-        {/* Receipts Feed with Empty State */}
-        {transactions.length === 0 ? (
-          <div className="py-8 text-center border border-dashed border-neutral-200 rounded-xl">
-            <p className="text-xs text-neutral-500">No receipts yet. When contributions arrive, they will appear here live with audit references.</p>
-          </div>
+        {viewMode === 'contributors' ? (
+          <ContributorTracker
+            transactions={transactions}
+            currency="KES"
+            bomaTitle="Treasury Portal"
+          />
         ) : (
+          <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
+                Recent Receipts
+              </h2>
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-semibold">
+                <CheckCircleIcon className="w-3 h-3" />
+                Live
+              </span>
+            </div>
+
+            {/* Receipts Feed with Empty State */}
+            {transactions.length === 0 ? (
+              <div className="py-8 text-center border border-dashed border-neutral-200 rounded-xl">
+                <p className="text-xs text-neutral-500">No receipts yet. When contributions arrive, they will appear here live with audit references.</p>
+              </div>
+            ) : (
           <>
             {/* Mobile Receipts View (< 640px) */}
             <div className="block sm:hidden divide-y divide-neutral-100 ">
@@ -349,6 +395,8 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+      )}
+    </div>
     </div>
   );
 }

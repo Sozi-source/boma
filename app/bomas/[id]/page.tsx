@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { Boma, Account, LedgerEntry, Disbursement } from '@/lib/types/fintech';
+import { Boma, Account, LedgerEntry, Disbursement, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import ContributionModal from '@/components/contribution-modal';
 import DisbursementModal from '@/components/disbursement-modal';
 import TransparentLedger from '@/components/transparent-ledger';
+import ContributorTracker from '@/components/contributor-tracker';
 import GovernancePanel from '@/components/governance-panel';
 import ShareModal from '@/components/share-modal';
 import ChamaStatementModal from '@/components/chama-statement-modal';
@@ -32,8 +33,9 @@ export default function BomaDetailPage({ params }: PageProps) {
   const [account, setAccount] = useState<Account | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [disbursements, setDisbursements] = useState<Disbursement[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'story' | 'ledger' | 'disbursements' | 'governance'>('story');
+  const [activeTab, setActiveTab] = useState<'story' | 'contributors' | 'ledger' | 'disbursements' | 'governance'>('story');
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [isDisburseModalOpen, setIsDisburseModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -46,10 +48,14 @@ export default function BomaDetailPage({ params }: PageProps) {
     if (result) {
       setBoma(result.boma);
       setAccount(result.account);
-      const entries = await bomaService.getBomaLedger(bomaId);
-      const disbs = await bomaService.getBomaDisbursements(bomaId);
+      const [entries, disbs, txns] = await Promise.all([
+        bomaService.getBomaLedger(bomaId),
+        bomaService.getBomaDisbursements(bomaId),
+        bomaService.getBomaTransactions(bomaId),
+      ]);
       setLedgerEntries(entries);
       setDisbursements(disbs);
+      setTransactions(txns);
     }
     setLoading(false);
   };
@@ -236,7 +242,13 @@ export default function BomaDetailPage({ params }: PageProps) {
             </div>
 
             <div className="flex justify-between text-[10px] text-neutral-400 pt-0.5">
-              <span>{boma.contributors_count} contributors</span>
+              <button
+                type="button"
+                onClick={() => setActiveTab('contributors')}
+                className="hover:text-emerald-700 font-bold transition-colors text-left"
+              >
+                {boma.contributors_count || transactions.length} contributors →
+              </button>
               <span>{daysLeft} days remaining</span>
             </div>
           </div>
@@ -254,6 +266,21 @@ export default function BomaDetailPage({ params }: PageProps) {
                 }`}
               >
                 Story
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('contributors')}
+                className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
+                  activeTab === 'contributors'
+                    ? 'border-emerald-600 text-emerald-700 '
+                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                }`}
+              >
+                <span>Contributors</span>
+                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] font-bold">
+                  {boma.contributors_count || transactions.length}
+                </span>
               </button>
 
               <button
@@ -315,6 +342,15 @@ export default function BomaDetailPage({ params }: PageProps) {
                 <span>All funds are held in segregated trust accounts and audited in real time.</span>
               </div>
             </div>
+          )}
+
+          {activeTab === 'contributors' && (
+            <ContributorTracker
+              transactions={transactions}
+              targetAmount={boma.target_amount}
+              currency={boma.currency}
+              bomaTitle={boma.title}
+            />
           )}
 
           {activeTab === 'ledger' && (
@@ -406,15 +442,19 @@ export default function BomaDetailPage({ params }: PageProps) {
 
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 gap-2 border-y border-neutral-100 py-3 text-xs">
-              <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveTab('contributors')}
+                className="flex items-center gap-1.5 text-left hover:opacity-80 transition-opacity"
+              >
                 <UsersIcon className="w-4 h-4 text-emerald-700" />
                 <div>
-                  <span className="font-bold text-neutral-900 ">
-                    {boma.contributors_count}
+                  <span className="font-bold text-neutral-900 block">
+                    {boma.contributors_count || transactions.length}
                   </span>
-                  <span className="block text-[10px] text-neutral-400">Members</span>
+                  <span className="block text-[10px] text-neutral-400">Members →</span>
                 </div>
-              </div>
+              </button>
 
               <div className="flex items-center gap-1.5">
                 <WalletIcon className="w-4 h-4 text-teal-600" />

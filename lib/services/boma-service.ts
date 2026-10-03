@@ -463,9 +463,64 @@ class BomaService {
   async getBomaTransactions(bomaId: string): Promise<Transaction[]> {
     if (this.isBrowser() && isSupabaseConfigured && /^[0-9a-f-]{36}$/i.test(bomaId)) {
       const supabase = createClient();
-      const { data, error } = await supabase.from('transactions').select('*').eq('boma_id', bomaId).order('created_at', { ascending: false });
-      if (error) return [];
-      return (data || []) as Transaction[];
+      const resultsMap = new Map<string, Transaction>();
+
+      // 1. Fetch transactions table
+      try {
+        const { data: txns } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('boma_id', bomaId)
+          .order('created_at', { ascending: false });
+
+        if (txns) {
+          for (const t of txns) {
+            resultsMap.set(t.reference, t as Transaction);
+          }
+        }
+      } catch (err) {
+        console.warn('Unable to query transactions table:', err);
+      }
+
+      // 2. Fetch paid payment_intents to ensure no Paystack payment is missed
+      try {
+        const { data: intents } = await supabase
+          .from('payment_intents')
+          .select('*')
+          .eq('boma_id', bomaId)
+          .eq('status', 'paid')
+          .order('created_at', { ascending: false });
+
+        if (intents) {
+          for (const pi of intents) {
+            if (!resultsMap.has(pi.reference)) {
+              const meta = (pi.metadata || {}) as Record<string, unknown>;
+              resultsMap.set(pi.reference, {
+                id: pi.id || pi.reference,
+                boma_id: pi.boma_id,
+                reference: pi.reference,
+                idempotency_key: pi.reference,
+                contributor_name: String(meta.contributor_name || 'Member'),
+                contributor_email: typeof meta.contributor_email === 'string' ? meta.contributor_email : undefined,
+                contributor_phone: typeof meta.contributor_phone === 'string' ? meta.contributor_phone : undefined,
+                is_anonymous: Boolean(meta.is_anonymous),
+                amount: Number(pi.amount_minor) / 100,
+                fee: 0,
+                net_amount: Number(pi.amount_minor) / 100,
+                currency: (pi.currency || 'KES') as Currency,
+                payment_method: (meta.payment_method as PaymentMethod) || 'mpesa',
+                status: 'completed',
+                created_at: pi.created_at || new Date().toISOString(),
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Unable to query payment_intents table:', err);
+      }
+
+      const list = Array.from(resultsMap.values());
+      return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
     const transactions = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
     return transactions.filter((t) => t.boma_id === bomaId);
