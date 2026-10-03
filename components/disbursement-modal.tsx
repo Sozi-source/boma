@@ -248,10 +248,10 @@ export default function DisbursementModal({
                   type="button"
                   disabled
                   title="Bank payouts will be enabled after Paystack bank code validation is configured."
-                  className="flex cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-2 text-xs font-bold text-neutral-400"
+                  className="flex cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-2 text-neutral-400"
                 >
-                  <BuildingLibraryIcon className="w-3.5 h-3.5 text-neutral-600" />
-                  <span>Bank Payouts Unavailable</span>
+                  <BuildingLibraryIcon className="w-3.5 h-3.5 shrink-0 text-neutral-500" />
+                  <span className="text-[10px] sm:text-xs font-bold leading-tight">Bank (Unavailable)</span>
                 </button>
               </div>
             </div>

@@ -222,27 +222,27 @@ export default function HomePage() {
       </div>
 
       {/* 3. Fintech Quick 4-Action Circular Grid */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-3 py-1">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-3 py-1">
         <Link
           href="/bomas/create"
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
         >
-          <div className="h-11 w-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 ">
-            New Contribution
+          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
+            Start Fund
           </span>
         </Link>
 
         <Link
           href="/bomas"
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
         >
-          <div className="h-11 w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
             <SmartphoneIcon className="w-5 h-5" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 ">
+          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
             Contribute
           </span>
         </Link>
@@ -250,12 +250,12 @@ export default function HomePage() {
         <button
           type="button"
           onClick={handleOpenStatement}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
         >
-          <div className="h-11 w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
             <DocumentTextIcon className="w-5 h-5" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 ">
+          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
             Statement
           </span>
         </button>
@@ -263,12 +263,12 @@ export default function HomePage() {
         <button
           type="button"
           onClick={handleOpenShare}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
+          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
         >
-          <div className="h-11 w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
             <QrCodeIcon className="w-5 h-5" />
           </div>
-          <span className="text-[11px] font-bold text-neutral-800 ">
+          <span className="text-[10px] sm:text-[11px] font-bold text-neutral-800 leading-tight">
             Share
           </span>
         </button>

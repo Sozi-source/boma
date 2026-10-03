@@ -242,8 +242,8 @@ export default function BomaDetailPage({ params }: PageProps) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="border-b border-neutral-200 ">
-            <nav className="flex space-x-4">
+          <div className="border-b border-neutral-200 -mx-3 px-3 sm:mx-0 sm:px-0">
+            <nav className="flex space-x-3 sm:space-x-4 overflow-x-auto no-scrollbar whitespace-nowrap">
               <button
                 type="button"
                 onClick={() => setActiveTab('story')}
