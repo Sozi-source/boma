@@ -28,10 +28,10 @@ export default function ShareModal({ boma, isOpen, onClose }: ShareModalProps) {
   const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setShareUrl(window.location.href);
+    if (typeof window !== 'undefined' && boma) {
+      setShareUrl(`${window.location.origin}/bomas/${boma.id}`);
     }
-  }, []);
+  }, [boma]);
 
   if (!isOpen) return null;
 
@@ -112,7 +112,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
           <div className="flex items-center gap-1.5">
-            <ShareIcon className="w-4 h-4 text-emerald-600" />
+            <ShareIcon className="w-4 h-4 text-emerald-700" />
             <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
               Share Campaign
             </h2>
@@ -137,7 +137,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 : 'text-neutral-500 hover:text-neutral-700'
             }`}
           >
-            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
+            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-700" />
             <span>WhatsApp Card</span>
           </button>
 
@@ -162,7 +162,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 <span>WhatsApp Preview</span>
                 {boma.verified && (
                   <span className="flex items-center gap-0.5">
-                    <ShieldCheckIcon className="w-3 h-3 text-emerald-600" />
+                    <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
                     Verified Trust Account
                   </span>
                 )}
@@ -208,7 +208,6 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 type="text"
                 value={customNote}
                 onChange={(e) => setCustomNote(e.target.value)}
-                placeholder="e.g. Urgent: hospital bill due tomorrow, please share!"
                 className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 focus:bg-white "
               />
             </div>
@@ -232,7 +231,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 >
                   {copiedText ? (
                     <>
-                      <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                      <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-700" />
                       <span>Copied Text!</span>
                     </>
                   ) : (
@@ -286,7 +285,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
               >
                 {copiedLink ? (
                   <>
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Copied!</span>
                   </>
                 ) : (

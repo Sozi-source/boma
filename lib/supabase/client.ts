@@ -11,7 +11,9 @@ export const isSupabaseConfigured = Boolean(
 );
 
 export function createClient() {
-  return createBrowserClient(supabaseUrl, supabaseKey);
+  const url = supabaseUrl && supabaseUrl.startsWith('http') ? supabaseUrl : 'https://placeholder.supabase.co';
+  const key = supabaseKey || 'placeholder-anon-key';
+  return createBrowserClient(url, key);
 }
 
 export const supabase = isSupabaseConfigured

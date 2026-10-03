@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { 
   PlusIcon, 
   WalletIcon, 
@@ -23,26 +24,33 @@ export default function MobileNav() {
   const [hasUser, setHasUser] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const demo = localStorage.getItem('bomapay_auth_user');
-      if (demo) setHasUser(true);
-    }
+    let active = true;
+    const readUser = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (active) setHasUser(Boolean(user));
+      } catch {
+        if (active) setHasUser(false);
+      }
+    };
+    void readUser();
+    return () => { active = false; };
   }, [pathname]);
 
   const isHome = pathname === '/';
   const isExplore = pathname === '/bomas';
-  const isCreate = pathname === '/bomas/create';
   const isDashboard = pathname === '/dashboard';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-neutral-200/80 bg-white/95 backdrop-blur-xl px-3 py-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] transition-colors">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 select-none border-t border-neutral-200 bg-white px-3 py-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] transition-colors md:hidden">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {/* Vault / Home */}
         <Link
           href="/"
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isHome
-              ? 'text-emerald-600 font-extrabold'
+              ? 'text-emerald-700 font-extrabold'
               : 'text-neutral-400 hover:text-neutral-700 font-medium'
           }`}
         >
@@ -55,7 +63,7 @@ export default function MobileNav() {
           href="/bomas"
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isExplore
-              ? 'text-emerald-600 font-extrabold'
+              ? 'text-emerald-700 font-extrabold'
               : 'text-neutral-400 hover:text-neutral-700 font-medium'
           }`}
         >
@@ -66,13 +74,13 @@ export default function MobileNav() {
         {/* Create (Elevated Action) */}
         <Link
           href="/bomas/create"
-          className="flex flex-col items-center justify-center -mt-5 group"
+          className="group flex flex-col items-center justify-center rounded-xl px-3 py-1"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-600/30 group-active:scale-90 transition-transform">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-700/20 transition-transform group-active:scale-95">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
           <span className="text-[10px] mt-0.5 font-bold text-neutral-800 ">
-            Create
+            Start
           </span>
         </Link>
 
@@ -81,7 +89,7 @@ export default function MobileNav() {
           href="/dashboard"
           className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isDashboard
-              ? 'text-emerald-600 font-extrabold'
+              ? 'text-emerald-700 font-extrabold'
               : 'text-neutral-400 hover:text-neutral-700 font-medium'
           }`}
         >
@@ -91,7 +99,7 @@ export default function MobileNav() {
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white " />
             )}
           </div>
-          <span className="text-[10px] mt-0.5 tracking-tight">Taarifa</span>
+          <span className="text-[10px] mt-0.5 tracking-tight">Activity</span>
         </Link>
       </div>
     </nav>

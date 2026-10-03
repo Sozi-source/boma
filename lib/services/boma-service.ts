@@ -91,24 +91,7 @@ class BomaService {
             phone: user.user_metadata?.phone,
           };
         }
-      } catch {
-        // Continue to check local demo session
-      }
-
-      const demo = localStorage.getItem('bomapay_auth_user');
-      if (demo) {
-        try {
-          const parsed = JSON.parse(demo);
-          return {
-            id: parsed.id || 'user-demo',
-            name: parsed.name || 'Demo Organizer',
-            email: parsed.email,
-            phone: parsed.phone,
-          };
-        } catch {
-          // ignore
-        }
-      }
+      } catch { /* Auth provider unavailable: no authenticated user. */ }
     }
     return { id: 'user-guest', name: 'Boma Organizer' };
   }
@@ -116,6 +99,15 @@ class BomaService {
   // --- BOMA OPERATIONS ---
 
   async getBomas(options?: { category?: BomaCategory | 'all'; query?: string }): Promise<Boma[]> {
+    if (this.isBrowser() && isSupabaseConfigured) {
+      const supabase = createClient();
+      let query = supabase.from('bomas').select('id,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at').eq('is_public', true).order('created_at', { ascending: false });
+      if (options?.category && options.category !== 'all') query = query.eq('category', options.category);
+      if (options?.query?.trim()) query = query.or(`title.ilike.%${options.query.trim()}%,description.ilike.%${options.query.trim()}%`);
+      const { data, error } = await query;
+      if (error) throw new Error('Unable to load funds');
+      return (data || []) as Boma[];
+    }
     const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
     let filtered = [...bomas];
 
@@ -137,6 +129,17 @@ class BomaService {
   }
 
   async getBomaById(id: string): Promise<{ boma: Boma; account: Account } | null> {
+    if (this.isBrowser() && isSupabaseConfigured && /^[0-9a-f-]{36}$/i.test(id)) {
+      const supabase = createClient();
+      const [{ data: boma, error: bomaError }, { data: account, error: accountError }] = await Promise.all([
+        supabase.from('bomas').select('id,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at').eq('id', id).maybeSingle(),
+        supabase.from('accounts').select('*').eq('boma_id', id).maybeSingle(),
+      ]);
+      if (bomaError || accountError) throw new Error('Unable to load fund data');
+      if (!boma) return null;
+      if (!account) throw new Error('Fund account is not available');
+      return { boma: boma as Boma, account: account as Account };
+    }
     const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
     const boma = bomas.find((b) => b.id === id);
     if (!boma) return null;
@@ -162,6 +165,10 @@ class BomaService {
     return { boma, account };
   }
 
+  async getBomaWithAccount(id: string): Promise<{ boma: Boma; account: Account } | null> {
+    return this.getBomaById(id);
+  }
+
   async createBoma(data: {
     title: string;
     description: string;
@@ -173,20 +180,19 @@ class BomaService {
     creator_phone?: string;
     image_url?: string;
   }): Promise<Boma> {
-    const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
-    const accounts = this.getStore<Account>(STORAGE_KEYS.ACCOUNTS, INITIAL_ACCOUNTS);
-
     const activeUser = await this.getCurrentUser();
+    if (activeUser.id === 'user-guest' || !isSupabaseConfigured) {
+      throw new Error('Sign in with a configured account to create a fund.');
+    }
+    const supabase = createClient();
     const creatorId = activeUser.id;
     const creatorName = data.creator_name || activeUser.name;
     const creatorPhone = data.creator_phone || activeUser.phone;
 
-    const id = `boma-${Date.now()}`;
     const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const deadline = new Date(Date.now() + data.deadlineDays * 24 * 60 * 60 * 1000).toISOString();
 
-    const newBoma: Boma = {
-      id,
+    const newBoma = {
       title: data.title,
       slug: `${slug}-${Math.random().toString(36).substring(2, 5)}`,
       description: data.description,
@@ -207,48 +213,11 @@ class BomaService {
       updated_at: new Date().toISOString(),
     };
 
-    // If Supabase is online, attempt cloud persistence
-    if (this.isBrowser() && isSupabaseConfigured) {
-      try {
-        const supabase = createClient();
-        await supabase.from('bomas').insert([{
-          title: newBoma.title,
-          slug: newBoma.slug,
-          description: newBoma.description,
-          category: newBoma.category,
-          target_amount: newBoma.target_amount,
-          current_amount: 0,
-          currency: newBoma.currency,
-          creator_id: creatorId,
-          creator_name: creatorName,
-          creator_phone: creatorPhone,
-          status: newBoma.status,
-          deadline: newBoma.deadline,
-          image_url: newBoma.image_url,
-          is_public: true,
-          contributors_count: 0,
-          verified: false,
-        }]);
-      } catch {
-        // Graceful fallback to local persistence
-      }
-    }
-
-    const newAccount: Account = {
-      id: `acc-${Date.now()}`,
-      boma_id: id,
-      currency: data.currency,
-      available_balance: 0,
-      ledger_balance: 0,
-      total_received: 0,
-      total_disbursed: 0,
-      last_reconciled_at: new Date().toISOString(),
-    };
-
-    this.setStore(STORAGE_KEYS.BOMAS, [newBoma, ...bomas]);
-    this.setStore(STORAGE_KEYS.ACCOUNTS, [...accounts, newAccount]);
-
-    return newBoma;
+    const { data: stored, error } = await supabase.from('bomas').insert({
+      ...newBoma, current_amount: 0, is_public: true, contributors_count: 0, verified: false,
+    }).select('id,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at').single();
+    if (error || !stored) throw new Error('Unable to create fund. Please check your sign-in and try again.');
+    return stored as Boma;
   }
 
   async deleteBoma(bomaId: string): Promise<boolean> {
@@ -307,7 +276,7 @@ class BomaService {
     const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
     const bomaIndex = bomas.findIndex((b) => b.id === payload.boma_id);
     if (bomaIndex === -1) {
-      throw new Error('Target Mchango does not exist.');
+      throw new Error('Target fund does not exist.');
     }
 
     if (payload.reference) {
@@ -492,11 +461,23 @@ class BomaService {
   // --- AUDIT & TRANSPARENCY QUERIES ---
 
   async getBomaTransactions(bomaId: string): Promise<Transaction[]> {
+    if (this.isBrowser() && isSupabaseConfigured && /^[0-9a-f-]{36}$/i.test(bomaId)) {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('transactions').select('*').eq('boma_id', bomaId).order('created_at', { ascending: false });
+      if (error) return [];
+      return (data || []) as Transaction[];
+    }
     const transactions = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
     return transactions.filter((t) => t.boma_id === bomaId);
   }
 
   async getBomaLedger(bomaId: string): Promise<LedgerEntry[]> {
+    if (this.isBrowser() && isSupabaseConfigured && /^[0-9a-f-]{36}$/i.test(bomaId)) {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('ledger_entries').select('*').eq('boma_id', bomaId).order('created_at', { ascending: false });
+      if (error) throw new Error('Unable to load ledger');
+      return (data || []) as LedgerEntry[];
+    }
     const ledger = this.getStore<LedgerEntry>(STORAGE_KEYS.LEDGER, INITIAL_LEDGER);
     return ledger
       .filter((l) => l.boma_id === bomaId)
@@ -504,6 +485,12 @@ class BomaService {
   }
 
   async getBomaDisbursements(bomaId: string): Promise<Disbursement[]> {
+    if (this.isBrowser() && isSupabaseConfigured && /^[0-9a-f-]{36}$/i.test(bomaId)) {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('disbursements').select('*').eq('boma_id', bomaId).order('created_at', { ascending: false });
+      if (error) return [];
+      return (data || []) as Disbursement[];
+    }
     const disbursements = this.getStore<Disbursement>(STORAGE_KEYS.DISBURSEMENTS, INITIAL_DISBURSEMENTS);
     return disbursements
       .filter((d) => d.boma_id === bomaId)
@@ -543,10 +530,6 @@ class BomaService {
   }): Promise<Disbursement> {
     const found = await this.getBomaById(payload.boma_id);
     if (!found) throw new Error('Boma not found');
-    if (payload.amount > found.account.available_balance) {
-      throw new Error('Requested amount exceeds available balance');
-    }
-
     const res = await fetch('/api/payments/paystack/transfer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -557,7 +540,23 @@ class BomaService {
       throw new Error(err.error || 'Paystack transfer failed');
     }
 
-    return this.disburse(payload);
+    const result = await res.json();
+    return {
+      id: result.reference,
+      boma_id: payload.boma_id,
+      requested_by: found.boma.creator_name,
+      amount: payload.amount,
+      currency: found.boma.currency,
+      recipient_type: payload.recipient_type,
+      recipient_phone: payload.recipient_phone,
+      recipient_bank_name: payload.recipient_bank_name,
+      recipient_account_number: payload.recipient_account_number,
+      recipient_name: payload.recipient_name,
+      purpose: payload.purpose,
+      status: 'pending',
+      reference: result.reference,
+      created_at: new Date().toISOString(),
+    };
   }
 
   // --- GOVERNANCE: COMMITTEE & MULTI-SIG PAYOUTS ---

@@ -15,15 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Boma — Michango, wazi kwa kila mwanachama",
+  title: "Boma — Contributions, transparent to every member",
   description: "Collect and track contributions for family, events and needs. Every member sees every shilling.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
@@ -38,22 +38,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-neutral-50 text-neutral-900 selection:bg-emerald-500 selection:text-white font-sans">
         <Navbar />
-        <main className="flex-1 pb-20 md:pb-6">{children}</main>
+        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8">{children}</main>
         <MobileNav />
 
         {/* Desktop App Status Bar */}
-        <footer className="hidden md:flex border-t border-neutral-200/60 bg-white/50 backdrop-blur-xs py-1.5 px-6 items-center justify-between text-[10px] text-neutral-400 font-mono transition-colors">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>Segregated Escrow Active</span>
-            <span>•</span>
-            <span>Paystack Rails Live</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span>Double-Entry Reconciled</span>
-            <span>•</span>
-            <span>v3.0.4</span>
-          </div>
+        <footer className="hidden md:flex border-t border-neutral-200 bg-white py-2 px-6 items-center justify-between text-[11px] text-neutral-500">
+          <span>Boma — Contributions, open to every member</span>
+          <span>Pay with M-Pesa or card</span>
         </footer>
       </body>
     </html>

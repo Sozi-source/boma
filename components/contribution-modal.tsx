@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Boma, PaymentMethod, Transaction, LedgerEntry } from '../lib/types/fintech';
 import { formatCurrency } from '../lib/ledger/ledger-service';
-import { bomaService } from '../lib/services/boma-service';
 import { 
   XMarkIcon, 
   SmartphoneIcon, 
@@ -19,7 +18,6 @@ interface ContributionModalProps {
   boma: Boma | null;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (result: { transaction: Transaction; ledgerEntry: LedgerEntry }) => void;
 }
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000];
@@ -28,14 +26,12 @@ export default function ContributionModal({
   boma,
   isOpen,
   onClose,
-  onSuccess,
 }: ContributionModalProps) {
-  if (!isOpen || !boma) return null;
-
   const [step, setStep] = useState<'input' | 'processing' | 'receipt'>('input');
   const [amount, setAmount] = useState<number>(2500);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [contributorName, setContributorName] = useState<string>('');
+  const [contributorEmail, setContributorEmail] = useState<string>('');
   const [contributorPhone, setContributorPhone] = useState<string>('0712345678');
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mpesa');
@@ -44,6 +40,8 @@ export default function ContributionModal({
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [receiptData, setReceiptData] = useState<{ transaction: Transaction; ledgerEntry: LedgerEntry } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  if (!isOpen || !boma) return null;
 
   const selectedAmount = customAmount ? parseFloat(customAmount) || 0 : amount;
 
@@ -78,6 +76,7 @@ export default function ContributionModal({
           boma_id: boma.id,
           amount: selectedAmount,
           contributor_name: contributorName.trim() || 'Member',
+          contributor_email: contributorEmail.trim(),
           contributor_phone: contributorPhone,
           is_anonymous: isAnonymous,
           payment_method: paymentMethod,
@@ -92,39 +91,11 @@ export default function ContributionModal({
       }
 
       const initData = await initRes.json();
-      const reference: string = initData.reference;
-
-      if (initData.live) {
-        // Live Paystack: hand off to hosted checkout (M-Pesa STK / card / bank).
-        // The boma page verifies the payment on return and books the ledger.
-        setProcessingStatus('Redirecting to secure Paystack checkout...');
-        window.location.href = initData.authorization_url;
-        return;
+      if (typeof initData.authorization_url !== 'string' || !initData.authorization_url.startsWith('https://')) {
+        throw new Error('Secure checkout is unavailable. Please try again later.');
       }
-
-      // Sandbox mode (no live Paystack keys): simulate the payment prompt.
-      setProcessingStatus(
-        paymentMethod === 'mpesa'
-          ? `[Sandbox] STK prompt sent to ${contributorPhone}. Enter PIN...`
-          : '[Sandbox] Authorizing card...'
-      );
-      await new Promise((res) => setTimeout(res, 1200));
-      setProcessingStatus('Posting double-entry ledger credit...');
-
-      const finalResult = await bomaService.contribute({
-        boma_id: boma.id,
-        amount: selectedAmount,
-        contributor_name: contributorName.trim() || 'Member',
-        contributor_phone: contributorPhone,
-        is_anonymous: isAnonymous,
-        payment_method: paymentMethod,
-        note: note.trim() || undefined,
-        reference,
-      });
-
-      setReceiptData(finalResult);
-      setStep('receipt');
-      onSuccess(finalResult);
+      setProcessingStatus('Redirecting to secure Paystack checkout...');
+      window.location.assign(initData.authorization_url);
     } catch (err: unknown) {
       setStep('input');
       setErrorMessage(err instanceof Error ? err.message : 'Contribution failed.');
@@ -163,7 +134,7 @@ export default function ContributionModal({
             </div>
             <div>
               <h2 className="text-sm font-bold text-neutral-900 leading-tight">
-                {step === 'receipt' ? 'Receipt' : 'Changia'}
+                {step === 'receipt' ? 'Receipt' : 'Contribute'}
               </h2>
               <p className="text-[10px] text-neutral-500 truncate max-w-[220px]">
                 {boma.title}
@@ -211,7 +182,6 @@ export default function ContributionModal({
               </div>
               <input
                 type="number"
-                placeholder="Custom amount..."
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
                 min="10"
@@ -234,7 +204,7 @@ export default function ContributionModal({
                       : 'border-neutral-200 bg-white '
                   }`}
                 >
-                  <SmartphoneIcon className="w-4 h-4 text-emerald-600 mb-0.5" />
+                  <SmartphoneIcon className="w-4 h-4 text-emerald-700 mb-0.5" />
                   <span className="text-[11px] font-bold">M-Pesa</span>
                   <span className="text-[9px] text-neutral-400">STK Push</span>
                 </button>
@@ -278,9 +248,23 @@ export default function ContributionModal({
                 <input
                   type="text"
                   required={!isAnonymous}
-                  placeholder="e.g. Kelvin Mutiso"
                   value={contributorName}
                   onChange={(e) => setContributorName(e.target.value)}
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-neutral-600 mb-0.5">
+                  Email for Paystack receipt
+                </label>
+                <input
+                  type="email"
+                  required
+                  maxLength={254}
+                  autoComplete="email"
+                  value={contributorEmail}
+                  onChange={(e) => setContributorEmail(e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
                 />
               </div>
@@ -293,7 +277,6 @@ export default function ContributionModal({
                   <input
                     type="tel"
                     required
-                    placeholder="0712 345 678"
                     value={contributorPhone}
                     onChange={(e) => setContributorPhone(e.target.value)}
                     className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -307,7 +290,6 @@ export default function ContributionModal({
                 </label>
                 <input
                   type="text"
-                  placeholder="Quick word of support..."
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -320,7 +302,7 @@ export default function ContributionModal({
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded-sm border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+                  className="h-3.5 w-3.5 rounded-sm border-neutral-300 text-emerald-700 focus:ring-emerald-500"
                 />
                 <span className="text-[11px] text-neutral-600 ">
                   Stay anonymous on public ledger
@@ -338,7 +320,7 @@ export default function ContributionModal({
                 <span>→</span>
               </button>
               <div className="text-center text-[10px] text-neutral-400 flex items-center justify-center gap-1">
-                <ShieldCheckIcon className="w-3 h-3 text-emerald-600" />
+                <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
                 <span>Secured by Paystack • Instant M-Pesa & Cards</span>
               </div>
             </div>
@@ -364,7 +346,7 @@ export default function ContributionModal({
         {step === 'receipt' && receiptData && (
           <div className="p-4 space-y-4">
             <div className="text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-1.5">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 mb-1.5">
                 <CheckCircleIcon className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-neutral-900 ">
@@ -383,7 +365,7 @@ export default function ContributionModal({
                   <button
                     type="button"
                     onClick={copyReceiptCode}
-                    className="p-0.5 hover:text-emerald-600"
+                    className="p-0.5 hover:text-emerald-700"
                   >
                     <CopyIcon className="w-3.5 h-3.5" />
                   </button>
@@ -392,7 +374,7 @@ export default function ContributionModal({
 
               <div className="flex justify-between items-center">
                 <span className="text-neutral-500 text-[11px]">Amount:</span>
-                <span className="font-extrabold text-emerald-600 ">
+                <span className="font-extrabold text-emerald-700 ">
                   {formatCurrency(receiptData.transaction.amount, receiptData.transaction.currency)}
                 </span>
               </div>
@@ -406,7 +388,7 @@ export default function ContributionModal({
             </div>
 
             {copied && (
-              <p className="text-center text-[10px] font-semibold text-emerald-600">
+              <p className="text-center text-[10px] font-semibold text-emerald-700">
                 ✓ Reference copied
               </p>
             )}
@@ -421,7 +403,7 @@ export default function ContributionModal({
                 }}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 py-2.5 text-xs font-bold text-emerald-800 transition-colors"
               >
-                <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
+                <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Share</span>
               </button>
 

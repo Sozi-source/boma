@@ -34,21 +34,7 @@ export default function UserMenu() {
           });
           return;
         }
-      } catch {
-        // Fall back to demo session
-      }
-
-      // 2. Check local demo session
-      if (typeof window !== 'undefined') {
-        const demo = localStorage.getItem('bomapay_auth_user');
-        if (demo) {
-          try {
-            setUser(JSON.parse(demo));
-          } catch {
-            setUser(null);
-          }
-        }
-      }
+      } catch { setUser(null); }
     };
 
     fetchUser();
@@ -125,7 +111,7 @@ export default function UserMenu() {
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-100 "
               >
-                <WalletIcon className="w-3.5 h-3.5 text-emerald-600" />
+                <WalletIcon className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Dashboard & Wallet</span>
               </Link>
             </div>

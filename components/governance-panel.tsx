@@ -126,7 +126,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
       <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs sm:text-sm font-bold text-neutral-900 flex items-center gap-1.5">
-            <UsersIcon className="w-4 h-4 text-emerald-600" />
+            <UsersIcon className="w-4 h-4 text-emerald-700" />
             Committee ({memberCount})
           </h3>
 
@@ -173,14 +173,14 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
         <form onSubmit={addMember} className="grid grid-cols-2 gap-2 pt-1">
           <input
             className={inputCls}
-            placeholder="Member name"
+            aria-label="Member name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
           <input
             className={inputCls}
-            placeholder="Phone (optional)"
+            aria-label="Phone number (optional)"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -298,7 +298,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
                     )}
 
                     {r.status === 'executed' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700">
                         <CheckCircleIcon className="w-3 h-3" />
                         {r.disbursement_reference}
                       </span>

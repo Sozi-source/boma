@@ -27,8 +27,6 @@ export default function DisbursementModal({
   onClose,
   onSuccess,
 }: DisbursementModalProps) {
-  if (!isOpen) return null;
-
   const [amount, setAmount] = useState<string>('');
   const [recipientType, setRecipientType] = useState<'mpesa' | 'bank'>('mpesa');
   const [recipientName, setRecipientName] = useState<string>('');
@@ -40,6 +38,8 @@ export default function DisbursementModal({
   const [error, setError] = useState<string>('');
   const [completedDisbursement, setCompletedDisbursement] = useState<Disbursement | null>(null);
   const [approvalRequested, setApprovalRequested] = useState<boolean>(false);
+
+  if (!isOpen) return null;
 
   const availableBalance = Number(account.available_balance);
 
@@ -142,17 +142,17 @@ export default function DisbursementModal({
 
         {completedDisbursement ? (
           <div className="p-4 space-y-4 text-center">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-1">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 mb-1">
               <CheckCircleIcon className="w-6 h-6" />
             </div>
             <div>
               <h3 className="text-base font-bold text-neutral-900 ">
-                Payout Dispatched
+                Payout Submitted
               </h3>
               <p className="text-[10px] text-neutral-400 mt-0.5">
-                Debited on public ledger
+                Awaiting Paystack settlement confirmation
               </p>
-              <div className="mt-1.5 inline-block rounded-lg bg-neutral-100 px-3 py-1 font-mono text-xs font-bold text-emerald-600 ">
+              <div className="mt-1.5 inline-block rounded-lg bg-neutral-100 px-3 py-1 font-mono text-xs font-bold text-emerald-700 ">
                 {completedDisbursement.reference}
               </div>
             </div>
@@ -220,7 +220,6 @@ export default function DisbursementModal({
                 type="number"
                 required
                 max={availableBalance}
-                placeholder={`Up to ${availableBalance}`}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -241,21 +240,18 @@ export default function DisbursementModal({
                       : 'border-neutral-200 bg-white '
                   }`}
                 >
-                  <SmartphoneIcon className="w-3.5 h-3.5 text-emerald-600" />
+                  <SmartphoneIcon className="w-3.5 h-3.5 text-emerald-700" />
                   <span>M-Pesa B2C</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setRecipientType('bank')}
-                  className={`flex items-center justify-center gap-1.5 p-2 rounded-lg border text-xs font-bold ${
-                    recipientType === 'bank'
-                      ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white '
-                  }`}
+                  disabled
+                  title="Bank payouts will be enabled after Paystack bank code validation is configured."
+                  className="flex cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-2 text-xs font-bold text-neutral-400"
                 >
                   <BuildingLibraryIcon className="w-3.5 h-3.5 text-neutral-600" />
-                  <span>Bank Account</span>
+                  <span>Bank Payouts Unavailable</span>
                 </button>
               </div>
             </div>
@@ -267,7 +263,6 @@ export default function DisbursementModal({
               <input
                 type="text"
                 required
-                placeholder="e.g. Nairobi Hospital / Supplier Ltd"
                 value={recipientName}
                 onChange={(e) => setRecipientName(e.target.value)}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -282,7 +277,6 @@ export default function DisbursementModal({
                 <input
                   type="tel"
                   required
-                  placeholder="0712 345 678"
                   value={recipientPhone}
                   onChange={(e) => setRecipientPhone(e.target.value)}
                   className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -309,7 +303,6 @@ export default function DisbursementModal({
                   <input
                     type="text"
                     required
-                    placeholder="0110..."
                     value={recipientAccountNumber}
                     onChange={(e) => setRecipientAccountNumber(e.target.value)}
                     className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs text-neutral-900 "
@@ -325,7 +318,6 @@ export default function DisbursementModal({
               <textarea
                 rows={2}
                 required
-                placeholder="e.g. Hospital invoice #INV-8392..."
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 resize-none"

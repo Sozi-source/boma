@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShieldCheckIcon, PlusIcon } from './ui/icons';
+import { PlusIcon } from './ui/icons';
 import UserMenu from './user-menu';
 
 export default function Navbar() {
@@ -16,8 +16,8 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl transition-colors">
-      <div className="mx-auto flex h-13 max-w-5xl items-center justify-between px-3 sm:px-6">
+    <header className="sticky top-0 z-30 w-full pt-[env(safe-area-inset-top)] border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl transition-colors">
+      <div className="mx-auto flex h-13 max-w-6xl items-center justify-between px-3 sm:px-6">
         
         {/* Logo & App Status */}
         <div className="flex items-center gap-3 sm:gap-6">
@@ -28,10 +28,6 @@ export default function Navbar() {
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-black tracking-tight text-neutral-900 ">
                 Boma
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 ">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                VAULT
               </span>
             </div>
           </Link>
@@ -59,17 +55,13 @@ export default function Navbar() {
 
         {/* Right Fintech Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden sm:inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 font-mono font-medium">
-            <ShieldCheckIcon className="w-3 h-3 text-emerald-600" />
-            <span>Audited</span>
-          </div>
 
           <Link
             href="/bomas/create"
-            className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95"
+            className="hidden sm:inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95"
           >
             <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>New Mchango</span>
+            <span>New Contribution</span>
           </Link>
 
           <UserMenu />

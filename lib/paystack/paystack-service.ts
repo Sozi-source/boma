@@ -1,13 +1,14 @@
 import crypto from 'crypto';
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
-const PAYSTACK_PUBLIC = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
+const PAYSTACK_ENV = process.env.NODE_ENV === 'production' ? 'live' : (process.env.PAYSTACK_ENV || 'live');
+export const isPaystackLiveConfigured = PAYSTACK_ENV === 'test'
+  ? /^sk_test_[A-Za-z0-9]+$/.test(PAYSTACK_SECRET)
+  : /^sk_live_[A-Za-z0-9]+$/.test(PAYSTACK_SECRET);
 
-export const isPaystackLiveConfigured = Boolean(
-  PAYSTACK_SECRET &&
-  !PAYSTACK_SECRET.includes('sample_key') &&
-  !PAYSTACK_SECRET.includes('placeholder')
-);
+function requirePaystack() {
+  if (!isPaystackLiveConfigured) throw new Error('Paystack is not configured');
+}
 
 export interface PaystackInitParams {
   email: string;
@@ -92,20 +93,8 @@ class PaystackService {
    * Initialize a collection transaction on Paystack
    */
   async initialize(params: PaystackInitParams): Promise<PaystackInitResponse> {
+    requirePaystack();
     const subUnits = this.toSubUnits(params.amount);
-
-    if (!isPaystackLiveConfigured) {
-      // Sandbox Simulation
-      return {
-        status: true,
-        message: 'Sandbox transaction initialized',
-        data: {
-          authorization_url: `/bomas?status=success&reference=${params.reference}`,
-          access_code: `mock_code_${Math.random().toString(36).substring(2, 9)}`,
-          reference: params.reference,
-        },
-      };
-    }
 
     const payload = {
       email: params.email,
@@ -121,6 +110,7 @@ class PaystackService {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!res.ok) {
@@ -135,30 +125,12 @@ class PaystackService {
    * Verify transaction status with Paystack
    */
   async verify(reference: string): Promise<PaystackVerifyResponse> {
-    if (!isPaystackLiveConfigured) {
-      // Sandbox Simulation
-      return {
-        status: true,
-        message: 'Sandbox verification successful',
-        data: {
-          id: Math.floor(Math.random() * 100000),
-          status: 'success',
-          reference,
-          amount: 250000,
-          currency: 'KES',
-          channel: 'mobile_money',
-          paid_at: new Date().toISOString(),
-          customer: {
-            email: 'contributor@bomapay.com',
-            first_name: 'Member',
-          },
-        },
-      };
-    }
+    requirePaystack();
 
     const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
       method: 'GET',
       headers: this.getHeaders(),
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!res.ok) {
@@ -173,9 +145,7 @@ class PaystackService {
    * Create a transfer recipient for automated payouts/disbursements
    */
   async createRecipient(params: PaystackRecipientParams): Promise<{ recipient_code: string }> {
-    if (!isPaystackLiveConfigured) {
-      return { recipient_code: `RCP_mock_${Math.random().toString(36).substring(2, 8)}` };
-    }
+    requirePaystack();
 
     const res = await fetch('https://api.paystack.co/transferrecipient', {
       method: 'POST',
@@ -187,6 +157,7 @@ class PaystackService {
         bank_code: params.bank_code,
         currency: params.currency || 'KES',
       }),
+      signal: AbortSignal.timeout(10_000),
     });
 
     const data = await res.json();
@@ -201,12 +172,7 @@ class PaystackService {
    * Initiate automated payout/disbursement to recipient
    */
   async initiateTransfer(params: PaystackTransferParams): Promise<{ transfer_code: string; status: string }> {
-    if (!isPaystackLiveConfigured) {
-      return {
-        transfer_code: `TRF_mock_${Math.random().toString(36).substring(2, 8)}`,
-        status: 'success',
-      };
-    }
+    requirePaystack();
 
     const res = await fetch('https://api.paystack.co/transfer', {
       method: 'POST',
@@ -219,6 +185,7 @@ class PaystackService {
         reference: params.reference,
         currency: params.currency || 'KES',
       }),
+      signal: AbortSignal.timeout(10_000),
     });
 
     const data = await res.json();
@@ -236,12 +203,12 @@ class PaystackService {
    * Verify Paystack Webhook HMAC Signature
    */
   verifyWebhookSignature(rawBody: string, signature: string): boolean {
-    if (!PAYSTACK_SECRET || !signature) return false;
+    if (!PAYSTACK_SECRET || !/^[a-f0-9]{128}$/i.test(signature)) return false;
     const hash = crypto
       .createHmac('sha512', PAYSTACK_SECRET)
       .update(rawBody)
       .digest('hex');
-    return hash === signature;
+    return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(signature, 'hex'));
   }
 }
 

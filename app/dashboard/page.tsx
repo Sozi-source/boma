@@ -63,7 +63,7 @@ export default function DashboardPage() {
             {user ? `${user.name.split(' ')[0]}'s Portal` : 'Treasury Portal'}
           </h1>
           <p className="text-[10px] sm:text-[11px] text-neutral-400 font-mono">
-            {user ? `Organizer: ${user.name}` : 'Pooled funds, active michango, and ledger receipts.'}
+            {user ? `Organizer: ${user.name}` : 'Pooled funds, active contributions, and ledger receipts.'}
           </p>
         </div>
 
@@ -72,7 +72,7 @@ export default function DashboardPage() {
           className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95"
         >
           <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>New Mchango</span>
+          <span>New Contribution</span>
         </Link>
       </div>
 
@@ -81,12 +81,12 @@ export default function DashboardPage() {
         <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 shadow-xs ">
           <div className="flex items-center justify-between text-neutral-400 text-[10px] sm:text-xs font-semibold">
             <span>Total Raised</span>
-            <WalletIcon className="w-3.5 h-3.5 text-emerald-600" />
+            <WalletIcon className="w-3.5 h-3.5 text-emerald-700" />
           </div>
           <div className="mt-1 text-base sm:text-xl font-black text-neutral-900 truncate">
             {formatCurrency(totalRaised, 'KES')}
           </div>
-          <span className="text-[9px] text-neutral-400 mt-0.5 block">{bomas.length} pools</span>
+          <span className="text-[9px] text-neutral-400 mt-0.5 block">{bomas.length} funds</span>
         </div>
 
         <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 shadow-xs ">
@@ -97,7 +97,7 @@ export default function DashboardPage() {
           <div className="mt-1 text-base sm:text-xl font-black text-neutral-900 ">
             {transactions.length}
           </div>
-          <span className="text-[9px] text-emerald-600 mt-0.5 block">100% verified</span>
+          <span className="text-[9px] text-emerald-700 mt-0.5 block">100% verified</span>
         </div>
 
         <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 shadow-xs ">
@@ -114,36 +114,36 @@ export default function DashboardPage() {
         <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 shadow-xs ">
           <div className="flex items-center justify-between text-neutral-400 text-[10px] sm:text-xs font-semibold">
             <span>Ledger Health</span>
-            <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-600" />
+            <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
           </div>
-          <div className="mt-1 text-base sm:text-xl font-black text-emerald-600 ">
+          <div className="mt-1 text-base sm:text-xl font-black text-emerald-700 ">
             Balanced
           </div>
           <span className="text-[9px] text-neutral-400 mt-0.5 block">Double-entry verified</span>
         </div>
       </div>
 
-      {/* Your Michango List (Compact Mobile Row View + Desktop Table) */}
+      {/* Your Contributions List (Compact Mobile Row View + Desktop Table) */}
       <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
-            Your Michango
+            Your Contributions
           </h2>
           <span className="text-[10px] text-neutral-400 font-medium">
             {bomas.length} Active
           </span>
         </div>
 
-        {/* Michango List & Table with Empty State */}
+        {/* Contributions List & Table with Empty State */}
         {bomas.length === 0 ? (
           <div className="py-8 text-center border border-dashed border-neutral-200 rounded-xl">
-            <p className="text-xs text-neutral-500 mb-2">No michango created yet</p>
+            <p className="text-xs text-neutral-500 mb-2">No contributions created yet</p>
             <Link
               href="/bomas/create"
               className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-500"
             >
               <PlusIcon className="w-3.5 h-3.5" />
-              <span>Start Your First Mchango</span>
+              <span>Start Your First Contribution</span>
             </Link>
           </div>
         ) : (
@@ -161,7 +161,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 mt-0.5">
                         <span className="uppercase font-semibold">{b.category}</span>
                         <span>•</span>
-                        <span className="text-emerald-600 font-bold">{pct}%</span>
+                        <span className="text-emerald-700 font-bold">{pct}%</span>
                       </div>
                     </div>
 
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                       </span>
                       <Link
                         href={`/bomas/${b.id}`}
-                        className="text-[11px] font-bold text-emerald-600 hover:text-emerald-500 inline-flex items-center gap-0.5"
+                        className="text-[11px] font-bold text-emerald-700 hover:text-emerald-700 inline-flex items-center gap-0.5"
                       >
                         <span>Manage</span>
                         <ArrowUpRightIcon className="w-3 h-3" />
@@ -219,7 +219,7 @@ export default function DashboardPage() {
                             <span className="text-[10px] font-bold text-neutral-500">{pct}%</span>
                           </div>
                         </td>
-                        <td className="py-2.5 px-2 text-right font-bold text-emerald-600 text-[11px]">
+                        <td className="py-2.5 px-2 text-right font-bold text-emerald-700 text-[11px]">
                           {formatCurrency(b.current_amount, b.currency)}
                         </td>
                         <td className="py-2.5 px-2 text-right text-neutral-400 text-[11px]">
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                         <td className="py-2.5 px-2 text-right">
                           <Link
                             href={`/bomas/${b.id}`}
-                            className="font-bold text-emerald-600 hover:text-emerald-500 text-[11px] inline-flex items-center gap-0.5"
+                            className="font-bold text-emerald-700 hover:text-emerald-700 text-[11px] inline-flex items-center gap-0.5"
                           >
                             <span>Manage</span>
                             <ArrowUpRightIcon className="w-3 h-3" />
@@ -250,7 +250,7 @@ export default function DashboardPage() {
           <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
             Recent Receipts
           </h2>
-          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-semibold">
             <CheckCircleIcon className="w-3 h-3" />
             Live
           </span>
@@ -276,16 +276,16 @@ export default function DashboardPage() {
                       <button
                         type="button"
                         onClick={() => handleCopy(t.reference)}
-                        className="p-0.5 text-neutral-400 hover:text-emerald-600"
+                        className="p-0.5 text-neutral-400 hover:text-emerald-700"
                       >
                         <CopyIcon className="w-3 h-3" />
                       </button>
-                      {copiedRef === t.reference && <span className="text-emerald-600 font-sans">Copied</span>}
+                      {copiedRef === t.reference && <span className="text-emerald-700 font-sans">Copied</span>}
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="text-xs font-extrabold text-emerald-600 block">
+                    <span className="text-xs font-extrabold text-emerald-700 block">
                       +{formatCurrency(t.amount, t.currency)}
                     </span>
                     <span className="text-[9px] text-neutral-400 uppercase">
@@ -324,7 +324,7 @@ export default function DashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleCopy(t.reference)}
-                            className="hover:text-emerald-600"
+                            className="hover:text-emerald-700"
                           >
                             <CopyIcon className="w-3 h-3" />
                           </button>
@@ -333,7 +333,7 @@ export default function DashboardPage() {
                       <td className="py-2 px-2 uppercase text-[9px] font-bold text-neutral-400">
                         {t.payment_method}
                       </td>
-                      <td className="py-2 px-2 text-right font-extrabold text-emerald-600 text-[11px]">
+                      <td className="py-2 px-2 text-right font-extrabold text-emerald-700 text-[11px]">
                         +{formatCurrency(t.amount, t.currency)}
                       </td>
                       <td className="py-2 px-2 text-center">

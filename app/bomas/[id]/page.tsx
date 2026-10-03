@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Boma, Account, LedgerEntry, Disbursement } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
@@ -19,7 +18,6 @@ import {
   ShareIcon, 
   WalletIcon,
   PrinterIcon,
-  TrashIcon
 } from '@/components/ui/icons';
 
 interface PageProps {
@@ -29,7 +27,6 @@ interface PageProps {
 export default function BomaDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const bomaId = resolvedParams.id;
-  const router = useRouter();
 
   const [boma, setBoma] = useState<Boma | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
@@ -42,16 +39,6 @@ export default function BomaDetailPage({ params }: PageProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
   const [paymentNotice, setPaymentNotice] = useState<{ ok: boolean; text: string } | null>(null);
-
-  const handleDeleteBoma = async () => {
-    if (typeof window !== 'undefined' && boma) {
-      const confirmed = window.confirm(`Are you sure you want to delete "${boma.title}"? This cannot be undone.`);
-      if (confirmed) {
-        await bomaService.deleteBoma(boma.id);
-        router.push('/bomas');
-      }
-    }
-  };
 
   // Reloads data in place (no spinner) so open tabs keep their state.
   const loadBomaData = async () => {
@@ -74,21 +61,13 @@ export default function BomaDetailPage({ params }: PageProps) {
       const reference = params.get('reference') || params.get('trxref');
       if (reference && params.get('paystack') === 'true') {
         try {
-          const res = await fetch(`/api/payments/paystack/verify?reference=${encodeURIComponent(reference)}`);
+          const res = await fetch('/api/payments/paystack/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reference }),
+          });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'Payment could not be verified');
-
-          const meta = data.metadata || {};
-          await bomaService.contribute({
-            boma_id: (meta.boma_id as string) || bomaId,
-            amount: data.amount,
-            contributor_name: (meta.contributor_name as string) || 'Member',
-            contributor_phone: meta.contributor_phone as string | undefined,
-            is_anonymous: Boolean(meta.is_anonymous),
-            payment_method: data.channel === 'mobile_money' ? 'mpesa' : 'card',
-            note: meta.note as string | undefined,
-            reference,
-          });
           setPaymentNotice({ ok: true, text: `Payment confirmed. Ref ${reference}` });
         } catch (err: unknown) {
           setPaymentNotice({
@@ -116,12 +95,12 @@ export default function BomaDetailPage({ params }: PageProps) {
   if (!boma || !account) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h2 className="text-lg font-bold text-neutral-900 ">Mchango Not Found</h2>
+        <h2 className="text-lg font-bold text-neutral-900 ">Contribution Not Found</h2>
         <Link
           href="/bomas"
           className="mt-4 inline-flex rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white"
         >
-          Back to Michango
+          Back to Contributions
         </Link>
       </div>
     );
@@ -134,12 +113,12 @@ export default function BomaDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-lg md:max-w-2xl lg:max-w-4xl px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-5">
+    <div className="mx-auto max-w-lg md:max-w-2xl lg:max-w-4xl px-3 sm:px-6 py-3 sm:py-6 pb-28 md:pb-6 space-y-3 sm:space-y-5">
       
       {/* Top Breadcrumb & Share */}
       <div className="flex items-center justify-between text-[11px] text-neutral-400">
         <div className="flex items-center gap-1.5">
-          <Link href="/bomas" className="hover:text-emerald-600 font-bold">Pools</Link>
+          <Link href="/bomas" className="hover:text-emerald-700 font-bold">Funds</Link>
           <span>/</span>
           <span className="capitalize font-mono">{boma.category}</span>
         </div>
@@ -150,7 +129,7 @@ export default function BomaDetailPage({ params }: PageProps) {
             onClick={() => setIsStatementModalOpen(true)}
             className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
           >
-            <PrinterIcon className="w-3 h-3 text-emerald-600" />
+            <PrinterIcon className="w-3 h-3 text-emerald-700" />
             <span>Statement</span>
           </button>
 
@@ -163,14 +142,6 @@ export default function BomaDetailPage({ params }: PageProps) {
             <span>Share & QR</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleDeleteBoma}
-            title="Delete this mchango"
-            className="inline-flex items-center rounded-lg border border-neutral-200 bg-white p-1 text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <TrashIcon className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 
@@ -214,20 +185,20 @@ export default function BomaDetailPage({ params }: PageProps) {
                 </span>
                 {boma.verified && (
                   <span className="rounded-md bg-white/90 text-neutral-900 px-2 py-0.5 text-[9px] font-bold backdrop-blur-xs flex items-center gap-0.5">
-                    <ShieldCheckIcon className="w-3 h-3 text-emerald-600" />
+                    <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
                     Verified
                   </span>
                 )}
               </div>
             </div>
           ) : (
-            <div className="relative h-24 sm:h-32 w-full overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-800 to-teal-700 flex items-end p-3">
+            <div className="relative h-24 sm:h-32 w-full overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-100 border border-neutral-200 flex items-end p-3">
               <div className="flex items-center gap-1">
-                <span className="rounded-md bg-white/20 text-white px-2 py-0.5 text-[9px] font-bold uppercase backdrop-blur-xs">
+                <span className="rounded-md bg-white text-neutral-700 border border-neutral-200 px-2 py-0.5 text-[9px] font-bold uppercase">
                   {boma.category}
                 </span>
                 {boma.verified && (
-                  <span className="rounded-md bg-emerald-500/90 text-white px-2 py-0.5 text-[9px] font-bold backdrop-blur-xs flex items-center gap-0.5">
+                  <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[9px] font-bold flex items-center gap-0.5">
                     <ShieldCheckIcon className="w-3 h-3" />
                     Verified
                   </span>
@@ -259,7 +230,7 @@ export default function BomaDetailPage({ params }: PageProps) {
 
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 ">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                className="h-full rounded-full bg-emerald-600"
                 style={{ width: `${percentage}%` }}
               />
             </div>
@@ -278,7 +249,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('story')}
                 className={`py-2 text-xs font-bold border-b-2 transition-colors ${
                   activeTab === 'story'
-                    ? 'border-emerald-600 text-emerald-600 '
+                    ? 'border-emerald-600 text-emerald-700 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -290,7 +261,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('ledger')}
                 className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
                   activeTab === 'ledger'
-                    ? 'border-emerald-600 text-emerald-600 '
+                    ? 'border-emerald-600 text-emerald-700 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -305,7 +276,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('disbursements')}
                 className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
                   activeTab === 'disbursements'
-                    ? 'border-emerald-600 text-emerald-600 '
+                    ? 'border-emerald-600 text-emerald-700 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -320,7 +291,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setActiveTab('governance')}
                 className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
                   activeTab === 'governance'
-                    ? 'border-emerald-600 text-emerald-600 '
+                    ? 'border-emerald-600 text-emerald-700 '
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -340,7 +311,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               </p>
 
               <div className="rounded-lg bg-emerald-50 p-2.5 border border-emerald-200 flex items-center gap-2 text-[11px] text-emerald-800 ">
-                <ShieldCheckIcon className="w-4 h-4 shrink-0 text-emerald-600" />
+                <ShieldCheckIcon className="w-4 h-4 shrink-0 text-emerald-700" />
                 <span>All funds are held in segregated trust accounts and audited in real time.</span>
               </div>
             </div>
@@ -422,7 +393,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               {/* Progress Bar */}
               <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-neutral-100 ">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                  className="h-full rounded-full bg-emerald-600"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -436,7 +407,7 @@ export default function BomaDetailPage({ params }: PageProps) {
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 gap-2 border-y border-neutral-100 py-3 text-xs">
               <div className="flex items-center gap-1.5">
-                <UsersIcon className="w-4 h-4 text-emerald-600" />
+                <UsersIcon className="w-4 h-4 text-emerald-700" />
                 <div>
                   <span className="font-bold text-neutral-900 ">
                     {boma.contributors_count}
@@ -463,7 +434,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                 onClick={() => setIsContributeModalOpen(true)}
                 className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs font-bold text-white shadow-xs transition-colors active:scale-98"
               >
-                Changia Now (M-Pesa / Card)
+                Contribute Now (M-Pesa / Card)
               </button>
 
               <button
@@ -480,7 +451,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                   onClick={() => setIsShareModalOpen(true)}
                   className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 flex items-center justify-center gap-1.5"
                 >
-                  <ShareIcon className="w-3.5 h-3.5 text-emerald-600" />
+                  <ShareIcon className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Share & QR</span>
                 </button>
 
@@ -489,7 +460,7 @@ export default function BomaDetailPage({ params }: PageProps) {
                   onClick={() => setIsStatementModalOpen(true)}
                   className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 flex items-center justify-center gap-1.5"
                 >
-                  <PrinterIcon className="w-3.5 h-3.5 text-emerald-600" />
+                  <PrinterIcon className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Statement</span>
                 </button>
               </div>
@@ -499,13 +470,13 @@ export default function BomaDetailPage({ params }: PageProps) {
       </div>
 
       {/* Floating Sticky Mobile Action Bar (Above Mobile Nav) */}
-      <div className="fixed bottom-12 left-0 right-0 z-30 md:hidden bg-white/95 border-t border-neutral-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md">
+      <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-neutral-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md shadow-md">
         <button
           type="button"
           onClick={() => setIsContributeModalOpen(true)}
           className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-sm transition-colors active:scale-98"
         >
-          Changia Now
+          Contribute Now
         </button>
 
         <button
@@ -531,7 +502,6 @@ export default function BomaDetailPage({ params }: PageProps) {
         boma={boma}
         isOpen={isContributeModalOpen}
         onClose={() => setIsContributeModalOpen(false)}
-        onSuccess={loadBomaData}
       />
 
       <DisbursementModal

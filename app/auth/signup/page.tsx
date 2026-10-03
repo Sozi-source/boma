@@ -21,8 +21,8 @@ export default function SignUpPage() {
     setError('');
     setLoading(true);
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (password.length < 12) {
+      setError('Password must be at least 12 characters long.');
       setLoading(false);
       return;
     }
@@ -60,7 +60,7 @@ export default function SignUpPage() {
   return (
     <div className="mx-auto max-w-sm px-4 py-8 sm:py-14">
       <div className="text-center mb-6 space-y-1">
-        <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-mono font-black text-xl shadow-xs mb-2">
+        <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-mono font-black text-xl shadow-xs mb-2">
           B
         </div>
         <h1 className="text-xl sm:text-2xl font-black text-neutral-900 ">
@@ -97,7 +97,6 @@ export default function SignUpPage() {
               <input
                 type="text"
                 required
-                placeholder="e.g. Kelvin Mutiso"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -111,7 +110,6 @@ export default function SignUpPage() {
               <input
                 type="tel"
                 required
-                placeholder="0712 345 678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -125,7 +123,6 @@ export default function SignUpPage() {
               <input
                 type="email"
                 required
-                placeholder="you@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -139,7 +136,6 @@ export default function SignUpPage() {
               <input
                 type="password"
                 required
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -158,14 +154,14 @@ export default function SignUpPage() {
 
         <p className="text-center text-xs text-neutral-500 pt-2">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-bold text-emerald-600 hover:text-emerald-500">
+          <Link href="/auth/login" className="font-bold text-emerald-700 hover:text-emerald-700">
             Sign In
           </Link>
         </p>
       </div>
 
       <div className="mt-6 text-center text-[11px] text-neutral-400 flex items-center justify-center gap-1.5">
-        <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-600" />
+        <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
         <span>Strict KYC & Double-Entry Ledger Protection</span>
       </div>
     </div>

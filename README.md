@@ -77,21 +77,37 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🗄️ Supabase Database Migration
 
-Whenever you want to persist data to your live Supabase cloud database:
+To enable payments, apply both SQL files in order. The second migration removes permissive starter policies and adds server-side payment and payout settlement routines:
 
 1. Open your [Supabase Dashboard](https://supabase.com/dashboard).
 2. Go to the **SQL Editor**.
-3. Copy and run the complete migration script located at:
+3. Run the base schema:
    ```
    supabase/schema.sql
    ```
-This script creates:
+4. Then run:
+   ```
+   supabase/migrations/20261003_enterprise_payment_security.sql
+   ```
+Do not enable payment routes until both scripts have succeeded. The base schema creates:
 - `bomas` (causes & community pools)
 - `accounts` (financial wallets & balances)
 - `transactions` (payment receipts & metadata)
 - `ledger_entries` (immutable double-entry log)
 - `disbursements` (withdrawal requests & justifications)
 - Complete Row-Level Security (RLS) policies and indexes.
+
+The security migration intentionally stops if existing Boma totals do not reconcile to ledger entries. Reconcile historical balances before retrying it. Ensure your hosting proxy overwrites `x-real-ip` before the app uses it for payment rate limits. Payouts remain reserved until a signed Paystack settlement webhook arrives; investigate any long-pending payout against Paystack before changing its state. Charge disputes are recorded in the private `payment_incidents` table for manual review.
+
+Configure these server environment variables in your deployment secret manager. Never expose the service role or Paystack secret with a `NEXT_PUBLIC_` prefix:
+```env
+APP_URL=https://your-production-domain.example
+SUPABASE_SERVICE_ROLE_KEY=...
+PAYSTACK_ENV=live
+PAYSTACK_SECRET_KEY=...
+```
+For local Paystack test mode, use `PAYSTACK_ENV=test` with a matching test secret. Production defaults to live mode and rejects test keys. Configure the Paystack webhook URL as `/api/payments/paystack/webhook`.
+Payouts also require Supabase MFA to be enabled and enrolled for the organizer account; requests without an `aal2` session are rejected. Update the hosted Supabase Auth password policy to at least 12 characters with upper/lowercase letters, digits, and symbols to match `supabase/config.toml`.
 
 ---
 

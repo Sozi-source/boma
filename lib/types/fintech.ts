@@ -1,6 +1,6 @@
 export type Currency = 'KES' | 'USD' | 'EUR' | 'UGX' | 'TZS';
 
-export type BomaCategory = 
+export type BomaCategory =
   | 'medical'
   | 'education'
   | 'chama'
@@ -8,7 +8,15 @@ export type BomaCategory =
   | 'wedding'
   | 'community'
   | 'emergency'
-  | 'business';
+  | 'business'
+  | 'family'
+  | 'housing'
+  | 'food'
+  | 'travel'
+  | 'religious'
+  | 'sports'
+  | 'technology'
+  | 'other';
 
 export type BomaStatus = 'active' | 'funded' | 'closed' | 'paused';
 

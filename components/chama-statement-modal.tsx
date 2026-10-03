@@ -60,7 +60,7 @@ export default function ChamaStatementModal({
         {/* Screen Action Bar (Hidden during print) */}
         <div className="flex items-center justify-between border-b border-neutral-200 pb-3 print:hidden">
           <div className="flex items-center gap-2">
-            <PrinterIcon className="w-4 h-4 text-emerald-600" />
+            <PrinterIcon className="w-4 h-4 text-emerald-700" />
             <div>
               <h2 className="text-xs sm:text-sm font-bold text-neutral-900 ">
                 Official Chama & Mchango Statement
@@ -117,7 +117,7 @@ export default function ChamaStatementModal({
               <p className="text-[10px] text-neutral-400 font-mono">Ref: {statementRefCode}</p>
               <p className="text-[10px] text-neutral-400">Date: {statementDate}</p>
               <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
-                <ShieldCheckIcon className="w-3 h-3 text-emerald-600" />
+                <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
                 <span>Verified Ledger</span>
               </div>
             </div>
@@ -243,7 +243,7 @@ export default function ChamaStatementModal({
               Trustee & Committee Authorization Sign-off
             </h4>
             <p className="text-[9px] text-neutral-500 leading-normal">
-              We, the undersigned committee members / trustees of this mchango, certify that this financial statement accurately reflects all funds raised, segregated, and disbursed under Boma trust rules.
+              We, the undersigned committee members / trustees of this contribution fund, certify that this financial statement accurately reflects all funds raised, segregated, and disbursed under Boma trust rules.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-3">
@@ -267,7 +267,7 @@ export default function ChamaStatementModal({
                   <div className="space-y-1">
                     <div className="border-b border-neutral-400 h-8" />
                     <p className="font-bold text-[10px] text-neutral-900">Boma</p>
-                    <p className="text-[8px] text-neutral-500 uppercase">System Reconciled</p>
+                    <p className="text-[8px] text-neutral-500 uppercase">Recorded</p>
                     <p className="text-[8px] text-neutral-400">Date: {statementDate}</p>
                   </div>
                 </>

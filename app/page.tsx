@@ -53,6 +53,13 @@ export default function HomePage() {
   } | null>(null);
   const [isStatementOpen, setIsStatementOpen] = useState(false);
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const loadData = async () => {
     const currentUser = await bomaService.getCurrentUser();
     if (currentUser && currentUser.id !== 'user-guest') {
@@ -85,7 +92,7 @@ export default function HomePage() {
   const handleOpenStatement = async () => {
     if (bomas.length > 0) {
       const targetBoma = bomas[0];
-      const result = await bomaService.getBomaWithAccount(targetBoma.id);
+      const result = await bomaService.getBomaById(targetBoma.id);
       if (result) {
         const entries = await bomaService.getBomaLedger(targetBoma.id);
         const disbs = await bomaService.getBomaDisbursements(targetBoma.id);
@@ -99,6 +106,7 @@ export default function HomePage() {
       }
     } else {
       setActiveTab('pools');
+      showToast('Start your first Fund to generate official statements.');
     }
   };
 
@@ -108,6 +116,7 @@ export default function HomePage() {
       setIsShareOpen(true);
     } else {
       setActiveTab('pools');
+      showToast('Start your first Fund to share with members.');
     }
   };
 
@@ -120,7 +129,13 @@ export default function HomePage() {
   const totalVaultBalance = bomas.reduce((acc, b) => acc + (b.current_amount || 0), 0);
 
   return (
-    <div className="mx-auto max-w-lg md:max-w-2xl lg:max-w-4xl px-3 sm:px-6 pt-2 sm:pt-5 space-y-4 sm:space-y-6">
+    <div className="mx-auto w-full max-w-lg md:max-w-3xl lg:max-w-6xl px-3 sm:px-6 pt-3 sm:pt-5 lg:pt-8 lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-8 lg:items-start relative">
+      {toastMessage && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-neutral-900 text-white px-4 py-2 text-xs font-semibold shadow-xl border border-neutral-700 animate-in fade-in duration-200">
+          {toastMessage}
+        </div>
+      )}
+      <aside className="space-y-4 lg:sticky lg:top-20">
       
       {/* 1. Fintech App Header Greeting */}
       <div className="flex items-center justify-between">
@@ -135,7 +150,7 @@ export default function HomePage() {
               </h1>
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <span className="text-[10px] text-neutral-400 font-mono">Segregated Trust Active</span>
+            <span className="text-[10px] text-neutral-400 font-mono">Your funds</span>
           </div>
         </div>
 
@@ -143,7 +158,7 @@ export default function HomePage() {
           <Link
             href="/bomas"
             className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-            title="Search michango"
+            title="Search contributions"
           >
             <SearchIcon className="w-4 h-4" />
           </Link>
@@ -159,21 +174,21 @@ export default function HomePage() {
       </div>
 
       {/* 2. Signature Fintech Obsidian Vault Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-emerald-700 text-white p-5 sm:p-6 shadow-xl border border-neutral-800">
+      <div className="relative overflow-hidden rounded-3xl bg-white text-neutral-900 border border-neutral-200 p-5 sm:p-6 shadow-sm">
         {/* Subtle Ambient Glows */}
-        <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
-        <div className="absolute -left-8 -bottom-8 h-36 w-36 rounded-full bg-teal-500/10 blur-2xl pointer-events-none" />
+        
+        
 
         <div className="relative z-10 space-y-4">
-          <div className="flex items-center justify-between text-neutral-400 text-[11px] font-mono">
+          <div className="flex items-center justify-between text-neutral-500 text-[11px] font-mono">
             <div className="flex items-center gap-1.5 tracking-wider uppercase font-semibold">
-              <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Total Trust Escrow</span>
+              <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Total raised</span>
             </div>
             <button
               type="button"
               onClick={() => setShowBalance(!showBalance)}
-              className="hover:text-white transition-colors p-1"
+              className="hover:text-neutral-900 transition-colors p-1"
               aria-label={showBalance ? 'Hide balance' : 'Show balance'}
             >
               {showBalance ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
@@ -181,27 +196,27 @@ export default function HomePage() {
           </div>
 
           <div>
-            <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white">
+            <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-neutral-900">
               {showBalance ? (
                 formatCurrency(stats?.total_volume_kes ?? totalVaultBalance, 'KES')
               ) : (
                 '••••••••••'
               )}
             </div>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono mt-1 font-semibold">
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono mt-1 font-semibold">
               <CheckCircleIcon className="w-3 h-3" />
-              100% Reconciled Double-Entry
+              Across all your funds
             </span>
           </div>
 
           {/* Card Micro Metadata Strip */}
-          <div className="pt-2 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400 font-mono">
+          <div className="pt-2 border-t border-neutral-200 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
             <div className="flex items-center gap-3">
-              <span>{bomas.length} Active Pools</span>
+              <span>{bomas.length} Funds</span>
               <span>•</span>
               <span>{stats?.total_contributions ?? transactions.length} Members</span>
             </div>
-            <span className="text-neutral-500 uppercase tracking-wider">Paystack STK</span>
+            <span className="text-neutral-500 uppercase tracking-wider">M-Pesa</span>
           </div>
         </div>
       </div>
@@ -216,7 +231,7 @@ export default function HomePage() {
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
           <span className="text-[11px] font-bold text-neutral-800 ">
-            New Mchango
+            New Contribution
           </span>
         </Link>
 
@@ -224,11 +239,11 @@ export default function HomePage() {
           href="/bomas"
           className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
-          <div className="h-11 w-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-            <SmartphoneIcon className="w-5 h-5 text-emerald-400" />
+          <div className="h-11 w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <SmartphoneIcon className="w-5 h-5" />
           </div>
           <span className="text-[11px] font-bold text-neutral-800 ">
-            Changia
+            Contribute
           </span>
         </Link>
 
@@ -237,8 +252,8 @@ export default function HomePage() {
           onClick={handleOpenStatement}
           className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
-          <div className="h-11 w-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-            <DocumentTextIcon className="w-5 h-5 text-teal-400" />
+          <div className="h-11 w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <DocumentTextIcon className="w-5 h-5" />
           </div>
           <span className="text-[11px] font-bold text-neutral-800 ">
             Statement
@@ -250,15 +265,17 @@ export default function HomePage() {
           onClick={handleOpenShare}
           className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group"
         >
-          <div className="h-11 w-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-            <QrCodeIcon className="w-5 h-5 text-amber-400" />
+          <div className="h-11 w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <QrCodeIcon className="w-5 h-5" />
           </div>
           <span className="text-[11px] font-bold text-neutral-800 ">
-            Scan & Share
+            Share
           </span>
         </button>
       </div>
 
+      </aside>
+      <section className="mt-4 lg:mt-0 space-y-4 min-w-0">
       {/* 4. Fintech Segmented Switcher Tabs */}
       <div className="flex items-center gap-1 rounded-2xl bg-neutral-200/70 p-1 ">
         <button
@@ -270,7 +287,7 @@ export default function HomePage() {
               : 'text-neutral-500 hover:text-neutral-900 '
           }`}
         >
-          Active Pools ({bomas.length})
+          Funds ({bomas.length})
         </button>
         <button
           type="button"
@@ -281,7 +298,7 @@ export default function HomePage() {
               : 'text-neutral-500 hover:text-neutral-900 '
           }`}
         >
-          Live Activity
+          Activity
         </button>
         <button
           type="button"
@@ -292,7 +309,7 @@ export default function HomePage() {
               : 'text-neutral-500 hover:text-neutral-900 '
           }`}
         >
-          Treasury Stats
+          Stats
         </button>
       </div>
 
@@ -301,19 +318,19 @@ export default function HomePage() {
         <div className="space-y-3">
           {bomas.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-neutral-200 p-8 text-center bg-white/70 space-y-3">
-              <div className="h-10 w-10 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="h-10 w-10 mx-auto rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
                 <SparklesIcon className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-neutral-900 ">No active pools deployed</h4>
-                <p className="text-[11px] text-neutral-400 mt-0.5">Start a Chama savings pool, medical fund, or community drive.</p>
+                <h4 className="text-xs font-bold text-neutral-900 ">No funds yet</h4>
+                <p className="text-[11px] text-neutral-400 mt-0.5">Start a Fund for a family need, wedding, birthday, funeral or school fees.</p>
               </div>
               <Link
                 href="/bomas/create"
                 className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-500 transition-colors"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                <span>Deploy First Pool</span>
+                <span>Start your first Fund</span>
               </Link>
             </div>
           ) : (
@@ -326,14 +343,14 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* 6. Tab Content: Live Activity Ledger */}
+      {/* 6. Tab Content: Activity Ledger */}
       {activeTab === 'activity' && (
         <div className="rounded-3xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
-              Real-Time Receipts Feed
+              Recent contributions
             </h3>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-mono font-semibold">
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono font-semibold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Ledger
             </span>
@@ -348,7 +365,7 @@ export default function HomePage() {
               {transactions.slice(0, 10).map((t) => (
                 <div key={t.id} className="py-2.5 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
                       <ArrowDownLeftIcon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
@@ -360,17 +377,17 @@ export default function HomePage() {
                         <button
                           type="button"
                           onClick={() => handleCopy(t.reference)}
-                          className="hover:text-emerald-600"
+                          className="hover:text-emerald-700"
                         >
                           <CopyIcon className="w-3 h-3" />
                         </button>
-                        {copiedRef === t.reference && <span className="text-emerald-600 font-sans">Copied</span>}
+                        {copiedRef === t.reference && <span className="text-emerald-700 font-sans">Copied</span>}
                       </div>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="text-xs font-black font-mono text-emerald-600 block">
+                    <span className="text-xs font-black font-mono text-emerald-700 block">
                       +{formatCurrency(t.amount, t.currency)}
                     </span>
                     <span className="rounded bg-neutral-100 px-1 py-0.5 text-[9px] font-bold text-neutral-500 uppercase">
@@ -392,9 +409,9 @@ export default function HomePage() {
             <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
               {stats ? formatCurrency(stats.total_volume_kes, 'KES') : 'KES 0'}
             </span>
-            <span className="text-[9px] text-emerald-600 font-medium mt-1 flex items-center gap-0.5">
+            <span className="text-[9px] text-emerald-700 font-medium mt-1 flex items-center gap-0.5">
               <TrendingUpIcon className="w-2.5 h-2.5" />
-              Reconciled
+              Total raised
             </span>
           </div>
 
@@ -405,38 +422,39 @@ export default function HomePage() {
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 flex items-center gap-0.5">
               <UsersIcon className="w-2.5 h-2.5" />
-              Verified Accounts
+              Members
             </span>
           </div>
 
           <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
-            <span className="text-[10px] font-semibold text-neutral-400 block">Ledger Integrity</span>
-            <span className="text-base sm:text-lg font-black font-mono text-emerald-600 mt-1 block">
-              100% Verified
+            <span className="text-[10px] font-semibold text-neutral-400 block">Contributions</span>
+            <span className="text-base sm:text-lg font-black font-mono text-emerald-700 mt-1 block">
+              {transactions.length}
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 block">
-              Debits == Credits
+              Recorded
             </span>
           </div>
 
           <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
-            <span className="text-[10px] font-semibold text-neutral-400 block">Active Pools</span>
+            <span className="text-[10px] font-semibold text-neutral-400 block">Funds</span>
             <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
               {bomas.length}
             </span>
             <span className="text-[9px] text-neutral-400 mt-1 block">
-              Michango
+              Contributions
             </span>
           </div>
         </div>
       )}
+
+      </section>
 
       {/* Modals */}
       <ContributionModal
         boma={selectedBomaForModal}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={loadData}
       />
 
       {shareBoma && (

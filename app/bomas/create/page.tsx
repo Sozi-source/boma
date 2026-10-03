@@ -82,10 +82,10 @@ export default function CreateBomaPage() {
     <div className="mx-auto max-w-lg md:max-w-xl px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-4">
       <div>
         <h1 className="text-base sm:text-lg font-black tracking-tight text-neutral-900 ">
-          Start a Mchango
+          Start a Contribution
         </h1>
         <p className="text-[10px] sm:text-[11px] text-neutral-400 font-mono">
-          Deploy an audited community pool with real-time ledger
+          Start a Fund with a record every member can see
         </p>
       </div>
 
@@ -96,7 +96,7 @@ export default function CreateBomaPage() {
           </div>
         )}
 
-        {/* Mchango Details */}
+        {/* Contribution Details */}
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
@@ -105,7 +105,6 @@ export default function CreateBomaPage() {
             <input
               type="text"
               required
-              placeholder="e.g. Baby Liam Pediatric Surgery Fund"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -129,6 +128,15 @@ export default function CreateBomaPage() {
                 <option value="wedding">Wedding</option>
                 <option value="funeral">Funeral</option>
                 <option value="emergency">Emergency</option>
+                <option value="business">Business</option>
+                <option value="family">Family</option>
+                <option value="housing">Housing</option>
+                <option value="food">Food &amp; Essentials</option>
+                <option value="travel">Travel</option>
+                <option value="religious">Faith &amp; Religious</option>
+                <option value="sports">Sports</option>
+                <option value="technology">Technology</option>
+                <option value="other">Other</option>
               </select>
             </div>
 
@@ -156,7 +164,6 @@ export default function CreateBomaPage() {
             <textarea
               rows={3}
               required
-              placeholder="Why are funds needed, who benefits, and how will disbursements be verified..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 resize-none"
@@ -174,7 +181,6 @@ export default function CreateBomaPage() {
               type="number"
               required
               min="100"
-              placeholder="e.g. 350000"
               value={targetAmount}
               onChange={(e) => setTargetAmount(e.target.value)}
               className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -206,7 +212,6 @@ export default function CreateBomaPage() {
             <input
               type="text"
               required
-              placeholder="e.g. Grace Mutua"
               value={creatorName}
               onChange={(e) => setCreatorName(e.target.value)}
               className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -219,7 +224,6 @@ export default function CreateBomaPage() {
             </label>
             <input
               type="tel"
-              placeholder="0712 345 678"
               value={creatorPhone}
               onChange={(e) => setCreatorPhone(e.target.value)}
               className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -234,7 +238,6 @@ export default function CreateBomaPage() {
           </label>
           <input
             type="url"
-            placeholder="https://example.com/image.jpg"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -250,7 +253,7 @@ export default function CreateBomaPage() {
             type="checkbox"
             checked={agreedToTransparency}
             onChange={(e) => setAgreedToTransparency(e.target.checked)}
-            className="mt-0.5 h-3.5 w-3.5 rounded-sm border-neutral-300 text-emerald-600"
+            className="mt-0.5 h-3.5 w-3.5 rounded-sm border-neutral-300 text-emerald-700"
           />
           <span className="text-[11px] text-neutral-600 leading-tight">
             I pledge full transparency: all contributions and payouts will be published on the public ledger.
@@ -264,7 +267,7 @@ export default function CreateBomaPage() {
             disabled={isSubmitting}
             className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs sm:text-sm font-bold text-white shadow-xs transition-all active:scale-98 disabled:opacity-50"
           >
-            {isSubmitting ? 'Starting Mchango...' : 'Start Mchango'}
+            {isSubmitting ? 'Starting Contribution...' : 'Start Contribution'}
           </button>
         </div>
       </form>

@@ -1,4 +1,4 @@
-import { Currency, LedgerEntry, Transaction, Account } from '../types/fintech';
+import { Currency, LedgerEntry, Account } from '../types/fintech';
 
 /**
  * Generate a unique, audit-compliant transaction reference
@@ -15,8 +15,9 @@ export function generateReference(prefix = 'BP'): string {
  * Format currency with proper locale symbols and standard fintech conventions
  */
 export function formatCurrency(amount: number, currency: Currency = 'KES'): string {
+  const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
   if (currency === 'KES') {
-    return `KES ${Number(amount).toLocaleString('en-KE', {
+    return `KES ${safeAmount.toLocaleString('en-KE', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     })}`;
@@ -27,7 +28,7 @@ export function formatCurrency(amount: number, currency: Currency = 'KES'): stri
     currency: currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(safeAmount);
 }
 
 /**
@@ -51,7 +52,9 @@ export function verifyLedgerIntegrity(
     }
   }, 0);
 
-  const recordedBalance = Number(account.available_balance);
+  // Available balance can be lower while an outbound payout is reserved.
+  // Ledger entries reconcile to the booked ledger balance instead.
+  const recordedBalance = Number(account.ledger_balance);
   const discrepancy = Math.abs(computedBalance - recordedBalance);
 
   return {
