@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Boma, PaymentMethod, Transaction, LedgerEntry } from '../lib/types/fintech';
 import { formatCurrency } from '../lib/ledger/ledger-service';
+import { createClient } from '../lib/supabase/client';
 import { 
   XMarkIcon, 
   SmartphoneIcon, 
@@ -31,13 +32,33 @@ export default function ContributionModal({
   const [amount, setAmount] = useState<number>(2500);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [contributorEmail, setContributorEmail] = useState<string>('');
-  const [contributorPhone, setContributorPhone] = useState<string>('0712345678');
+  const [contributorPhone, setContributorPhone] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mpesa');
-  const [note, setNote] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [receiptData, setReceiptData] = useState<{ transaction: Transaction; ledgerEntry: LedgerEntry } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // Members have accounts: use the signed-in email (and saved phone) instead of asking.
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!active || !user) return;
+        setContributorEmail(user.email || '');
+        const savedPhone = user.user_metadata?.phone;
+        if (typeof savedPhone === 'string' && savedPhone) {
+          setContributorPhone((prev) => prev || savedPhone);
+        }
+      } catch {
+        // stays signed-out; handled on submit
+      }
+    })();
+    return () => { active = false; };
+  }, [isOpen]);
 
   if (!isOpen || !boma) return null;
 
@@ -57,6 +78,11 @@ export default function ContributionModal({
       return;
     }
 
+    if (!contributorEmail) {
+      setErrorMessage('Please sign in to contribute.');
+      return;
+    }
+
     setStep('processing');
     setProcessingStatus(`Initiating Paystack ${paymentMethod.toUpperCase()} rail...`);
 
@@ -69,11 +95,10 @@ export default function ContributionModal({
           boma_id: boma.id,
           amount: selectedAmount,
           contributor_name: 'Member',
-          contributor_email: contributorEmail.trim(),
+          contributor_email: contributorEmail,
           contributor_phone: contributorPhone,
           is_anonymous: true,
           payment_method: paymentMethod,
-          note: note.trim() || undefined,
           currency: boma.currency,
         }),
       });
@@ -242,7 +267,6 @@ export default function ContributionModal({
                   <input
                     type="tel"
                     required
-                    placeholder="e.g. 0712345678"
                     value={contributorPhone}
                     onChange={(e) => setContributorPhone(e.target.value)}
                     className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
@@ -250,38 +274,9 @@ export default function ContributionModal({
                 </div>
               )}
 
-              <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-0.5">
-                  Email for Receipt
-                </label>
-                <input
-                  type="email"
-                  required
-                  maxLength={254}
-                  autoComplete="email"
-                  placeholder="yourname@gmail.com"
-                  value={contributorEmail}
-                  onChange={(e) => setContributorEmail(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-0.5">
-                  Words of Encouragement (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Wishing you quick recovery!"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
-                />
-              </div>
-
               <div className="flex items-center gap-1.5 pt-1 text-[11px] text-neutral-500">
                 <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                <span>No name required · Private &amp; secure contribution</span>
+                <span>Private &amp; secure contribution</span>
               </div>
             </div>
 
