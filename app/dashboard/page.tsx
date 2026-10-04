@@ -124,7 +124,7 @@ export default function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            <div className={`grid gap-3 sm:gap-4 ${bomas.length === 1 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 lg:grid-cols-3'}`}>
               {bomas.map((b) => {
                 const pct = Math.min(100, Math.round((b.current_amount / b.target_amount) * 100));
                 return (
