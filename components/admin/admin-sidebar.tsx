@@ -114,8 +114,14 @@ export default function AdminSidebar() {
     <>
       {/* Laptop & Desktop Vibrant Teal Green Fintech Sidebar */}
       <aside 
-        className="hidden lg:flex w-64 xl:w-72 flex-col shrink-0 bg-gradient-to-b from-[#0f8579] via-[#0d766e] to-[#0a5852] text-teal-50 border-r border-teal-800/40 h-screen sticky top-0 z-40 select-none shadow-sm"
-        style={{ backgroundColor: '#0f8579' }}
+        className="hidden lg:flex w-64 xl:w-72 flex-col shrink-0 bg-[#0A4F43] text-teal-50 border-r border-teal-800/40 h-screen sticky top-0 z-40 select-none shadow-sm"
+        style={{
+          backgroundColor: '#0A4F43',
+          backgroundImage: 'image-set(url("/assets/images/dashboard/sidebar_bg_288w_1x.webp") 1x, url("/assets/images/dashboard/sidebar_bg_576w_2x.webp") 2x, url("/assets/images/dashboard/sidebar_bg_864w_3x.webp") 3x)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'top center',
+          backgroundRepeat: 'no-repeat',
+        }}
       >
         
         {/* Merchant / Organization Account Header */}
@@ -192,12 +198,13 @@ export default function AdminSidebar() {
         </div>
 
         {/* Minimal Quiet Status Footer */}
-        <div className="p-3.5 border-t border-teal-600/40 bg-teal-900/25 flex items-center justify-between text-xs text-teal-200">
-          <div className="flex items-center gap-2">
+        <div className="relative flex items-center justify-between overflow-hidden border-t border-teal-600/40 p-3.5 text-xs text-teal-200">
+          <span aria-hidden="true" className="absolute inset-0 bg-[#052b28]/70" />
+          <div className="relative flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
             <span className="font-semibold text-white text-xs">Live System</span>
           </div>
-          <span className="text-[10px] font-mono font-medium text-teal-300/80">v1.2</span>
+          <span className="relative text-[10px] font-mono font-medium text-teal-300/80">v1.2</span>
         </div>
       </aside>
     </>

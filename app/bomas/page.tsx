@@ -135,6 +135,9 @@ export default function ExploreBomasPage() {
                 key={boma.id}
                 boma={boma}
                 onContributeClick={handleContribute}
+                coverSizes={bomas.length === 1
+                  ? '(max-width: 639px) calc(100vw - 60px), (max-width: 1023px) calc(50vw - 64px), 33vw'
+                  : '(max-width: 639px) calc(50vw - 38px), (max-width: 1023px) calc(50vw - 64px), 33vw'}
               />
             ))}
           </div>

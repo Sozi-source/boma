@@ -6,6 +6,7 @@ import { Boma, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import ContributorTracker from '@/components/contributor-tracker';
+import BomaCover from '@/components/boma-cover';
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
@@ -77,13 +78,28 @@ export default function DashboardPage() {
         </div>
 
         {/* Main account / fund hero */}
-        <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#063f43] via-[#087f78] to-[#13a092] p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.22)] sm:p-7">
-          <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-cyan-300/10 blur-3xl" />
+        <section className="relative overflow-hidden rounded-[24px] bg-[#064c41] bg-cover bg-right bg-no-repeat p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.22)] sm:p-7">
+          <picture className="pointer-events-none absolute inset-0">
+            <source
+              media="(max-width: 639px)"
+              srcSet="/assets/images/dashboard/hero_card_bg_640w_mobile.webp 640w"
+              sizes="calc(100vw - 32px)"
+            />
+            <source
+              media="(min-width: 640px)"
+              srcSet="/assets/images/dashboard/hero_card_bg_944w_web.webp 944w, /assets/images/dashboard/hero_card_bg_1416w_web-xl.webp 1416w, /assets/images/dashboard/hero_card_bg_1888w_web-2x.webp 1888w"
+              sizes="(min-width: 1024px) 944px, calc(100vw - 48px)"
+            />
+            <img
+              src="/assets/images/dashboard/hero_card_bg_640w_mobile.webp"
+              alt=""
+              className="h-full w-full object-cover object-right"
+            />
+          </picture>
 
           <div className="relative">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-medium text-white/75">
+              <div className="flex items-center gap-2 text-xs font-medium text-white/90">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15">
                   <WalletIcon className="h-4 w-4" />
                 </span>
@@ -100,13 +116,13 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-5">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/60">Available across your funds</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/90">Available across your funds</p>
               <p className="mt-1 text-[34px] font-bold tracking-tight sm:text-[42px]">{balance}</p>
             </div>
 
             <div className="mt-6 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[11px] text-white/60">Active funds</p>
+                <p className="text-xs text-white/85">Active funds</p>
                 <p className="mt-1 text-sm font-semibold">{bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</p>
               </div>
               <Link
@@ -217,6 +233,11 @@ export default function DashboardPage() {
                     href={`/bomas/${b.id}`}
                     className="block rounded-2xl border border-slate-200 bg-[#fbfcfc] p-4 transition hover:border-emerald-300 hover:bg-emerald-50/20"
                   >
+                    <BomaCover
+                      boma={b}
+                      className="mb-3 h-32 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-40 lg:h-44"
+                      sizes="(max-width: 639px) calc(100vw - 64px), (max-width: 1023px) calc(100vw - 96px), 840px"
+                    />
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
@@ -257,7 +278,17 @@ export default function DashboardPage() {
           </div>
 
           {transactions.length === 0 ? (
-            <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-7 text-center text-[11px] text-slate-500">
+            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 text-left text-[11px] text-slate-500 sm:p-4">
+              <img
+                src="/assets/images/dashboard/empty-state/empty_state_240w_mobile-sm.webp"
+                srcSet="/assets/images/dashboard/empty-state/empty_state_240w_mobile-sm.webp 240w, /assets/images/dashboard/empty-state/empty_state_360w_mobile.webp 360w, /assets/images/dashboard/empty-state/empty_state_720w_tablet.webp 720w, /assets/images/dashboard/empty-state/empty_state_1080w_web.webp 1080w"
+                sizes="72px"
+                alt=""
+                aria-hidden="true"
+                className="h-[72px] w-[72px] shrink-0 rounded-xl object-cover"
+                loading="lazy"
+                decoding="async"
+              />
               No contributions yet. They’ll appear here when received.
             </div>
           ) : viewMode === 'receipts' ? (

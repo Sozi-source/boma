@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { Boma } from '../lib/types/fintech';
 import { formatCurrency } from '../lib/ledger/ledger-service';
 import { ArrowUpRightIcon, PlusIcon, ShieldCheckIcon } from './ui/icons';
+import BomaCover from './boma-cover';
 
 interface BomaCardProps {
   boma: Boma;
   onContributeClick?: (boma: Boma) => void;
+  coverSizes?: string;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -30,7 +32,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'General Fund',
 };
 
-export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
+export default function BomaCard({ boma, onContributeClick, coverSizes }: BomaCardProps) {
   const percentage = Math.min(100, Math.round((boma.current_amount / boma.target_amount) * 100));
   const categoryLabel = CATEGORY_LABELS[boma.category] || boma.category;
 
@@ -60,17 +62,12 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
           )}
         </div>
 
-        {/* Optional Cover Banner */}
-        {boma.image_url && (
-          <div className="mb-4 h-36 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-40">
-            <img
-              src={boma.image_url}
-              alt={boma.title}
-              className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-200"
-              loading="lazy"
-            />
-          </div>
-        )}
+        <BomaCover
+          boma={boma}
+          className="mb-4 h-32 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-40 lg:h-44"
+          imageClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes={coverSizes}
+        />
 
         {/* Title & Description */}
         <Link href={`/bomas/${boma.id}`} className="block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
