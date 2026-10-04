@@ -22,6 +22,7 @@ interface ContributionModalProps {
   boma: Boma | null;
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => Promise<void> | void;
 }
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000];
@@ -30,6 +31,7 @@ export default function ContributionModal({
   boma,
   isOpen,
   onClose,
+  onSuccess,
 }: ContributionModalProps) {
   const [step, setStep] = useState<'input' | 'processing' | 'receipt'>('input');
   const [amount, setAmount] = useState<number>(2500);
@@ -187,6 +189,9 @@ export default function ContributionModal({
   };
 
   const handleResetAndClose = () => {
+    if (receiptData && onSuccess) {
+      onSuccess();
+    }
     setStep('input');
     setReceiptData(null);
     setErrorMessage('');
