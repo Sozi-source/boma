@@ -172,3 +172,55 @@ export interface PayoutRequest {
   disbursement_reference?: string;
   created_at: string;
 }
+
+// --- ADMIN CONTROLS & MULTI-PHONE USER MANAGEMENT ---
+
+export type UserRole = 'admin' | 'organizer' | 'member';
+export type UserStatus = 'active' | 'pending_approval' | 'rejected' | 'suspended';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  /** Multiple phone numbers associated with this user (e.g. primary & secondary M-Pesa lines) */
+  phones: string[];
+  role: UserRole;
+  status: UserStatus;
+  created_at: string;
+  approved_at?: string;
+  approved_by?: string;
+  avatar_url?: string;
+  notes?: string;
+}
+
+export interface SignupRequest {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  additional_phones?: string[];
+  role: UserRole;
+  status: UserStatus;
+  submitted_at: string;
+  reviewed_at?: string;
+  reviewed_by?: string;
+  rejection_reason?: string;
+}
+
+export interface Subaccount {
+  id: string;
+  subaccount_code: string;
+  business_name: string;
+  settlement_bank: string;
+  account_number: string;
+  currency: Currency;
+  type: 'mobile_money' | 'bank_account';
+  percentage_charge: number;
+  primary_contact_email?: string;
+  primary_contact_name?: string;
+  primary_contact_phone?: string;
+  status: 'active' | 'pending' | 'verified';
+  created_at: string;
+}
+
+

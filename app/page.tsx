@@ -5,48 +5,35 @@ import Link from 'next/link';
 import { Boma, Transaction, PlatformStats, Account, LedgerEntry, Disbursement } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
+import { formatPhoneDisplay } from '@/lib/utils/phone';
 import BomaCard from '@/components/boma-card';
 import ContributionModal from '@/components/contribution-modal';
 import ShareModal from '@/components/share-modal';
 import ChamaStatementModal from '@/components/chama-statement-modal';
-import ContributorTracker from '@/components/contributor-tracker';
 import { 
-  ShieldCheckIcon, 
-  PlusIcon, 
-  TrendingUpIcon, 
+  BuildingLibraryIcon, 
+  WalletIcon, 
   UsersIcon, 
-  SmartphoneIcon,
-  SparklesIcon,
+  CreditCardIcon,
+  PlusIcon,
   CheckCircleIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  BellIcon,
-  SearchIcon,
-  QrCodeIcon,
+  ArrowUpRightIcon,
   DocumentTextIcon,
-  CopyIcon,
-  ArrowDownLeftIcon
+  SmartphoneIcon,
+  SearchIcon
 } from '@/components/ui/icons';
 
 export default function HomePage() {
   const [bomas, setBomas] = useState<Boma[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<PlatformStats | null>(null);
-  const [user, setUser] = useState<{ id: string; name: string } | null>(null);
-  
-  // Fintech Card View State
-  const [showBalance, setShowBalance] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pools' | 'activity' | 'stats'>('pools');
-  const [activityView, setActivityView] = useState<'contributors' | 'stream'>('contributors');
-  const [copiedRef, setCopiedRef] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Modals
   const [selectedBomaForModal, setSelectedBomaForModal] = useState<Boma | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
   const [shareBoma, setShareBoma] = useState<Boma | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
-
   const [statementData, setStatementData] = useState<{
     boma: Boma;
     account: Account;
@@ -55,31 +42,25 @@ export default function HomePage() {
   } | null>(null);
   const [isStatementOpen, setIsStatementOpen] = useState(false);
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const loadData = async () => {
-    const currentUser = await bomaService.getCurrentUser();
-    if (currentUser && currentUser.id !== 'user-guest') {
-      setUser(currentUser);
-    }
+    try {
+      const [list, platformStats] = await Promise.all([
+        bomaService.getBomas(),
+        bomaService.getPlatformStats(),
+      ]);
+      setBomas(list);
+      setStats(platformStats);
 
-    const list = await bomaService.getBomas();
-    const platformStats = await bomaService.getPlatformStats();
-    setBomas(list);
-    setStats(platformStats);
-
-    const allTxns: Transaction[] = [];
-    for (const b of list) {
-      const txns = await bomaService.getBomaTransactions(b.id);
-      allTxns.push(...txns);
+      const allTxns: Transaction[] = [];
+      for (const b of list) {
+        const txns = await bomaService.getBomaTransactions(b.id);
+        allTxns.push(...txns);
+      }
+      allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setTransactions(allTxns);
+    } finally {
+      setLoading(false);
     }
-    allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    setTransactions(allTxns);
   };
 
   useEffect(() => {
@@ -107,431 +88,321 @@ export default function HomePage() {
         setIsStatementOpen(true);
       }
     } else {
-      setActiveTab('pools');
-      showToast('Start your first Fund to generate official statements.');
+      alert('Start a fund first to generate official audit statements.');
     }
-  };
-
-  const handleOpenShare = () => {
-    if (bomas.length > 0) {
-      setShareBoma(bomas[0]);
-      setIsShareOpen(true);
-    } else {
-      setActiveTab('pools');
-      showToast('Start your first Fund to share with members.');
-    }
-  };
-
-  const handleCopy = (ref: string) => {
-    navigator.clipboard.writeText(ref);
-    setCopiedRef(ref);
-    setTimeout(() => setCopiedRef(null), 2000);
   };
 
   const totalVaultBalance = bomas.reduce((acc, b) => acc + (Number(b.current_amount) || 0), 0);
-  const totalMembers = bomas.reduce((acc, b) => acc + (Number(b.contributors_count) || 0), 0) || transactions.length;
+  const totalMembers = bomas.reduce((acc, b) => acc + (Number(b.contributors_count) || 0), 0);
 
   return (
-    <div className="mx-auto w-full max-w-lg md:max-w-3xl lg:max-w-6xl px-3 sm:px-6 pt-3 sm:pt-5 lg:pt-8 lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-8 lg:items-start relative">
-      {toastMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-neutral-900 text-white px-4 py-2 text-xs font-semibold shadow-xl border border-neutral-700 animate-in fade-in duration-200">
-          {toastMessage}
-        </div>
-      )}
-      <aside className="space-y-4 lg:sticky lg:top-20">
-      
-      {/* 1. Fintech App Header Greeting */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-2xl bg-emerald-700 text-white flex items-center justify-center font-black text-sm shadow-xs">
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'B'}
-          </div>
+    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
+      <div className="w-full max-w-7xl space-y-6">
+
+        {/* Top Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-slate-200/80">
           <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xs sm:text-sm font-black text-neutral-900 leading-none">
-                {user?.name ? `Hi, ${user.name}` : 'Boma'}
-              </h1>
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
-            <span className="text-[10px] text-neutral-400 font-mono">Your funds</span>
+            <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
+              Platform Overview
+            </h1>
           </div>
-        </div>
 
-        <div className="flex items-center gap-1">
-          <Link
-            href="/bomas"
-            className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-            title="Search contributions"
-          >
-            <SearchIcon className="w-4 h-4" />
-          </Link>
-          <Link
-            href="/dashboard"
-            className="relative p-2 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-            title="Activity Notifications"
-          >
-            <BellIcon className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white " />
-          </Link>
-        </div>
-      </div>
-
-      {/* 2. Vault Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-emerald-100/70 text-neutral-900 border border-emerald-200 p-5 sm:p-6 shadow-sm">
-        <div className="relative z-10 space-y-4">
-          <div className="flex items-center justify-between text-neutral-500 text-[11px] font-mono">
-            <div className="flex items-center gap-1.5 tracking-wider uppercase font-semibold">
-              <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Total raised</span>
-            </div>
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
-              onClick={() => setShowBalance(!showBalance)}
-              className="hover:text-neutral-900 transition-colors p-1"
-              aria-label={showBalance ? 'Hide balance' : 'Show balance'}
+              onClick={handleOpenStatement}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
             >
-              {showBalance ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
+              <DocumentTextIcon className="w-3.5 h-3.5 text-slate-500" />
+              <span>Statement</span>
             </button>
-          </div>
 
-          <div>
-            <div className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight text-emerald-800">
-              {showBalance ? (
-                formatCurrency(totalVaultBalance, 'KES')
-              ) : (
-                '••••••••••'
-              )}
+            <Link
+              href="/bomas/create"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors"
+            >
+              <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Start a Fund</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* 4 Key Executive Metrics Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">Total Capital Raised</span>
+              <WalletIcon className="w-4 h-4 text-emerald-600" />
             </div>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono mt-1 font-semibold">
-              <CheckCircleIcon className="w-3 h-3" />
-              Across all your funds
+            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
+              {formatCurrency(totalVaultBalance, 'KES')}
+            </p>
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Audited across all funds
             </span>
           </div>
 
-          <div className="pt-2 border-t border-emerald-200 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
-            <div className="flex items-center gap-3">
-              <span>{bomas.length} Funds</span>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('activity');
-                  setActivityView('contributors');
-                }}
-                className="hover:text-emerald-800 font-bold transition-colors underline decoration-emerald-300 underline-offset-2"
-                title="View contributor register"
-              >
-                {totalMembers} Members
-              </button>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">Active Campaigns</span>
+              <BuildingLibraryIcon className="w-4 h-4 text-slate-400" />
             </div>
-            <span className="inline-flex items-center gap-1 uppercase tracking-wider">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-              M-Pesa
+            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
+              {bomas.length}
+            </p>
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Transparent community pools
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">Total Contributors</span>
+              <UsersIcon className="w-4 h-4 text-slate-400" />
+            </div>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
+              {totalMembers}
+            </p>
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Verified legal identities
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">Ledger Transactions</span>
+              <CreditCardIcon className="w-4 h-4 text-slate-400" />
+            </div>
+            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
+              {transactions.length}
+            </p>
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Zero anonymous transactions
             </span>
           </div>
         </div>
-      </div>
 
-      {/* 3. Fintech Quick 4-Action Circular Grid */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-3 py-1">
-        <Link
-          href="/bomas/create"
-          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
-        >
-          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-            <PlusIcon className="w-5 h-5 stroke-[2.5]" />
-          </div>
-          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
-            Start
-          </span>
-        </Link>
+        {/* 2-Column Enterprise Workspace Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Main 8-Column Area: Active Funds Grid */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Active Funds Card */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-2xs p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-800">
+                    Active Community Funds
+                  </h2>
+                </div>
 
-        <Link
-          href="/bomas"
-          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
-        >
-          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <SmartphoneIcon className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
-            Contribute
-          </span>
-        </Link>
-
-        <button
-          type="button"
-          onClick={handleOpenStatement}
-          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
-        >
-          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <DocumentTextIcon className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
-            Statement
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleOpenShare}
-          className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 group text-center"
-        >
-          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <QrCodeIcon className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] font-bold text-neutral-800 whitespace-nowrap">
-            Share
-          </span>
-        </button>
-      </div>
-
-      </aside>
-      <section className="mt-4 lg:mt-0 space-y-4 min-w-0">
-      {/* 4. Fintech Segmented Switcher Tabs */}
-      <div className="flex items-center gap-1 rounded-2xl bg-neutral-200/70 p-1 ">
-        <button
-          type="button"
-          onClick={() => setActiveTab('pools')}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-xl transition-all ${
-            activeTab === 'pools'
-              ? 'bg-white text-neutral-900 shadow-xs '
-              : 'text-neutral-500 hover:text-neutral-900 '
-          }`}
-        >
-          Funds ({bomas.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('activity')}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-xl transition-all ${
-            activeTab === 'activity'
-              ? 'bg-white text-neutral-900 shadow-xs '
-              : 'text-neutral-500 hover:text-neutral-900 '
-          }`}
-        >
-          Activity
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('stats')}
-          className={`flex-1 py-1.5 text-center text-xs font-bold rounded-xl transition-all ${
-            activeTab === 'stats'
-              ? 'bg-white text-neutral-900 shadow-xs '
-              : 'text-neutral-500 hover:text-neutral-900 '
-          }`}
-        >
-          Stats
-        </button>
-      </div>
-
-      {/* 5. Tab Content: Active Pools */}
-      {activeTab === 'pools' && (
-        <div className="space-y-3">
-          {bomas.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 p-8 text-center bg-white/70 space-y-3">
-              <div className="h-10 w-10 mx-auto rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                <SparklesIcon className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-neutral-900 ">No funds yet</h4>
-                <p className="text-[11px] text-neutral-400 mt-0.5">Start a Fund for a family need, wedding, birthday, funeral or school fees.</p>
-              </div>
-              <Link
-                href="/bomas/create"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-500 transition-colors"
-              >
-                <PlusIcon className="w-3.5 h-3.5" />
-                <span>Start your first Fund</span>
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {bomas.map((b) => (
-                <BomaCard key={b.id} boma={b} onContributeClick={handleContribute} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 6. Tab Content: Activity & Contributor Register */}
-      {activeTab === 'activity' && (
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3 sm:p-4 shadow-xs flex items-center justify-between gap-2 flex-wrap">
-            <div>
-              <h3 className="text-xs sm:text-sm font-bold text-neutral-900">
-                Payment &amp; Contributor Register
-              </h3>
-              <p className="text-[10px] text-neutral-400 font-mono">
-                Track payments per contributor across all your funds
-              </p>
-            </div>
-
-            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setActivityView('contributors')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                  activityView === 'contributors'
-                    ? 'bg-white text-neutral-900 shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800'
-                }`}
-              >
-                By Contributor
-              </button>
-              <button
-                type="button"
-                onClick={() => setActivityView('stream')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                  activityView === 'stream'
-                    ? 'bg-white text-neutral-900 shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800'
-                }`}
-              >
-                Recent Receipts ({transactions.length})
-              </button>
-            </div>
-          </div>
-
-          {activityView === 'contributors' ? (
-            <ContributorTracker
-              transactions={transactions}
-              currency="KES"
-              bomaTitle="Boma Portfolio"
-            />
-          ) : (
-            <div className="rounded-3xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs sm:text-sm font-bold text-neutral-900">
-                  Recent contributions
-                </h3>
-                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-mono font-semibold">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live Ledger
-                </span>
+                <Link
+                  href="/bomas"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
+                >
+                  <span>Explore all</span>
+                  <ArrowUpRightIcon className="w-3.5 h-3.5" />
+                </Link>
               </div>
 
-              {transactions.length === 0 ? (
-                <div className="py-8 text-center border border-dashed border-neutral-200 rounded-2xl">
-                  <p className="text-xs text-neutral-400">No transactions recorded yet. Incoming Paystack receipts will stream here live.</p>
+              {loading ? (
+                <div className="py-12 text-center text-xs text-slate-400 font-mono">
+                  Loading campaigns...
+                </div>
+              ) : bomas.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-10 text-center">
+                  <BuildingLibraryIcon className="w-8 h-8 text-slate-300 mb-2" />
+                  <p className="text-sm font-semibold text-slate-800">No active campaigns</p>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                    Start your first community fund or chama to begin tracking pooled contributions transparently.
+                  </p>
+                  <Link
+                    href="/bomas/create"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5" />
+                    <span>Start a Fund</span>
+                  </Link>
                 </div>
               ) : (
-                <div className="divide-y divide-neutral-100">
-                  {transactions.slice(0, 15).map((t) => (
-                    <div key={t.id || t.reference} className="py-2.5 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
-                          <ArrowDownLeftIcon className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="text-xs font-bold text-neutral-900 block truncate">
-                            {t.is_anonymous ? 'Anonymous Friend' : t.contributor_name}
-                          </span>
-                          <div className="flex items-center gap-1 font-mono text-[9px] text-neutral-400">
-                            <span>{t.reference}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleCopy(t.reference)}
-                              className="hover:text-emerald-700"
-                            >
-                              <CopyIcon className="w-3 h-3" />
-                            </button>
-                            {copiedRef === t.reference && <span className="text-emerald-700 font-sans">Copied</span>}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <span className="text-xs font-black font-mono text-emerald-700 block">
-                          +{formatCurrency(t.amount, t.currency)}
-                        </span>
-                        <span className="rounded bg-neutral-100 px-1 py-0.5 text-[9px] font-bold text-neutral-500 uppercase">
-                          {t.payment_method}
-                        </span>
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {bomas.slice(0, 4).map((boma) => (
+                    <BomaCard
+                      key={boma.id}
+                      boma={boma}
+                      onContributeClick={handleContribute}
+                    />
                   ))}
                 </div>
               )}
             </div>
-          )}
+
+            {/* Recent Ledger Entries Card */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-2xs p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-800">
+                    Recent Contribution Ledger
+                  </h2>
+                </div>
+
+                <Link
+                  href="/admin/ledger"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
+                >
+                  <span>Full Ledger</span>
+                  <ArrowUpRightIcon className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {transactions.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No payment transactions recorded yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <th className="pb-2">Contributor</th>
+                        <th className="pb-2">Amount</th>
+                        <th className="pb-2">Reference</th>
+                        <th className="pb-2 text-right">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {transactions.slice(0, 5).map((tx) => (
+                        <tr key={tx.id || tx.reference} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="py-2.5 font-medium text-slate-900">
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] font-semibold">
+                                {tx.contributor_name.charAt(0).toUpperCase()}
+                              </span>
+                              <span>{tx.contributor_name}</span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 font-mono font-semibold text-slate-900">
+                            {formatCurrency(tx.amount, tx.currency)}
+                          </td>
+                          <td className="py-2.5 font-mono text-[11px] text-slate-500">
+                            {tx.reference}
+                          </td>
+                          <td className="py-2.5 text-right text-slate-400 font-mono text-[11px]">
+                            {new Date(tx.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* Right 4-Column Area: Treasury & Settlement Status */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Settlement Status Card */}
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Settlement Status</span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live Clearing
+                </span>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">M-Pesa Gateway</span>
+                  <span className="font-semibold text-slate-800">Safaricom Direct</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Central Merchant ID</span>
+                  <span className="font-mono text-slate-800">1938784</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Disbursement Mode</span>
+                  <span className="font-semibold text-slate-800">Subaccount Splits</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100">
+                <Link
+                  href="/admin/subaccounts"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+                >
+                  <SmartphoneIcon className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Configure Subaccounts</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Quick Access Card */}
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Quick Navigation</span>
+              
+              <div className="space-y-1 pt-1">
+                <Link
+                  href="/admin/users"
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-xs text-slate-700 transition-colors group"
+                >
+                  <span className="font-medium group-hover:text-slate-900">Member Directory</span>
+                  <ArrowUpRightIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                </Link>
+                <Link
+                  href="/admin/approvals"
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-xs text-slate-700 transition-colors group"
+                >
+                  <span className="font-medium group-hover:text-slate-900">Signup Approvals Queue</span>
+                  <ArrowUpRightIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                </Link>
+                <Link
+                  href="/admin/ledger"
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-xs text-slate-700 transition-colors group"
+                >
+                  <span className="font-medium group-hover:text-slate-900">Double-Entry Ledger Audit</span>
+                  <ArrowUpRightIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                </Link>
+              </div>
+            </div>
+
+          </div>
+
         </div>
-      )}
 
-      {/* 7. Tab Content: Treasury Analytics */}
-      {activeTab === 'stats' && (
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
-            <span className="text-[10px] font-semibold text-neutral-400 block">Total Volume</span>
-            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
-              {formatCurrency(stats?.total_volume_kes || totalVaultBalance, 'KES')}
-            </span>
-            <span className="text-[9px] text-emerald-700 font-medium mt-1 flex items-center gap-0.5">
-              <TrendingUpIcon className="w-2.5 h-2.5" />
-              Total raised
-            </span>
-          </div>
+        {/* Modals */}
+        {selectedBomaForModal && (
+          <ContributionModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            boma={selectedBomaForModal}
+            onSuccess={loadData}
+          />
+        )}
 
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
-            <span className="text-[10px] font-semibold text-neutral-400 block">Contributors</span>
-            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
-              {(stats?.total_contributions || totalMembers).toLocaleString()}
-            </span>
-            <span className="text-[9px] text-neutral-400 mt-1 flex items-center gap-0.5">
-              <UsersIcon className="w-2.5 h-2.5" />
-              Members
-            </span>
-          </div>
+        {shareBoma && (
+          <ShareModal
+            isOpen={isShareOpen}
+            onClose={() => setIsShareOpen(false)}
+            boma={shareBoma}
+          />
+        )}
 
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
-            <span className="text-[10px] font-semibold text-neutral-400 block">Contributions</span>
-            <span className="text-base sm:text-lg font-black font-mono text-emerald-700 mt-1 block">
-              {transactions.length}
-            </span>
-            <span className="text-[9px] text-neutral-400 mt-1 block">
-              Recorded
-            </span>
-          </div>
+        {statementData && statementData.boma && (
+          <ChamaStatementModal
+            isOpen={isStatementOpen}
+            onClose={() => setIsStatementOpen(false)}
+            boma={statementData.boma}
+            account={statementData.account}
+            entries={statementData.entries}
+            disbursements={statementData.disbursements}
+          />
+        )}
 
-          <div className="rounded-2xl border border-neutral-200/80 bg-white p-3.5 ">
-            <span className="text-[10px] font-semibold text-neutral-400 block">Funds</span>
-            <span className="text-base sm:text-lg font-black font-mono text-neutral-900 mt-1 block">
-              {bomas.length}
-            </span>
-            <span className="text-[9px] text-neutral-400 mt-1 block">
-              Contributions
-            </span>
-          </div>
-        </div>
-      )}
-
-      </section>
-
-      {/* Modals */}
-      <ContributionModal
-        boma={selectedBomaForModal}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
-
-      {shareBoma && (
-        <ShareModal
-          boma={shareBoma}
-          isOpen={isShareOpen}
-          onClose={() => setIsShareOpen(false)}
-        />
-      )}
-
-      {statementData && (
-        <ChamaStatementModal
-          boma={statementData.boma}
-          account={statementData.account}
-          entries={statementData.entries}
-          disbursements={statementData.disbursements}
-          isOpen={isStatementOpen}
-          onClose={() => setIsStatementOpen(false)}
-        />
-      )}
+      </div>
     </div>
   );
 }

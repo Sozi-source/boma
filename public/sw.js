@@ -1,53 +1,69 @@
 // Service Worker for Boma PWA
-const CACHE_NAME = 'boma-pwa-v1';
+const CACHE_NAME = 'boma-pwa-v2';
 
-const STATIC_ASSETS = [
-  '/',
-  '/manifest.webmanifest',
-  '/assets/icons/favicon.ico',
-  '/assets/icons/icon-48x48.png',
-  '/assets/icons/icon-72x72.png',
-  '/assets/icons/icon-96x96.png',
-  '/assets/icons/icon-128x128.png',
-  '/assets/icons/icon-144x144.png',
-  '/assets/icons/icon-192x192.png',
-  '/assets/icons/icon-384x384.png',
-  '/assets/icons/icon-512x512.png',
-  '/assets/icons/apple-touch-icon.png',
-];
+// If running on localhost / dev, completely bypass and clean up
+const isLocalhost = Boolean(
+  self.location.hostname === 'localhost' ||
+  self.location.hostname === '[::1]' ||
+  self.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+);
 
-// Install Event
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
-  );
-});
+if (isLocalhost) {
+  self.addEventListener('install', () => self.skipWaiting());
+  self.addEventListener('activate', (event) => {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .then(() => self.registration.unregister())
+    );
+  });
+} else {
+  const STATIC_ASSETS = [
+    '/',
+    '/manifest.webmanifest',
+    '/assets/icons/favicon.ico',
+    '/assets/icons/icon-48x48.png',
+    '/assets/icons/icon-72x72.png',
+    '/assets/icons/icon-96x96.png',
+    '/assets/icons/icon-128x128.png',
+    '/assets/icons/icon-144x144.png',
+    '/assets/icons/icon-192x192.png',
+    '/assets/icons/icon-384x384.png',
+    '/assets/icons/icon-512x512.png',
+    '/assets/icons/apple-touch-icon.png',
+  ];
 
-// Activate Event - Clean old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
+  // Install Event
+  self.addEventListener('install', (event) => {
+    event.waitUntil(
+      caches
+        .open(CACHE_NAME)
+        .then((cache) => cache.addAll(STATIC_ASSETS))
+        .then(() => self.skipWaiting())
+    );
+  });
+
+  // Activate Event - Clean old caches
+  self.addEventListener('activate', (event) => {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter((key) => key !== CACHE_NAME)
+              .map((key) => caches.delete(key))
+          )
         )
-      )
-      .then(() => self.clients.claim())
-  );
-});
+        .then(() => self.clients.claim())
+    );
+  });
 
-// Fetch Event
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
+  // Fetch Event
+  self.addEventListener('fetch', (event) => {
+    const { request } = event;
 
-  // Only handle GET requests
-  if (request.method !== 'GET') return;
+    // Only handle GET requests
+    if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
 
@@ -143,3 +159,4 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+}

@@ -43,15 +43,15 @@ export default function MobileNav() {
   const isDashboard = pathname === '/dashboard';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 select-none border-t border-neutral-200 bg-white h-[calc(5rem+env(safe-area-inset-bottom))] px-3 pb-[env(safe-area-inset-bottom)] transition-colors md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 select-none border-t border-slate-200 bg-white h-[calc(5rem+env(safe-area-inset-bottom))] px-3 pb-[env(safe-area-inset-bottom)] transition-colors lg:hidden">
       <div className="flex items-center justify-around max-w-md mx-auto h-full">
         {/* Vault / Home */}
         <Link
           href="/"
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isHome
-              ? 'text-emerald-700 font-extrabold'
-              : 'text-neutral-400 hover:text-neutral-700 font-medium'
+              ? 'text-emerald-700 font-semibold'
+              : 'text-slate-400 hover:text-slate-700 font-medium'
           }`}
         >
           <HomeNavIcon className="w-5 h-5" />
@@ -63,8 +63,8 @@ export default function MobileNav() {
           href="/bomas"
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isExplore
-              ? 'text-emerald-700 font-extrabold'
-              : 'text-neutral-400 hover:text-neutral-700 font-medium'
+              ? 'text-emerald-700 font-semibold'
+              : 'text-slate-400 hover:text-slate-700 font-medium'
           }`}
         >
           <SearchIcon className="w-5 h-5" />
@@ -76,10 +76,10 @@ export default function MobileNav() {
           href="/bomas/create"
           className="group flex flex-col items-center justify-center rounded-xl px-3 py-0.5"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-700/20 transition-transform group-active:scale-95">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs transition-transform group-active:scale-95">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
-          <span className="text-[10px] mt-0.5 font-bold text-neutral-800 ">
+          <span className="text-[10px] mt-0.5 font-semibold text-slate-800">
             Start
           </span>
         </Link>
@@ -89,14 +89,14 @@ export default function MobileNav() {
           href="/dashboard"
           className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isDashboard
-              ? 'text-emerald-700 font-extrabold'
-              : 'text-neutral-400 hover:text-neutral-700 font-medium'
+              ? 'text-emerald-700 font-semibold'
+              : 'text-slate-400 hover:text-slate-700 font-medium'
           }`}
         >
           <div className="relative">
             <WalletIcon className="w-5 h-5" />
             {hasUser && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white " />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
             )}
           </div>
           <span className="text-[10px] mt-0.5 tracking-tight">Activity</span>

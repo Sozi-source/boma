@@ -10,12 +10,20 @@ import {
   PlatformStats,
   Committee,
   CommitteeRole,
-  PayoutRequest
+  PayoutRequest,
+  UserProfile,
+  UserRole,
+  UserStatus,
+  SignupRequest,
+  Subaccount
 } from '../types/fintech';
 import { generateReference, createIdempotencyKey } from '../ledger/ledger-service';
 import { createClient, isSupabaseConfigured } from '../supabase/client';
+import { normalizePhoneNumber, phoneListIncludes } from '../utils/phone';
 
 // Clean initial stores (all dummy data purged)
+const INITIAL_USERS: UserProfile[] = [];
+const INITIAL_SIGNUP_REQUESTS: SignupRequest[] = [];
 const INITIAL_BOMAS: Boma[] = [];
 const INITIAL_TRANSACTIONS: Transaction[] = [];
 const INITIAL_LEDGER: LedgerEntry[] = [];
@@ -23,27 +31,34 @@ const INITIAL_ACCOUNTS: Account[] = [];
 const INITIAL_DISBURSEMENTS: Disbursement[] = [];
 const INITIAL_COMMITTEES: Committee[] = [];
 const INITIAL_PAYOUT_REQUESTS: PayoutRequest[] = [];
+const INITIAL_SUBACCOUNTS: Subaccount[] = [];
 
-// LocalStorage Keys for client persistence (v3 clean slate)
+// LocalStorage Keys for client persistence (v4 production clean slate)
 const STORAGE_KEYS = {
-  BOMAS: 'bomapay_bomas_v3',
-  ACCOUNTS: 'bomapay_accounts_v3',
-  TRANSACTIONS: 'bomapay_transactions_v3',
-  LEDGER: 'bomapay_ledger_v3',
-  DISBURSEMENTS: 'bomapay_disbursements_v3',
-  COMMITTEES: 'bomapay_committees_v3',
-  PAYOUT_REQUESTS: 'bomapay_payout_requests_v3',
+  BOMAS: 'bomapay_bomas_v4',
+  ACCOUNTS: 'bomapay_accounts_v4',
+  TRANSACTIONS: 'bomapay_transactions_v4',
+  LEDGER: 'bomapay_ledger_v4',
+  DISBURSEMENTS: 'bomapay_disbursements_v4',
+  COMMITTEES: 'bomapay_committees_v4',
+  PAYOUT_REQUESTS: 'bomapay_payout_requests_v4',
+  USERS: 'bomapay_users_v4',
+  SIGNUP_REQUESTS: 'bomapay_signup_requests_v4',
+  SUBACCOUNTS: 'bomapay_subaccounts_v4',
 };
 
 class BomaService {
   constructor() {
     if (typeof window !== 'undefined') {
-      // Purge all legacy storage keys and any user-created bomas from previous test sessions
+      // Purge all legacy storage keys and mock data from previous test sessions
       const legacyKeys = [
         'bomapay_bomas_v1', 'bomapay_accounts_v1', 'bomapay_transactions_v1',
         'bomapay_ledger_v1', 'bomapay_disbursements_v1', 'bomapay_committees_v1', 'bomapay_payout_requests_v1',
         'bomapay_bomas_v2', 'bomapay_accounts_v2', 'bomapay_transactions_v2',
         'bomapay_ledger_v2', 'bomapay_disbursements_v2', 'bomapay_committees_v2', 'bomapay_payout_requests_v2',
+        'bomapay_bomas_v3', 'bomapay_accounts_v3', 'bomapay_transactions_v3',
+        'bomapay_ledger_v3', 'bomapay_disbursements_v3', 'bomapay_committees_v3', 'bomapay_payout_requests_v3',
+        'bomapay_users_v3', 'bomapay_signup_requests_v3', 'bomapay_subaccounts_v3',
       ];
       legacyKeys.forEach((key) => {
         try { localStorage.removeItem(key); } catch {}
@@ -300,16 +315,25 @@ class BomaService {
     const transactionId = `txn-${Date.now()}`;
     const ledgerId = `ledger-${Date.now()}`;
 
+    // Resolve sender identity using registered phone numbers & email
+    const senderResolution = this.resolveSenderIdentity(
+      payload.contributor_phone,
+      payload.contributor_email,
+      payload.contributor_name
+    );
+    const resolvedName = senderResolution.matchedUser ? senderResolution.matchedUser.full_name : senderResolution.name;
+    const isAnonymous = senderResolution.matchedUser ? false : payload.is_anonymous;
+
     // 1. Transaction record
     const newTransaction: Transaction = {
       id: transactionId,
       boma_id: boma.id,
       reference,
       idempotency_key: idempotencyKey,
-      contributor_name: payload.contributor_name || 'Member',
+      contributor_name: resolvedName,
       contributor_phone: payload.contributor_phone,
       contributor_email: payload.contributor_email,
-      is_anonymous: payload.is_anonymous,
+      is_anonymous: isAnonymous,
       amount,
       fee: 0,
       net_amount: amount,
@@ -334,9 +358,9 @@ class BomaService {
       amount,
       currency: boma.currency,
       balance_after: newBalance,
-      description: payload.is_anonymous 
+      description: isAnonymous 
         ? `Anonymous contribution via ${payload.payment_method.toUpperCase()}`
-        : `Contribution from ${payload.contributor_name} via ${payload.payment_method.toUpperCase()}`,
+        : `Contribution from ${resolvedName} via ${payload.payment_method.toUpperCase()}`,
       reference_code: reference,
       created_at: new Date().toISOString(),
     };
@@ -520,10 +544,33 @@ class BomaService {
       }
 
       const list = Array.from(resultsMap.values());
-      return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const sorted = list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      return sorted.map((t) => {
+        const resolved = this.resolveSenderIdentity(t.contributor_phone, t.contributor_email, t.contributor_name);
+        if (resolved.matchedUser) {
+          return {
+            ...t,
+            contributor_name: resolved.matchedUser.full_name,
+            is_anonymous: false,
+          };
+        }
+        return t;
+      });
     }
     const transactions = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
-    return transactions.filter((t) => t.boma_id === bomaId);
+    return transactions
+      .filter((t) => t.boma_id === bomaId)
+      .map((t) => {
+        const resolved = this.resolveSenderIdentity(t.contributor_phone, t.contributor_email, t.contributor_name);
+        if (resolved.matchedUser) {
+          return {
+            ...t,
+            contributor_name: resolved.matchedUser.full_name,
+            is_anonymous: false,
+          };
+        }
+        return t;
+      });
   }
 
   async getBomaLedger(bomaId: string): Promise<LedgerEntry[]> {
@@ -534,8 +581,24 @@ class BomaService {
       return (data || []) as LedgerEntry[];
     }
     const ledger = this.getStore<LedgerEntry>(STORAGE_KEYS.LEDGER, INITIAL_LEDGER);
+    const transactions = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
     return ledger
       .filter((l) => l.boma_id === bomaId)
+      .map((l) => {
+        if (l.entry_type === 'credit') {
+          const tx = transactions.find((t) => t.id === l.transaction_id || t.reference === l.reference_code);
+          if (tx) {
+            const resolved = this.resolveSenderIdentity(tx.contributor_phone, tx.contributor_email, tx.contributor_name);
+            if (resolved.matchedUser) {
+              return {
+                ...l,
+                description: `Contribution from ${resolved.matchedUser.full_name} via ${tx.payment_method.toUpperCase()}`,
+              };
+            }
+          }
+        }
+        return l;
+      })
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
@@ -772,6 +835,376 @@ class BomaService {
     this.setStore(STORAGE_KEYS.PAYOUT_REQUESTS, all);
     return req;
   }
+
+  // =========================================================================
+  // --- ADMIN CONTROLS & MULTI-PHONE USER MANAGEMENT ---
+  // =========================================================================
+
+  async getUsers(): Promise<UserProfile[]> {
+    return this.getStore<UserProfile>(STORAGE_KEYS.USERS, INITIAL_USERS);
+  }
+
+  async getUserById(id: string): Promise<UserProfile | null> {
+    const users = await this.getUsers();
+    return users.find((u) => u.id === id) || null;
+  }
+
+  async getUserByPhone(phone: string): Promise<UserProfile | null> {
+    const users = await this.getUsers();
+    return users.find((u) => phoneListIncludes(u.phones, phone)) || null;
+  }
+
+  async addUser(data: {
+    full_name: string;
+    email: string;
+    phones: string[];
+    role: UserRole;
+    status?: UserStatus;
+    notes?: string;
+  }): Promise<UserProfile> {
+    const users = await this.getUsers();
+    const cleanPhones = Array.from(
+      new Set(data.phones.map((p) => p.trim()).filter(Boolean))
+    );
+
+    const newUser: UserProfile = {
+      id: `usr-${Date.now()}`,
+      full_name: data.full_name.trim(),
+      email: data.email.toLowerCase().trim(),
+      phones: cleanPhones.length > 0 ? cleanPhones : ['+254700000000'],
+      role: data.role,
+      status: data.status || 'active',
+      created_at: new Date().toISOString(),
+      approved_at: new Date().toISOString(),
+      approved_by: 'Admin Console',
+      notes: data.notes,
+    };
+
+    this.setStore(STORAGE_KEYS.USERS, [newUser, ...users]);
+    await this.autoReconcileTransactions();
+    return newUser;
+  }
+
+  async updateUser(id: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+    const users = await this.getUsers();
+    const index = users.findIndex((u) => u.id === id);
+    if (index === -1) throw new Error('User account not found');
+
+    const updated: UserProfile = {
+      ...users[index],
+      ...updates,
+      phones: updates.phones
+        ? Array.from(new Set(updates.phones.map((p) => p.trim()).filter(Boolean)))
+        : users[index].phones,
+    };
+    users[index] = updated;
+    this.setStore(STORAGE_KEYS.USERS, [...users]);
+    await this.autoReconcileTransactions();
+    return updated;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    const users = await this.getUsers();
+    this.setStore(STORAGE_KEYS.USERS, users.filter((u) => u.id !== id));
+  }
+
+  async addPhoneToUser(userId: string, newPhone: string): Promise<UserProfile> {
+    const user = await this.getUserById(userId);
+    if (!user) throw new Error('User not found');
+    const trimmed = newPhone.trim();
+    if (!trimmed) throw new Error('Phone number is required');
+    if (!phoneListIncludes(user.phones, trimmed)) {
+      const updatedPhones = [...user.phones, trimmed];
+      return this.updateUser(userId, { phones: updatedPhones });
+    }
+    return user;
+  }
+
+  async removePhoneFromUser(userId: string, phoneToRemove: string): Promise<UserProfile> {
+    const user = await this.getUserById(userId);
+    if (!user) throw new Error('User not found');
+    if (user.phones.length <= 1) {
+      throw new Error('User must retain at least one associated mobile number');
+    }
+    const filtered = user.phones.filter(
+      (p) => normalizePhoneNumber(p) !== normalizePhoneNumber(phoneToRemove)
+    );
+    return this.updateUser(userId, { phones: filtered });
+  }
+
+  // --- SIGNUP REQUESTS & APPROVAL QUEUE ---
+
+  async getSignupRequests(filterStatus?: UserStatus): Promise<SignupRequest[]> {
+    const reqs = this.getStore<SignupRequest>(STORAGE_KEYS.SIGNUP_REQUESTS, INITIAL_SIGNUP_REQUESTS);
+    if (filterStatus) {
+      return reqs.filter((r) => r.status === filterStatus);
+    }
+    return reqs.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+  }
+
+  async submitSignupRequest(req: {
+    full_name: string;
+    email: string;
+    phone: string;
+    additional_phones?: string[];
+    role?: UserRole;
+  }): Promise<SignupRequest> {
+    const all = await this.getSignupRequests();
+    const newReq: SignupRequest = {
+      id: `req-${Date.now()}`,
+      full_name: req.full_name.trim(),
+      email: req.email.toLowerCase().trim(),
+      phone: req.phone.trim(),
+      additional_phones: (req.additional_phones || []).map((p) => p.trim()).filter(Boolean),
+      role: req.role || 'member',
+      status: 'pending_approval',
+      submitted_at: new Date().toISOString(),
+    };
+    this.setStore(STORAGE_KEYS.SIGNUP_REQUESTS, [newReq, ...all]);
+
+    // Also register user profile in pending state so admin can see in full directory
+    const allPhones = [req.phone, ...(req.additional_phones || [])].map((p) => p.trim()).filter(Boolean);
+    const users = await this.getUsers();
+    if (!users.some((u) => u.email.toLowerCase() === req.email.toLowerCase().trim())) {
+      const userProfile: UserProfile = {
+        id: `usr-pending-${Date.now()}`,
+        email: req.email.toLowerCase().trim(),
+        full_name: req.full_name.trim(),
+        phones: allPhones,
+        role: req.role || 'member',
+        status: 'pending_approval',
+        created_at: new Date().toISOString(),
+      };
+      this.setStore(STORAGE_KEYS.USERS, [userProfile, ...users]);
+    }
+
+    return newReq;
+  }
+
+  async approveSignupRequest(
+    requestId: string,
+    reviewerName = 'Admin',
+    role?: UserRole
+  ): Promise<UserProfile> {
+    const allReqs = await this.getSignupRequests();
+    const req = allReqs.find((r) => r.id === requestId);
+    if (!req) throw new Error('Signup request not found');
+
+    req.status = 'active';
+    req.reviewed_at = new Date().toISOString();
+    req.reviewed_by = reviewerName;
+    if (role) req.role = role;
+    this.setStore(STORAGE_KEYS.SIGNUP_REQUESTS, allReqs);
+
+    const users = await this.getUsers();
+    const existing = users.find((u) => u.email.toLowerCase() === req.email.toLowerCase());
+    const allPhones = [req.phone, ...(req.additional_phones || [])].map((p) => p.trim()).filter(Boolean);
+
+    if (existing) {
+      existing.status = 'active';
+      existing.role = req.role;
+      existing.approved_at = new Date().toISOString();
+      existing.approved_by = reviewerName;
+      allPhones.forEach((p) => {
+        if (!phoneListIncludes(existing.phones, p)) {
+          existing.phones.push(p);
+        }
+      });
+      this.setStore(STORAGE_KEYS.USERS, users);
+      await this.autoReconcileTransactions();
+      return existing;
+    } else {
+      const newUser: UserProfile = {
+        id: `usr-${Date.now()}`,
+        email: req.email.toLowerCase().trim(),
+        full_name: req.full_name.trim(),
+        phones: allPhones,
+        role: req.role,
+        status: 'active',
+        created_at: req.submitted_at || new Date().toISOString(),
+        approved_at: new Date().toISOString(),
+        approved_by: reviewerName,
+      };
+      this.setStore(STORAGE_KEYS.USERS, [newUser, ...users]);
+      await this.autoReconcileTransactions();
+      return newUser;
+    }
+  }
+
+  async rejectSignupRequest(
+    requestId: string,
+    reason?: string,
+    reviewerName = 'Admin'
+  ): Promise<void> {
+    const allReqs = await this.getSignupRequests();
+    const req = allReqs.find((r) => r.id === requestId);
+    if (!req) throw new Error('Signup request not found');
+
+    req.status = 'rejected';
+    req.reviewed_at = new Date().toISOString();
+    req.reviewed_by = reviewerName;
+    req.rejection_reason = reason || 'Declined by Administrator';
+    this.setStore(STORAGE_KEYS.SIGNUP_REQUESTS, allReqs);
+
+    const users = await this.getUsers();
+    const u = users.find((x) => x.email.toLowerCase() === req.email.toLowerCase());
+    if (u) {
+      u.status = 'rejected';
+      this.setStore(STORAGE_KEYS.USERS, users);
+    }
+  }
+
+  /**
+   * Resolves incoming sender identity using registered multi-phone numbers and emails.
+   * If an incoming phone matches ANY of a user's associated phone lines, returns their full legal name.
+   */
+  resolveSenderIdentity(
+    phone?: string,
+    email?: string,
+    fallbackName?: string
+  ): { name: string; isAnonymous: boolean; matchedUser?: UserProfile } {
+    const users = this.getStore<UserProfile>(STORAGE_KEYS.USERS, INITIAL_USERS);
+
+    // 1. Match phone across any registered user's associated phones
+    if (phone) {
+      const byPhone = users.find((u) => phoneListIncludes(u.phones, phone));
+      if (byPhone) {
+        return {
+          name: byPhone.full_name,
+          isAnonymous: false,
+          matchedUser: byPhone,
+        };
+      }
+    }
+
+    // 2. Match email
+    if (email) {
+      const cleanEmail = email.toLowerCase().trim();
+      const byEmail = users.find((u) => u.email.toLowerCase().trim() === cleanEmail);
+      if (byEmail) {
+        return {
+          name: byEmail.full_name,
+          isAnonymous: false,
+          matchedUser: byEmail,
+        };
+      }
+    }
+
+    // 3. Fallback
+    const cleanFallback = fallbackName && fallbackName.trim() && fallbackName !== 'Anonymous' && fallbackName !== 'Member'
+      ? fallbackName.trim()
+      : 'Member';
+
+    return {
+      name: cleanFallback,
+      isAnonymous: false,
+      matchedUser: undefined,
+    };
+  }
+
+  /**
+   * Automatically reconcile unlinked transactions against all registered users' phone numbers and emails.
+   * If a transaction with 'Member' or unlinked phone now matches a user, automatically update it.
+   */
+  async autoReconcileTransactions(): Promise<number> {
+    const users = this.getStore<UserProfile>(STORAGE_KEYS.USERS, INITIAL_USERS);
+    const transactions = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
+    const ledger = this.getStore<LedgerEntry>(STORAGE_KEYS.LEDGER, INITIAL_LEDGER);
+    let updatedCount = 0;
+
+    const updatedTxns = transactions.map((tx) => {
+      const res = this.resolveSenderIdentity(tx.contributor_phone, tx.contributor_email, tx.contributor_name);
+      if (res.matchedUser && tx.contributor_name !== res.matchedUser.full_name) {
+        updatedCount++;
+        // Update corresponding ledger entry description
+        const lIndex = ledger.findIndex((l) => l.transaction_id === tx.id || l.reference_code === tx.reference);
+        if (lIndex !== -1) {
+          ledger[lIndex].description = `Contribution from ${res.matchedUser.full_name} via ${tx.payment_method.toUpperCase()}`;
+        }
+        return {
+          ...tx,
+          contributor_name: res.matchedUser.full_name,
+          is_anonymous: false,
+        };
+      }
+      return tx;
+    });
+
+    if (updatedCount > 0) {
+      this.setStore(STORAGE_KEYS.TRANSACTIONS, updatedTxns);
+      this.setStore(STORAGE_KEYS.LEDGER, ledger);
+    }
+
+    return updatedCount;
+  }
+
+  /**
+   * Retrieve all platform transactions across all Bomas with sender resolution applied.
+   */
+  async getAllTransactions(): Promise<Transaction[]> {
+    await this.autoReconcileTransactions();
+    const bomas = await this.getBomas();
+    const allTxns: Transaction[] = [];
+
+    for (const b of bomas) {
+      const txns = await this.getBomaTransactions(b.id);
+      allTxns.push(...txns);
+    }
+
+    if (allTxns.length === 0) {
+      const local = this.getStore<Transaction>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
+      allTxns.push(...local.map((t) => {
+        const res = this.resolveSenderIdentity(t.contributor_phone, t.contributor_email, t.contributor_name);
+        return res.matchedUser ? { ...t, contributor_name: res.matchedUser.full_name, is_anonymous: false } : t;
+      }));
+    }
+
+    return allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+
+  // --- SUBACCOUNTS & SETTLEMENT DESTINATIONS ---
+
+  async getSubaccounts(): Promise<Subaccount[]> {
+    return this.getStore<Subaccount>(STORAGE_KEYS.SUBACCOUNTS, INITIAL_SUBACCOUNTS);
+  }
+
+  async createSubaccount(payload: {
+    business_name: string;
+    settlement_bank: string;
+    account_number: string;
+    currency: Currency;
+    type: 'mobile_money' | 'bank_account';
+    percentage_charge?: number;
+    primary_contact_email?: string;
+    primary_contact_name?: string;
+    primary_contact_phone?: string;
+  }): Promise<Subaccount> {
+    const all = await this.getSubaccounts();
+    const codeNum = Math.floor(1000000 + Math.random() * 9000000);
+    const newSub: Subaccount = {
+      id: `sub-${Date.now()}`,
+      subaccount_code: `SUB_${codeNum}`,
+      business_name: payload.business_name.trim(),
+      settlement_bank: payload.settlement_bank.trim(),
+      account_number: payload.account_number.trim(),
+      currency: payload.currency,
+      type: payload.type,
+      percentage_charge: payload.percentage_charge || 0,
+      primary_contact_email: payload.primary_contact_email?.trim(),
+      primary_contact_name: payload.primary_contact_name?.trim(),
+      primary_contact_phone: payload.primary_contact_phone?.trim(),
+      status: 'active',
+      created_at: new Date().toISOString(),
+    };
+    this.setStore(STORAGE_KEYS.SUBACCOUNTS, [newSub, ...all]);
+    return newSub;
+  }
+
+  async deleteSubaccount(id: string): Promise<void> {
+    const all = await this.getSubaccounts();
+    this.setStore(STORAGE_KEYS.SUBACCOUNTS, all.filter((s) => s.id !== id));
+  }
 }
+
 
 export const bomaService = new BomaService();

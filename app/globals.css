@@ -49,6 +49,25 @@ body {
   scrollbar-width: none;
 }
 
+/* Custom sleek visible scrollbar for sidebar */
+.custom-sidebar-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+.custom-sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
 /* Print styles for audit statements */
 @media print {
   body {

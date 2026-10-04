@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { WalletIcon } from './ui/icons';
+import { WalletIcon, ShieldCheckIcon } from './ui/icons';
 
 interface AuthUser {
   id: string;
@@ -95,32 +95,40 @@ export default function UserMenu() {
             className="fixed inset-0 z-40"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-52 sm:w-56 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg z-50 animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-2.5 py-2 border-b border-neutral-100 ">
-              <p className="text-xs font-bold text-neutral-900 truncate">
+          <div className="absolute right-0 mt-2 w-52 sm:w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-lg z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-2.5 py-2 border-b border-slate-100">
+              <p className="text-xs font-semibold text-slate-900 truncate">
                 {user.name}
               </p>
-              <p className="text-[10px] text-neutral-400 truncate">
+              <p className="text-[10px] text-slate-400 truncate">
                 {user.email}
               </p>
             </div>
 
-            <div className="py-1">
+            <div className="py-1 space-y-0.5">
               <Link
                 href="/dashboard"
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-100 "
+                className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 <WalletIcon className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Dashboard & Wallet</span>
+                <span>Dashboard &amp; Wallet</span>
+              </Link>
+              <Link
+                href="/admin"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <ShieldCheckIcon className="w-3.5 h-3.5 text-amber-600" />
+                <span>Admin Controls</span>
               </Link>
             </div>
 
-            <div className="pt-1 border-t border-neutral-100 ">
+            <div className="pt-1 border-t border-slate-100">
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="w-full text-left rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 "
+                className="w-full text-left rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
               >
                 Sign Out
               </button>

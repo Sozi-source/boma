@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/navbar";
 import MobileNav from "@/components/mobile-nav";
+import AdminSidebar from "@/components/admin/admin-sidebar";
+import DesktopHeader from "@/components/desktop-header";
 import PwaRegister from "@/components/pwa-register";
 import "./globals.css";
 
@@ -53,18 +55,50 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-neutral-50 text-neutral-900 selection:bg-emerald-500 selection:text-white font-sans">
-        <Navbar />
-        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8">{children}</main>
-        <MobileNav />
+      <body 
+        suppressHydrationWarning
+        className="min-h-full flex flex-col lg:flex-row bg-[#f8fafc] text-slate-900 selection:bg-emerald-500 selection:text-white font-sans"
+      >
+        
+        {/* Desktop Dark Navy Fintech Sidebar (Persistent on Laptop & Desktop) */}
+        <AdminSidebar />
 
-        {/* Desktop App Status Bar */}
-        <footer className="hidden md:flex border-t border-neutral-200 bg-white py-2 px-6 items-center justify-between text-[11px] text-neutral-500">
-          <span>Boma — Contributions, open to every member</span>
-          <span>Pay with M-Pesa or card</span>
-        </footer>
+        {/* Workspace Column on Laptop & Desktop */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+          
+          {/* Mobile Top Navbar (Visible only on < lg) */}
+          <div className="lg:hidden">
+            <Navbar />
+          </div>
+
+          {/* Desktop Top Header (Visible on >= lg) */}
+          <div className="hidden lg:block sticky top-0 z-30">
+            <DesktopHeader />
+          </div>
+
+          {/* Main Page Content */}
+          <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8 w-full min-w-0">
+            {children}
+          </main>
+
+          {/* Mobile Bottom Navigation (Visible only on < lg) */}
+          <MobileNav />
+
+          {/* Desktop Fintech Status Bar Footer */}
+          <footer className="hidden lg:flex border-t border-slate-200 bg-white py-2.5 px-5 sm:px-8 lg:px-10 xl:px-12 items-center justify-between text-[11px] text-slate-500 select-none">
+            <span>Boma — Contributions, open and transparent to every member</span>
+            <div className="flex items-center gap-4 font-mono text-[10px]">
+              <span className="text-emerald-700 font-bold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                M-Pesa &amp; Card Gateway Live
+              </span>
+              <span>Merchant ID: 1938784</span>
+            </div>
+          </footer>
+        </div>
 
         {/* PWA Service Worker & Install Prompt */}
         <PwaRegister />

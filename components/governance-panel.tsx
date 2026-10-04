@@ -99,22 +99,22 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
     'w-full rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 ';
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-4">
       {error && (
-        <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
+        <div className="rounded-lg bg-rose-50 p-2.5 text-xs text-rose-800 border border-rose-200">
           {error}
         </div>
       )}
 
       {/* Status banner */}
       <div
-        className={`rounded-xl border p-3 flex items-center gap-2 text-[11px] ${
+        className={`rounded-xl border p-3 flex items-center gap-2 text-xs ${
           approvalActive
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-800 '
-            : 'border-neutral-200 bg-white text-neutral-600 '
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+            : 'border-slate-200 bg-white text-slate-600'
         }`}
       >
-        <ShieldCheckIcon className="w-4 h-4 shrink-0" />
+        <ShieldCheckIcon className="w-4 h-4 shrink-0 text-emerald-700" />
         <span>
           {approvalActive
             ? `Multi-sig active: ${committee.threshold} of ${memberCount} approvals release a payout.`
@@ -123,20 +123,20 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
       </div>
 
       {/* Committee */}
-      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 space-y-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3.5 shadow-2xs">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 flex items-center gap-1.5">
+          <h3 className="text-xs sm:text-sm font-semibold text-slate-900 flex items-center gap-1.5">
             <UsersIcon className="w-4 h-4 text-emerald-700" />
             Committee ({memberCount})
           </h3>
 
           {memberCount >= 2 && (
-            <label className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+            <label className="flex items-center gap-1.5 text-xs text-slate-500">
               Approvals needed
               <select
                 value={committee.threshold}
                 onChange={(e) => changeThreshold(Number(e.target.value))}
-                className="rounded-md border border-neutral-300 bg-white px-1.5 py-0.5 text-xs "
+                className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 focus:outline-hidden"
               >
                 {Array.from({ length: memberCount }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>
@@ -149,18 +149,18 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
         </div>
 
         {memberCount > 0 && (
-          <ul className="divide-y divide-neutral-100 ">
+          <ul className="divide-y divide-slate-100">
             {committee.members.map((m) => (
-              <li key={m.id} className="py-2 flex items-center justify-between text-xs">
+              <li key={m.id} className="py-2.5 flex items-center justify-between text-xs">
                 <div className="min-w-0">
-                  <span className="font-semibold text-neutral-900 ">{m.name}</span>
-                  <span className="ml-1.5 text-[10px] uppercase text-neutral-400">{m.role}</span>
-                  {m.phone && <span className="block text-[10px] text-neutral-400">{m.phone}</span>}
+                  <span className="font-semibold text-slate-900">{m.name}</span>
+                  <span className="ml-2 text-[10px] uppercase font-semibold text-slate-400 font-mono">{m.role}</span>
+                  {m.phone && <span className="block text-[10px] text-slate-400 font-mono mt-0.5">{m.phone}</span>}
                 </div>
                 <button
                   type="button"
                   onClick={() => removeMember(m.id)}
-                  className="p-1 text-neutral-400 hover:text-red-600"
+                  className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
                   aria-label={`Remove ${m.name}`}
                 >
                   <XMarkIcon className="w-4 h-4" />
@@ -172,20 +172,22 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
 
         <form onSubmit={addMember} className="grid grid-cols-2 gap-2 pt-1">
           <input
-            className={inputCls}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-hidden"
             aria-label="Member name"
+            placeholder="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
           <input
-            className={inputCls}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-hidden"
             aria-label="Phone number (optional)"
+            placeholder="Phone (optional)"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
           <select
-            className={inputCls}
+            className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:border-emerald-500 focus:outline-hidden"
             value={role}
             onChange={(e) => setRole(e.target.value as CommitteeRole)}
           >
@@ -197,7 +199,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
           </select>
           <button
             type="submit"
-            className="rounded-lg bg-emerald-600 hover:bg-emerald-500 py-1.5 text-xs font-bold text-white transition-colors"
+            className="rounded-lg bg-emerald-600 hover:bg-emerald-700 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
           >
             Add Member
           </button>
@@ -205,19 +207,19 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
       </div>
 
       {/* Payout requests */}
-      <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-3.5 sm:p-5 space-y-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3.5 shadow-2xs">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
+          <h3 className="text-xs sm:text-sm font-semibold text-slate-900">
             Payout Requests ({requests.length})
           </h3>
 
           {memberCount > 0 && (
-            <label className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+            <label className="flex items-center gap-1.5 text-xs text-slate-500">
               Vote as
               <select
                 value={voterId}
                 onChange={(e) => setVoterId(e.target.value)}
-                className="rounded-md border border-neutral-300 bg-white px-1.5 py-0.5 text-xs "
+                className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 focus:outline-hidden"
               >
                 {committee.members.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -230,7 +232,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
         </div>
 
         {requests.length === 0 ? (
-          <p className="py-6 text-center text-xs text-neutral-400">
+          <p className="py-6 text-center text-xs text-slate-400">
             No payout requests. Use Request Payout to start one.
           </p>
         ) : (
@@ -241,35 +243,35 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
               return (
                 <div
                   key={r.id}
-                  className="rounded-lg border border-neutral-200 p-3 text-xs space-y-2"
+                  className="rounded-lg border border-slate-200 p-3 text-xs space-y-2 hover:border-slate-300 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-bold text-neutral-900 truncate">
+                      <p className="font-semibold text-slate-900 truncate">
                         {r.recipient_name}
                       </p>
-                      <p className="text-[11px] text-neutral-500">{r.purpose}</p>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">
+                      <p className="text-[11px] text-slate-500">{r.purpose}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
                         By {r.requested_by} · {new Date(r.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-extrabold text-amber-600 ">
+                      <p className="font-semibold font-mono text-amber-700">
                         {formatCurrency(r.amount, r.currency)}
                       </p>
                       <span
-                        className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${STATUS_STYLES[r.status]}`}
+                        className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase ${STATUS_STYLES[r.status]}`}
                       >
                         {r.status}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-neutral-500">
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                    <span className="text-[11px] text-slate-500">
                       {yes}/{committee.threshold} approvals
                       {r.approvals.length > 0 && (
-                        <span className="text-neutral-400">
+                        <span className="text-slate-400 font-mono">
                           {' '}
                           ({r.approvals.map((a) => `${a.member_name} ${a.decision === 'approve' ? '✓' : '✗'}`).join(', ')})
                         </span>
@@ -282,7 +284,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
                           type="button"
                           disabled={hasVoted || busyId === r.id}
                           onClick={() => vote(r.id, 'approve')}
-                          className="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1 text-[11px] font-bold text-white disabled:opacity-40"
+                          className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-semibold text-white shadow-2xs disabled:opacity-40 transition-colors"
                         >
                           Approve
                         </button>
@@ -290,7 +292,7 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
                           type="button"
                           disabled={hasVoted || busyId === r.id}
                           onClick={() => vote(r.id, 'reject')}
-                          className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-40 "
+                          className="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors"
                         >
                           Reject
                         </button>

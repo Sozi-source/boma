@@ -38,22 +38,22 @@ export default function CreateBomaPage() {
 
     const target = parseFloat(targetAmount);
     if (!title.trim()) {
-      setError('Provide a title.');
+      setError('Please provide a title for the fund.');
       return;
     }
 
     if (!target || target <= 0) {
-      setError('Enter a valid target goal.');
+      setError('Enter a valid fundraising goal target.');
       return;
     }
 
     if (!creatorName.trim()) {
-      setError('Enter organizer name.');
+      setError('Enter the organizer full legal name.');
       return;
     }
 
     if (!agreedToTransparency) {
-      setError('You must agree to transparency.');
+      setError('You must agree to transparent ledger accounting.');
       return;
     }
 
@@ -73,204 +73,202 @@ export default function CreateBomaPage() {
 
       router.push(`/bomas/${newBoma.id}`);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create Boma.');
+      setError(err instanceof Error ? err.message : 'Failed to launch Fund.');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="mx-auto max-w-lg md:max-w-xl px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-4">
-      <div>
-        <h1 className="text-base sm:text-lg font-black tracking-tight text-neutral-900 ">
-          Start a Contribution
-        </h1>
-        <p className="text-[10px] sm:text-[11px] text-neutral-400 font-mono">
-          Start a Fund with a record every member can see
-        </p>
-      </div>
+    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
+      <div className="w-full max-w-2xl space-y-6">
+        <div className="pb-3.5 border-b border-slate-200/80">
+          <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
+            Start a Community Fund
+          </h1>
+        </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 rounded-2xl border border-neutral-200/80 bg-white p-4 sm:p-5 shadow-xs ">
-        {error && (
-          <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 border border-red-200 ">
-            {error}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-2xs">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 border border-red-200">
+              {error}
+            </div>
+          )}
 
-        {/* Contribution Details */}
-        <div className="space-y-3">
+          {/* Title */}
           <div>
-            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-              Title *
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Campaign Title *
             </label>
             <input
               type="text"
               required
+              placeholder="e.g. Kiprono Family Medical Relief Fund"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Category & Duration */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Category *
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as BomaCategory)}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-medium text-slate-800 focus:border-emerald-600 focus:outline-hidden"
               >
-                <option value="medical">Medical</option>
-                <option value="education">Education</option>
-                <option value="chama">Chama</option>
-                <option value="community">Community</option>
+                <option value="medical">Medical Relief</option>
+                <option value="education">Education &amp; Tuition</option>
+                <option value="chama">Chama &amp; Savings</option>
+                <option value="community">Community Development</option>
                 <option value="wedding">Wedding</option>
                 <option value="funeral">Funeral</option>
-                <option value="emergency">Emergency</option>
-                <option value="business">Business</option>
-                <option value="family">Family</option>
+                <option value="emergency">Urgent Relief</option>
+                <option value="business">Business &amp; Ventures</option>
+                <option value="family">Family &amp; Welfare</option>
                 <option value="housing">Housing</option>
-                <option value="food">Food &amp; Essentials</option>
-                <option value="travel">Travel</option>
-                <option value="religious">Faith &amp; Religious</option>
-                <option value="sports">Sports</option>
-                <option value="technology">Technology</option>
-                <option value="other">Other</option>
+                <option value="other">General Fund</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                Duration *
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Campaign Duration *
               </label>
               <select
                 value={deadlineDays}
                 onChange={(e) => setDeadlineDays(Number(e.target.value))}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-medium text-slate-800 focus:border-emerald-600 focus:outline-hidden"
               >
                 <option value={7}>7 Days (Urgent)</option>
-                <option value={14}>14 Days</option>
+                <option value={14}>14 Days (2 Weeks)</option>
                 <option value={30}>30 Days (1 Month)</option>
-                <option value={60}>60 Days</option>
+                <option value={60}>60 Days (2 Months)</option>
+                <option value={90}>90 Days (Quarterly)</option>
               </select>
             </div>
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-              Purpose & Story *
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Purpose &amp; Objective *
             </label>
             <textarea
               rows={3}
               required
+              placeholder="Explain the purpose of this fund and how contributions will be allocated..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 resize-none"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden resize-none"
             />
           </div>
-        </div>
 
-        {/* Financial Target */}
-        <div className="grid grid-cols-3 gap-2.5 pt-1">
-          <div className="col-span-2">
-            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-              Target Goal *
+          {/* Financial Target & Currency */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Target Fundraising Goal *
+              </label>
+              <input
+                type="number"
+                required
+                min="100"
+                placeholder="50000"
+                value={targetAmount}
+                onChange={(e) => setTargetAmount(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-mono text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Currency
+              </label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as Currency)}
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-medium text-slate-800 focus:border-emerald-600 focus:outline-hidden"
+              >
+                <option value="KES">KES</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Organizer Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Organizer Full Name *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Faith Muthoni"
+                value={creatorName}
+                onChange={(e) => setCreatorName(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                M-Pesa Primary Contact Line
+              </label>
+              <input
+                type="tel"
+                placeholder="0712345678"
+                value={creatorPhone}
+                onChange={(e) => setCreatorPhone(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-mono text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
+              />
+            </div>
+          </div>
+
+          {/* Cover Image URL */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Cover Image URL (Optional)
             </label>
             <input
-              type="number"
-              required
-              min="100"
-              value={targetAmount}
-              onChange={(e) => setTargetAmount(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
+              type="url"
+              placeholder="https://..."
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
             />
           </div>
 
-          <div>
-            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-              Currency
-            </label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value as Currency)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
-            >
-              <option value="KES">KES</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Organizer */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div>
-            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-              Organizer Name *
-            </label>
+          {/* Transparency Pledge */}
+          <label className="flex items-start gap-2.5 pt-2 cursor-pointer">
             <input
-              type="text"
-              required
-              value={creatorName}
-              onChange={(e) => setCreatorName(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
+              type="checkbox"
+              checked={agreedToTransparency}
+              onChange={(e) => setAgreedToTransparency(e.target.checked)}
+              className="mt-0.5 h-3.5 w-3.5 rounded-sm border-slate-300 text-emerald-600"
             />
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-              M-Pesa Phone
-            </label>
-            <input
-              type="tel"
-              value={creatorPhone}
-              onChange={(e) => setCreatorPhone(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
-            />
-          </div>
-        </div>
-
-        {/* Cover Image */}
-        <div className="pt-1">
-          <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-            Cover Image URL (Optional)
+            <span className="text-xs text-slate-600 leading-snug">
+              I commit to full financial transparency: all member contributions and disbursement allocations will be recorded on the platform ledger.
+            </span>
           </label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500 "
-          />
-          <p className="mt-1 text-[10px] text-neutral-400">
-            Leave blank if you prefer a clean category gradient card. You can add your image later.
-          </p>
-        </div>
 
-        {/* Transparency Checkbox */}
-        <label className="flex items-start gap-2 pt-1 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={agreedToTransparency}
-            onChange={(e) => setAgreedToTransparency(e.target.checked)}
-            className="mt-0.5 h-3.5 w-3.5 rounded-sm border-neutral-300 text-emerald-700"
-          />
-          <span className="text-[11px] text-neutral-600 leading-tight">
-            I pledge full transparency: all contributions and payouts will be published on the public ledger.
-          </span>
-        </label>
-
-        {/* Submit Button */}
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs sm:text-sm font-bold text-white shadow-xs transition-all active:scale-98 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Starting Contribution...' : 'Start Contribution'}
-          </button>
-        </div>
-      </form>
+          {/* Submit Action */}
+          <div className="pt-3">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? 'Launching Fund...' : 'Launch Fund'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

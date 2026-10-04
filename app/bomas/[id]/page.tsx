@@ -119,33 +119,34 @@ export default function BomaDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-lg md:max-w-2xl lg:max-w-4xl px-3 sm:px-6 py-3 sm:py-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))] md:pb-6 space-y-3 sm:space-y-5">
+    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
+      <div className="w-full max-w-7xl space-y-6">
       
       {/* Top Breadcrumb & Share */}
-      <div className="flex items-center justify-between text-[11px] text-neutral-400">
-        <div className="flex items-center gap-1.5">
-          <Link href="/bomas" className="hover:text-emerald-700 font-bold">Funds</Link>
+      <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex items-center gap-2">
+          <Link href="/bomas" className="hover:text-emerald-700 font-medium">Funds</Link>
           <span>/</span>
-          <span className="capitalize font-mono">{boma.category}</span>
+          <span className="capitalize font-mono text-slate-600">{boma.category}</span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsStatementModalOpen(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
           >
-            <PrinterIcon className="w-3 h-3 text-emerald-700" />
+            <PrinterIcon className="w-3.5 h-3.5 text-slate-500" />
             <span>Statement</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
           >
-            <ShareIcon className="w-3 h-3" />
-            <span>Share & QR</span>
+            <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
+            <span>Share &amp; QR</span>
           </button>
 
         </div>
@@ -154,10 +155,10 @@ export default function BomaDetailPage({ params }: PageProps) {
       {/* Payment Confirmation / Alert Banner */}
       {paymentNotice && (
         <div
-          className={`rounded-xl p-3 text-xs font-semibold flex items-center justify-between shadow-xs ${
+          className={`rounded-lg p-3 text-xs font-semibold flex items-center justify-between shadow-2xs ${
             paymentNotice.ok
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 '
-              : 'bg-rose-50 text-rose-800 border border-rose-200 '
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border border-rose-200'
           }`}
         >
           <span>{paymentNotice.text}</span>
@@ -172,41 +173,41 @@ export default function BomaDetailPage({ params }: PageProps) {
       )}
 
       {/* Main Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column (Content, Hero, Tabs) */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+        <div className="lg:col-span-2 space-y-6">
           
           {/* Cover Media */}
           {boma.image_url ? (
-            <div className="relative h-44 sm:h-72 w-full overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-100 ">
+            <div className="relative h-56 sm:h-80 w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200">
               <img
                 src={boma.image_url}
                 alt={boma.title}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute top-2 left-2 flex items-center gap-1">
-                <span className="rounded-md bg-emerald-600/90 text-white px-2 py-0.5 text-[9px] font-bold uppercase backdrop-blur-xs">
+              <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                <span className="rounded-md bg-slate-900/80 text-white px-2.5 py-1 text-[10px] font-semibold uppercase backdrop-blur-xs">
                   {boma.category}
                 </span>
                 {boma.verified && (
-                  <span className="rounded-md bg-amber-500/90 text-amber-950 font-black px-2 py-0.5 text-[9px] backdrop-blur-xs flex items-center gap-1 shadow-xs">
+                  <span className="rounded-md bg-amber-500/90 text-amber-950 font-bold px-2.5 py-1 text-[10px] backdrop-blur-xs flex items-center gap-1 shadow-xs">
                     <ShieldCheckIcon className="w-3 h-3 text-amber-950" />
-                    Audited Trust Fund
+                    Verified Fund
                   </span>
                 )}
               </div>
             </div>
           ) : (
-            <div className="relative h-24 sm:h-32 w-full overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-100 border border-neutral-200 flex items-end p-3">
-              <div className="flex items-center gap-1">
-                <span className="rounded-md bg-white text-neutral-700 border border-neutral-200 px-2 py-0.5 text-[9px] font-bold uppercase">
+            <div className="relative h-28 sm:h-36 w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-200 flex items-end p-4">
+              <div className="flex items-center gap-2">
+                <span className="rounded-md bg-white text-slate-700 border border-slate-200 px-2.5 py-1 text-[10px] font-semibold uppercase shadow-2xs">
                   {boma.category}
                 </span>
                 {boma.verified && (
-                  <span className="rounded-md bg-amber-500/10 text-amber-800 border border-amber-500/25 px-2 py-0.5 text-[9px] font-bold flex items-center gap-1">
+                  <span className="rounded-md bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 text-[10px] font-semibold flex items-center gap-1">
                     <ShieldCheckIcon className="w-3 h-3 text-amber-600" />
-                    Audited Trust Fund
+                    Verified Fund
                   </span>
                 )}
               </div>
@@ -214,38 +215,38 @@ export default function BomaDetailPage({ params }: PageProps) {
           )}
 
           {/* Title & Organizer Info */}
-          <div>
-            <h1 className="text-lg sm:text-2xl font-black text-neutral-900 leading-snug">
+          <div className="pb-3 border-b border-slate-200/80">
+            <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight leading-snug">
               {boma.title}
             </h1>
-            <p className="text-[11px] text-neutral-400 mt-1">
-              Organized by <strong className="text-neutral-700 ">{boma.creator_name}</strong>
+            <p className="text-xs text-slate-500 mt-1">
+              Organized by <strong className="text-slate-700 font-semibold">{boma.creator_name}</strong>
             </p>
           </div>
 
           {/* Mobile-Only Progress Strip (shown on mobile above tabs) */}
-          <div className="block lg:hidden rounded-xl border border-neutral-200 bg-white p-3.5 space-y-2">
+          <div className="block lg:hidden rounded-xl border border-slate-200 bg-white p-4 space-y-2 shadow-2xs">
             <div className="flex justify-between items-baseline text-xs">
-              <span className="text-lg font-black text-neutral-900 ">
+              <span className="text-xl font-semibold font-mono text-slate-900">
                 {formatCurrency(boma.current_amount, boma.currency)}
               </span>
-              <span className="text-neutral-500 font-semibold text-[11px]">
+              <span className="text-slate-500 font-medium text-xs font-mono">
                 {percentage}% of {formatCurrency(boma.target_amount, boma.currency)}
               </span>
             </div>
 
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 ">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-emerald-600"
                 style={{ width: `${percentage}%` }}
               />
             </div>
 
-            <div className="flex justify-between text-[10px] text-neutral-400 pt-0.5">
+            <div className="flex justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setActiveTab('contributors')}
-                className="hover:text-emerald-700 font-bold transition-colors text-left"
+                className="hover:text-emerald-700 font-semibold transition-colors text-left"
               >
                 {boma.contributors_count || transactions.length} contributors →
               </button>
@@ -254,15 +255,15 @@ export default function BomaDetailPage({ params }: PageProps) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="border-b border-neutral-200 -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="border-b border-slate-200">
             <nav className="flex space-x-3 sm:space-x-4 overflow-x-auto no-scrollbar whitespace-nowrap">
               <button
                 type="button"
                 onClick={() => setActiveTab('story')}
-                className={`py-2 text-xs font-bold border-b-2 transition-colors ${
+                className={`py-2 text-xs font-semibold border-b-2 transition-colors ${
                   activeTab === 'story'
-                    ? 'border-emerald-600 text-emerald-700 '
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    ? 'border-emerald-600 text-emerald-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Story
@@ -271,14 +272,14 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('contributors')}
-                className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
+                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeTab === 'contributors'
-                    ? 'border-emerald-600 text-emerald-700 '
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    ? 'border-emerald-600 text-emerald-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <span>Contributors</span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] font-bold">
+                <span className="rounded-full bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-mono">
                   {boma.contributors_count || transactions.length}
                 </span>
               </button>
@@ -286,14 +287,14 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('ledger')}
-                className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
+                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeTab === 'ledger'
-                    ? 'border-emerald-600 text-emerald-700 '
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    ? 'border-emerald-600 text-emerald-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <span>Ledger</span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] ">
+                <span className="rounded-full bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-mono">
                   {ledgerEntries.length}
                 </span>
               </button>
@@ -301,14 +302,14 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('disbursements')}
-                className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
+                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeTab === 'disbursements'
-                    ? 'border-emerald-600 text-emerald-700 '
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    ? 'border-emerald-600 text-emerald-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <span>Payouts</span>
-                <span className="rounded-full bg-neutral-100 text-neutral-800 px-1.5 py-0.2 text-[9px] ">
+                <span className="rounded-full bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-mono">
                   {disbursements.length}
                 </span>
               </button>
@@ -316,14 +317,14 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('governance')}
-                className={`py-2 text-xs font-bold border-b-2 flex items-center gap-1 transition-colors ${
+                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeTab === 'governance'
-                    ? 'border-emerald-600 text-emerald-700 '
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    ? 'border-emerald-600 text-emerald-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <span>Governance</span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.2 text-[9px] ">
+                <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase">
                   Multi-Sig
                 </span>
               </button>
@@ -332,12 +333,12 @@ export default function BomaDetailPage({ params }: PageProps) {
 
           {/* Tab Contents */}
           {activeTab === 'story' && (
-            <div className="space-y-4 text-xs text-neutral-700 leading-relaxed rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 ">
-              <p className="whitespace-pre-line text-xs sm:text-sm">
+            <div className="space-y-4 text-xs text-slate-700 leading-relaxed rounded-xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <p className="whitespace-pre-line text-xs sm:text-sm text-slate-600 leading-relaxed">
                 {boma.description}
               </p>
 
-              <div className="rounded-lg bg-emerald-50 p-2.5 border border-emerald-200 flex items-center gap-2 text-[11px] text-emerald-800 ">
+              <div className="rounded-lg bg-emerald-50/70 p-3 border border-emerald-200/80 flex items-center gap-2.5 text-xs text-emerald-900">
                 <ShieldCheckIcon className="w-4 h-4 shrink-0 text-emerald-700" />
                 <span>All funds are held in segregated trust accounts and audited in real time.</span>
               </div>
@@ -363,18 +364,18 @@ export default function BomaDetailPage({ params }: PageProps) {
           )}
 
           {activeTab === 'disbursements' && (
-            <div className="rounded-xl sm:rounded-2xl border border-neutral-200 bg-white p-4 space-y-3">
-              <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
-                <h3 className="text-xs font-bold text-neutral-900 ">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-semibold text-slate-900">
                   Documented Payouts
                 </h3>
-                <span className="text-[11px] text-neutral-400">
+                <span className="text-xs font-mono text-slate-500">
                   Disbursed: {formatCurrency(account.total_disbursed, boma.currency)}
                 </span>
               </div>
 
               {disbursements.length === 0 ? (
-                <div className="py-8 text-center text-xs text-neutral-400">
+                <div className="py-8 text-center text-xs text-slate-400">
                   No disbursements requested yet. Raised funds are intact.
                 </div>
               ) : (
@@ -382,22 +383,22 @@ export default function BomaDetailPage({ params }: PageProps) {
                   {disbursements.map((d) => (
                     <div
                       key={d.id}
-                      className="rounded-lg border border-neutral-200 p-2.5 flex justify-between items-center text-xs"
+                      className="rounded-lg border border-slate-200 p-3 flex justify-between items-center text-xs hover:border-slate-300 transition-colors"
                     >
                       <div>
-                        <span className="font-bold text-neutral-900 block">
+                        <span className="font-semibold text-slate-900 block">
                           {d.recipient_name}
                         </span>
-                        <p className="text-[11px] text-neutral-500">
+                        <p className="text-[11px] text-slate-500">
                           {d.purpose}
                         </p>
                       </div>
 
                       <div className="text-right">
-                        <span className="font-bold text-amber-600 ">
+                        <span className="font-semibold font-mono text-amber-700">
                           -{formatCurrency(d.amount, d.currency)}
                         </span>
-                        <span className="block font-mono text-[9px] text-neutral-400">
+                        <span className="block font-mono text-[10px] text-slate-400">
                           {d.reference}
                         </span>
                       </div>
@@ -415,54 +416,54 @@ export default function BomaDetailPage({ params }: PageProps) {
 
         {/* Right Column (Financial Progress Card - Desktop Sticky) */}
         <div className="space-y-4">
-          <div className="hidden lg:block sticky top-20 rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs space-y-5">
+          <div className="hidden lg:block sticky top-20 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-5">
             
             {/* Amount Stats */}
             <div>
-              <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                 Raised of {formatCurrency(boma.target_amount, boma.currency)}
               </span>
-              <div className="mt-1 text-2xl font-black text-neutral-900 ">
+              <div className="mt-1 text-2xl font-semibold font-mono text-slate-900">
                 {formatCurrency(boma.current_amount, boma.currency)}
               </div>
 
               {/* Progress Bar */}
-              <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-neutral-100 ">
+              <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-emerald-600"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
 
-              <div className="mt-1.5 flex justify-between text-xs text-neutral-400">
+              <div className="mt-2 flex justify-between text-xs text-slate-500 font-mono">
                 <span>{percentage}% funded</span>
                 <span>{daysLeft}d left</span>
               </div>
             </div>
 
             {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-2 border-y border-neutral-100 py-3 text-xs">
+            <div className="grid grid-cols-2 gap-3 border-y border-slate-100 py-3 text-xs">
               <button
                 type="button"
                 onClick={() => setActiveTab('contributors')}
-                className="flex items-center gap-1.5 text-left hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity"
               >
-                <UsersIcon className="w-4 h-4 text-emerald-700" />
+                <UsersIcon className="w-4 h-4 text-emerald-700 shrink-0" />
                 <div>
-                  <span className="font-bold text-neutral-900 block">
+                  <span className="font-semibold font-mono text-slate-900 block">
                     {boma.contributors_count || transactions.length}
                   </span>
-                  <span className="block text-[10px] text-neutral-400">Members →</span>
+                  <span className="block text-[10px] text-slate-400">Members →</span>
                 </div>
               </button>
 
-              <div className="flex items-center gap-1.5">
-                <WalletIcon className="w-4 h-4 text-teal-600" />
+              <div className="flex items-center gap-2">
+                <WalletIcon className="w-4 h-4 text-slate-600 shrink-0" />
                 <div>
-                  <span className="font-bold text-neutral-900 truncate">
+                  <span className="font-semibold font-mono text-slate-900 truncate block">
                     {formatCurrency(account.available_balance, boma.currency)}
                   </span>
-                  <span className="block text-[10px] text-neutral-400">Available</span>
+                  <span className="block text-[10px] text-slate-400">Available</span>
                 </div>
               </div>
             </div>
@@ -472,7 +473,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => setIsContributeModalOpen(true)}
-                className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs font-bold text-white shadow-xs transition-colors active:scale-98"
+                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors"
               >
                 Contribute Now (M-Pesa / Card)
               </button>
@@ -480,7 +481,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => setIsDisburseModalOpen(true)}
-                className="w-full rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 py-2 text-xs font-semibold text-neutral-700 "
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 py-2 text-xs font-semibold text-slate-700 transition-colors"
               >
                 Request Payout
               </button>
@@ -489,18 +490,18 @@ export default function BomaDetailPage({ params }: PageProps) {
                 <button
                   type="button"
                   onClick={() => setIsShareModalOpen(true)}
-                  className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 flex items-center justify-center gap-1.5"
+                  className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 py-2 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                 >
-                  <ShareIcon className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Share & QR</span>
+                  <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Share &amp; QR</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setIsStatementModalOpen(true)}
-                  className="rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 py-2 text-xs font-semibold text-neutral-700 flex items-center justify-center gap-1.5"
+                  className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 py-2 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                 >
-                  <PrinterIcon className="w-3.5 h-3.5 text-emerald-700" />
+                  <PrinterIcon className="w-3.5 h-3.5 text-slate-500" />
                   <span>Statement</span>
                 </button>
               </div>
@@ -510,11 +511,11 @@ export default function BomaDetailPage({ params }: PageProps) {
       </div>
 
       {/* Floating Sticky Mobile Action Bar (Above Mobile Nav) */}
-      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-neutral-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md shadow-md">
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-slate-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md shadow-lg">
         <button
           type="button"
           onClick={() => setIsContributeModalOpen(true)}
-          className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-sm transition-colors active:scale-98"
+          className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors"
         >
           Contribute Now
         </button>
@@ -522,7 +523,7 @@ export default function BomaDetailPage({ params }: PageProps) {
         <button
           type="button"
           onClick={() => setIsDisburseModalOpen(true)}
-          className="rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-2.5 text-xs font-semibold text-neutral-700 "
+          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700"
         >
           Payout
         </button>
@@ -530,10 +531,10 @@ export default function BomaDetailPage({ params }: PageProps) {
         <button
           type="button"
           onClick={() => setIsShareModalOpen(true)}
-          className="rounded-xl border border-neutral-300 bg-neutral-50 p-2.5 text-neutral-700 "
+          className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-slate-700"
           aria-label="Share & QR"
         >
-          <ShareIcon className="w-4 h-4" />
+          <ShareIcon className="w-4 h-4 text-slate-500" />
         </button>
       </div>
 

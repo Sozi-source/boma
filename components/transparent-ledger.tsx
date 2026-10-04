@@ -65,15 +65,15 @@ export default function TransparentLedger({
   };
 
   return (
-    <div className="rounded-xl sm:rounded-2xl border border-neutral-200/90 bg-white p-3.5 sm:p-5 shadow-xs ">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-5 shadow-2xs">
       
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 pb-3 border-b border-neutral-100 ">
+      <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5">
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 ">
+          <h3 className="text-xs sm:text-sm font-semibold text-slate-900">
             Public Ledger
           </h3>
-          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 ">
+          <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-200">
             <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
             Verified
           </span>
@@ -83,9 +83,9 @@ export default function TransparentLedger({
           <button
             type="button"
             onClick={exportCSV}
-            className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
           >
-            <DownloadIcon className="w-3 h-3" />
+            <DownloadIcon className="w-3 h-3 text-slate-500" />
             <span>CSV</span>
           </button>
 
@@ -93,9 +93,9 @@ export default function TransparentLedger({
             <button
               type="button"
               onClick={onOpenStatement}
-              className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 "
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
             >
-              <PrinterIcon className="w-3 h-3 text-emerald-700" />
+              <PrinterIcon className="w-3 h-3 text-slate-500" />
               <span>Statement</span>
             </button>
           )}
@@ -104,14 +104,14 @@ export default function TransparentLedger({
 
       {/* Filter and Search Bar */}
       <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
-        <div className="flex items-center gap-1 p-0.5 rounded-lg bg-neutral-100 text-[11px]">
+        <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 text-[11px]">
           <button
             type="button"
             onClick={() => setFilterType('all')}
             className={`rounded-md px-2.5 py-1 font-semibold transition-colors ${
               filterType === 'all'
-                ? 'bg-white text-neutral-900 shadow-xs '
-                : 'text-neutral-500'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             All ({entries.length})
@@ -121,8 +121,8 @@ export default function TransparentLedger({
             onClick={() => setFilterType('credit')}
             className={`rounded-md px-2.5 py-1 font-semibold transition-colors ${
               filterType === 'credit'
-                ? 'bg-white text-emerald-700 shadow-xs '
-                : 'text-neutral-500'
+                ? 'bg-white text-emerald-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             In
@@ -132,8 +132,8 @@ export default function TransparentLedger({
             onClick={() => setFilterType('debit')}
             className={`rounded-md px-2.5 py-1 font-semibold transition-colors ${
               filterType === 'debit'
-                ? 'bg-white text-amber-700 shadow-xs '
-                : 'text-neutral-500'
+                ? 'bg-white text-amber-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             Out
@@ -141,21 +141,21 @@ export default function TransparentLedger({
         </div>
 
         <div className="relative w-full sm:w-56">
-          <SearchIcon className="absolute left-2.5 top-2 h-3.5 w-3.5 text-neutral-400" />
+          <SearchIcon className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
           <input
             type="text"
             placeholder="Search ledger..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-neutral-200 bg-neutral-50 pl-7 pr-2.5 py-1 text-[11px] text-neutral-900 focus:border-emerald-500 focus:bg-white focus:outline-hidden "
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-7 pr-2.5 py-1 text-[11px] text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-hidden"
           />
         </div>
       </div>
 
-      {/* Mobile Transaction List View (Native App Feel on Screens < 640px) */}
-      <div className="mt-3 block sm:hidden divide-y divide-neutral-100 ">
+      {/* Mobile Transaction List View (Screens < 640px) */}
+      <div className="mt-3 block sm:hidden divide-y divide-slate-100">
         {filteredEntries.length === 0 ? (
-          <div className="py-6 text-center text-xs text-neutral-400">
+          <div className="py-6 text-center text-xs text-slate-400">
             No ledger entries.
           </div>
         ) : (
@@ -165,7 +165,7 @@ export default function TransparentLedger({
               <div key={entry.id} className="py-2.5 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-                    isCredit ? 'bg-emerald-50 text-emerald-700 ' : 'bg-amber-50 text-amber-600 '
+                    isCredit ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                   }`}>
                     {isCredit ? (
                       <ArrowDownLeftIcon className="w-3.5 h-3.5" />
@@ -174,10 +174,10 @@ export default function TransparentLedger({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-neutral-900 truncate">
+                    <p className="text-xs font-semibold text-slate-900 truncate">
                       {entry.description}
                     </p>
-                    <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
                       <span>{new Date(entry.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                       <span>•</span>
                       <span className="font-mono text-[9px]">{entry.reference_code}</span>
@@ -186,12 +186,12 @@ export default function TransparentLedger({
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className={`text-xs font-extrabold ${
-                    isCredit ? 'text-emerald-700 ' : 'text-amber-600 '
+                  <span className={`text-xs font-semibold font-mono ${
+                    isCredit ? 'text-emerald-700' : 'text-amber-700'
                   }`}>
                     {isCredit ? '+' : '-'}{formatCurrency(entry.amount, currency)}
                   </span>
-                  <p className="text-[9px] text-neutral-400 font-mono">
+                  <p className="text-[9px] text-slate-400 font-mono">
                     Bal: {formatCurrency(entry.balance_after, currency)}
                   </p>
                 </div>
@@ -204,13 +204,13 @@ export default function TransparentLedger({
       {/* Desktop & Tablet Table (Screens >= 640px) */}
       <div className="mt-4 hidden sm:block overflow-x-auto">
         {filteredEntries.length === 0 ? (
-          <div className="py-8 text-center text-xs text-neutral-400">
+          <div className="py-8 text-center text-xs text-slate-400">
             No ledger entries found.
           </div>
         ) : (
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-neutral-100 text-neutral-400 font-semibold uppercase tracking-wider text-[9px]">
+              <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-[9px]">
                 <th className="py-2.5 px-2">Date</th>
                 <th className="py-2.5 px-2">Type</th>
                 <th className="py-2.5 px-2">Description</th>
@@ -219,33 +219,33 @@ export default function TransparentLedger({
                 <th className="py-2.5 px-2 text-right">Balance</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100 ">
+            <tbody className="divide-y divide-slate-100">
               {filteredEntries.map((entry) => {
                 const isCredit = entry.entry_type === 'credit';
                 return (
-                  <tr key={entry.id} className="hover:bg-neutral-50/80 ">
-                    <td className="py-2 px-2 text-neutral-500 whitespace-nowrap text-[11px]">
+                  <tr key={entry.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-2 px-2 text-slate-500 whitespace-nowrap text-[11px]">
                       {new Date(entry.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                     </td>
                     <td className="py-2 px-2 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-bold ${
-                        isCredit ? 'bg-emerald-50 text-emerald-700 ' : 'bg-amber-50 text-amber-700 '
+                      <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold ${
+                        isCredit ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
                       }`}>
                         {entry.entry_type.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-2 px-2 font-medium text-neutral-900 max-w-xs truncate text-[11px]">
+                    <td className="py-2 px-2 font-medium text-slate-900 max-w-xs truncate text-[11px]">
                       {entry.description}
                     </td>
-                    <td className="py-2 px-2 font-mono text-[10px] text-neutral-400 whitespace-nowrap">
+                    <td className="py-2 px-2 font-mono text-[10px] text-slate-400 whitespace-nowrap">
                       {entry.reference_code}
                     </td>
-                    <td className={`py-2 px-2 text-right font-extrabold text-[11px] whitespace-nowrap ${
-                      isCredit ? 'text-emerald-700 ' : 'text-amber-600 '
+                    <td className={`py-2 px-2 text-right font-semibold font-mono text-[11px] whitespace-nowrap ${
+                      isCredit ? 'text-emerald-700' : 'text-amber-700'
                     }`}>
                       {isCredit ? '+' : '-'}{formatCurrency(entry.amount, currency)}
                     </td>
-                    <td className="py-2 px-2 text-right font-mono text-[11px] text-neutral-500 whitespace-nowrap">
+                    <td className="py-2 px-2 text-right font-mono text-[11px] text-slate-500 whitespace-nowrap">
                       {formatCurrency(entry.balance_after, currency)}
                     </td>
                   </tr>

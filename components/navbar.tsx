@@ -13,37 +13,38 @@ export default function Navbar() {
     { href: '/', label: 'Home' },
     { href: '/bomas', label: 'Explore' },
     { href: '/dashboard', label: 'Dashboard' },
+    { href: '/admin', label: 'Admin' },
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full pt-[env(safe-area-inset-top)] border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl transition-colors">
-      <div className="mx-auto flex h-13 max-w-6xl items-center justify-between px-3 sm:px-6">
+    <header className="sticky top-0 z-30 w-full pt-[env(safe-area-inset-top)] border-b border-slate-200 bg-white/95 backdrop-blur-xl transition-colors">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-3 sm:px-6">
         
         {/* Logo & App Status */}
         <div className="flex items-center gap-3 sm:gap-6">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-xs group-hover:scale-105 transition-transform">
-              <span className="font-mono text-sm font-black tracking-tight">B</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs group-hover:bg-emerald-700 transition-colors">
+              <span className="font-mono text-sm font-semibold tracking-tight">B</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-black tracking-tight text-neutral-900 ">
+              <span className="text-sm font-semibold tracking-tight text-slate-800">
                 Boma
               </span>
             </div>
           </Link>
 
           {/* Desktop App Nav Items (Pill Style) */}
-          <nav className="hidden md:flex items-center gap-1 rounded-xl bg-neutral-100/80 p-1 ">
+          <nav className="hidden md:flex items-center gap-1 rounded-lg bg-slate-100 p-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-white text-neutral-900 shadow-xs '
-                      : 'text-neutral-500 hover:text-neutral-900 '
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   {link.label}
@@ -58,9 +59,9 @@ export default function Navbar() {
 
           <Link
             href="/bomas/create"
-            className="hidden sm:inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95"
+            className="hidden sm:inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
           >
-            <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+            <PlusIcon className="w-3.5 h-3.5 stroke-[2]" />
             <span>New Contribution</span>
           </Link>
 
