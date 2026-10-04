@@ -567,6 +567,7 @@ export default function BomaDetailPage({ params }: PageProps) {
         isOpen={isStatementModalOpen}
         onClose={() => setIsStatementModalOpen(false)}
       />
+      </div>
     </div>
   );
 }
