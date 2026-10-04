@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { bomaService } from '@/lib/services/boma-service';
 import { UserProfile, UserRole, UserStatus } from '@/lib/types/fintech';
 import { formatPhoneDisplay, normalizePhoneNumber } from '@/lib/utils/phone';
@@ -177,18 +178,27 @@ export default function UserManagementPage() {
         </div>
       )}
 
+      {/* Top Navigation Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+        <Link href="/admin" className="hover:text-emerald-700 font-medium transition-colors">
+          ← Admin Dashboard
+        </Link>
+        <span>/</span>
+        <span className="text-slate-600 font-medium">User Directory</span>
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-3.5 border-b border-slate-200/80">
         <div>
-          <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
-            User Directory &amp; Accounts
+          <h1 className="text-base sm:text-xl font-semibold text-slate-800 tracking-tight">
+            User Directory
           </h1>
         </div>
 
         <button
           type="button"
           onClick={() => setIsAddUserModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors shrink-0"
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-2xs transition-colors shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Add New User</span>
@@ -196,8 +206,8 @@ export default function UserManagementPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-3.5 shadow-2xs space-y-2.5 sm:space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
           
           {/* Search */}
           <div className="relative flex-1">
@@ -216,7 +226,7 @@ export default function UserManagementPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as 'all' | UserRole)}
-              className="rounded-lg border border-slate-200 bg-white py-1.5 px-3 text-xs font-medium text-slate-700 focus:outline-hidden focus:border-emerald-600"
+              className="rounded-lg border border-slate-200 bg-white py-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium text-slate-700 focus:outline-hidden focus:border-emerald-600"
             >
               <option value="all">All Roles</option>
               <option value="admin">Admins</option>
@@ -228,7 +238,7 @@ export default function UserManagementPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | UserStatus)}
-              className="rounded-lg border border-slate-200 bg-white py-1.5 px-3 text-xs font-medium text-slate-700 focus:outline-hidden focus:border-emerald-600"
+              className="rounded-lg border border-slate-200 bg-white py-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium text-slate-700 focus:outline-hidden focus:border-emerald-600"
             >
               <option value="all">All Statuses</option>
               <option value="active">Active</option>
@@ -239,14 +249,14 @@ export default function UserManagementPage() {
         </div>
 
         {/* Quick Filter Counts */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 font-mono">
           <span>Showing {filteredUsers.length} of {users.length} accounts</span>
         </div>
       </div>
 
       {/* Users Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden 2xl:block">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-100 text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
@@ -269,9 +279,9 @@ export default function UserManagementPage() {
                   <tr key={u.id} className="hover:bg-neutral-50/60 transition-colors">
                     
                     {/* User Identity */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 text-white shadow-2xs ${
+                    <td className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center shrink-0 text-white shadow-2xs ${
                           u.role === 'admin'
                             ? 'bg-amber-500'
                             : u.role === 'organizer'
@@ -281,10 +291,10 @@ export default function UserManagementPage() {
                           {u.full_name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <span className="font-bold text-neutral-900 block truncate">
+                          <span className="font-bold text-neutral-900 text-[11px] sm:text-xs block truncate">
                             {u.full_name}
                           </span>
-                          <span className="text-[11px] text-neutral-400 block truncate font-mono">
+                          <span className="text-[9.5px] sm:text-[11px] text-neutral-400 block truncate font-mono">
                             {u.email}
                           </span>
                         </div>
@@ -292,11 +302,11 @@ export default function UserManagementPage() {
                     </td>
 
                     {/* Role */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">
                       <select
                         value={u.role}
                         onChange={(e) => handleChangeRole(u.id, e.target.value as UserRole)}
-                        className={`text-[10px] font-bold font-mono uppercase px-2 py-1 rounded-md border cursor-pointer focus:outline-hidden ${
+                        className={`text-[9px] sm:text-[10px] font-bold font-mono uppercase px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border cursor-pointer focus:outline-hidden ${
                           u.role === 'admin'
                             ? 'bg-amber-100 text-amber-900 border-amber-300'
                             : u.role === 'organizer'
@@ -311,16 +321,16 @@ export default function UserManagementPage() {
                     </td>
 
                     {/* Multi-Phone Lines */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex flex-wrap items-center gap-1.5 max-w-sm">
+                    <td className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 max-w-sm">
                         {u.phones.map((phone, pIdx) => (
                           <span
                             key={pIdx}
-                            className="inline-flex items-center gap-1 font-mono text-[10px] bg-neutral-100 border border-neutral-200/80 px-2 py-0.5 rounded-md text-neutral-700 group"
+                            className="inline-flex items-center gap-1 font-mono text-[9px] sm:text-[10px] bg-neutral-100 border border-neutral-200/80 px-1.5 sm:px-2 py-0.5 rounded-md text-neutral-700 group"
                           >
                             <span>{formatPhoneDisplay(phone)}</span>
                             {pIdx === 0 && (
-                              <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 rounded-xs font-bold uppercase">
+                              <span className="text-[7.5px] sm:text-[8px] bg-emerald-100 text-emerald-800 px-1 rounded-xs font-bold uppercase">
                                 Primary
                               </span>
                             )}
@@ -344,7 +354,7 @@ export default function UserManagementPage() {
                             setSelectedUser(u);
                             setIsAddPhoneModalOpen(true);
                           }}
-                          className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 hover:text-emerald-800 px-2 py-0.5 rounded-md border border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/60 transition-colors"
+                          className="inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-700 hover:text-emerald-800 px-1.5 sm:px-2 py-0.5 rounded-md border border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/60 transition-colors"
                         >
                           <PlusIcon className="w-3 h-3 stroke-[2.5]" />
                           <span>Add Phone</span>
@@ -353,8 +363,8 @@ export default function UserManagementPage() {
                     </td>
 
                     {/* Status */}
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                    <td className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">
+                      <span className={`inline-block text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full capitalize ${
                         u.status === 'active'
                           ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                           : u.status === 'pending_approval'
@@ -366,12 +376,12 @@ export default function UserManagementPage() {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-2.5 sm:py-3.5 px-2.5 sm:px-4 text-right">
+                      <div className="flex items-center justify-end gap-1 sm:gap-1.5">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(u)}
-                          className="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+                          className="px-2 sm:px-2.5 py-1 rounded-lg border border-neutral-200 bg-white text-[10px] sm:text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
                         >
                           {u.status === 'active' ? 'Suspend' : 'Activate'}
                         </button>
@@ -381,7 +391,7 @@ export default function UserManagementPage() {
                           className="p-1 rounded-lg text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                           title="Delete user"
                         >
-                          <TrashIcon className="w-4 h-4" />
+                          <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </td>
@@ -390,6 +400,45 @@ export default function UserManagementPage() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 2xl:hidden">
+          {filteredUsers.length === 0 ? (
+            <p className="py-8 text-center text-xs text-neutral-400 sm:col-span-2">No users matching criteria found.</p>
+          ) : filteredUsers.map((u) => (
+            <div key={u.id} className="min-w-0 rounded-xl border border-slate-200 p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold text-neutral-900">{u.full_name}</p>
+                  <p className="truncate text-[10px] text-neutral-500">{u.email}</p>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold capitalize ${u.status === 'active' ? 'bg-emerald-100 text-emerald-800' : u.status === 'pending_approval' ? 'bg-amber-100 text-amber-900' : 'bg-red-100 text-red-800'}`}>
+                  {u.status.replace('_', ' ')}
+                </span>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <span className="text-[10px] text-neutral-500">Role</span>
+                <select value={u.role} onChange={(e) => handleChangeRole(u.id, e.target.value as UserRole)} className="max-w-[65%] rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] font-semibold uppercase text-neutral-700">
+                  <option value="admin">Admin</option>
+                  <option value="organizer">Organizer</option>
+                  <option value="member">Member</option>
+                </select>
+              </div>
+              <div className="mt-2 space-y-1">
+                <span className="text-[10px] font-semibold text-neutral-500">Phone numbers</span>
+                {u.phones.map((phone, pIdx) => (
+                  <div key={pIdx} className="flex items-center justify-between gap-2 text-[10px]">
+                    <span className="min-w-0 truncate font-mono text-neutral-700">{formatPhoneDisplay(phone)}{pIdx === 0 ? ' · Primary' : ''}</span>
+                    {u.phones.length > 1 && <button type="button" onClick={() => handleRemovePhone(u.id, phone, u.full_name)} className="shrink-0 text-red-600">Remove</button>}
+                  </div>
+                ))}
+                <button type="button" onClick={() => { setSelectedUser(u); setIsAddPhoneModalOpen(true); }} className="mt-1 text-[10px] font-semibold text-emerald-700">+ Add phone</button>
+              </div>
+              <div className="mt-3 flex gap-2 border-t border-slate-100 pt-2">
+                <button type="button" onClick={() => handleToggleStatus(u)} className="flex-1 rounded-lg border border-neutral-200 px-2 py-1.5 text-[10px] font-semibold text-neutral-700">{u.status === 'active' ? 'Suspend' : 'Activate'}</button>
+                <button type="button" onClick={() => handleDeleteUser(u)} className="rounded-lg px-2 py-1.5 text-[10px] font-semibold text-red-600">Delete</button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -417,13 +466,12 @@ export default function UserManagementPage() {
 
             <form onSubmit={handleAddUser} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
                   Full Legal Name *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Samuel Kipchumba"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500"
@@ -431,13 +479,12 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
                   Email Address *
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="e.g. samuel@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500"
@@ -445,13 +492,12 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
                   Primary Mobile Number (M-Pesa) *
                 </label>
                 <input
                   type="tel"
                   required
-                  placeholder="e.g. 0712345678"
                   value={primaryPhone}
                   onChange={(e) => setPrimaryPhone(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500"
@@ -459,26 +505,25 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
                   Secondary Mobile Number (Optional)
                 </label>
                 <input
                   type="tel"
-                  placeholder="e.g. 0733556677 (Airtel or secondary line)"
                   value={secondaryPhone}
                   onChange={(e) => setSecondaryPhone(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500"
                 />
-                <p className="text-[10px] text-neutral-400 mt-0.5">
-                  Contributions from any of these numbers will automatically display Samuel&apos;s real name.
+                <p className="text-[9.5px] sm:text-[10px] text-neutral-400 mt-0.5">
+                  Contributions from any of these numbers will automatically display the member&apos;s real name.
                 </p>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
                   Platform Role
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                   {(['member', 'organizer', 'admin'] as UserRole[]).map((r) => (
                     <button
                       key={r}
@@ -500,14 +545,14 @@ export default function UserManagementPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddUserModalOpen(false)}
-                  className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                  className="rounded-xl border border-neutral-200 bg-white px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs disabled:opacity-50"
+                  className="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-white shadow-xs disabled:opacity-50"
                 >
                   {loading ? 'Adding User...' : 'Add User'}
                 </button>
@@ -519,16 +564,16 @@ export default function UserManagementPage() {
 
       {/* Add Additional Phone Modal for an existing user */}
       {isAddPhoneModalOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-xs">
-          <div className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-xl border border-neutral-200 space-y-4 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-neutral-900/50 backdrop-blur-xs">
+          <div className="w-full max-w-sm bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-neutral-200 space-y-3 sm:space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-teal-700 text-white flex items-center justify-center">
                   <SmartphoneIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-neutral-900">Add Phone Line</h3>
-                  <p className="text-[10px] text-neutral-400">For {selectedUser.full_name}</p>
+                  <h3 className="text-xs sm:text-sm font-black text-neutral-900">Add Phone Line</h3>
+                  <p className="text-[9.5px] sm:text-[10px] text-neutral-400">For {selectedUser.full_name}</p>
                 </div>
               </div>
               <button
@@ -541,18 +586,17 @@ export default function UserManagementPage() {
 
             <form onSubmit={handleAddPhoneToUser} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
                   New Mobile Number (M-Pesa / Alternative SIM) *
                 </label>
                 <input
                   type="tel"
                   required
-                  placeholder="e.g. 0722 000 000 or +254 7..."
                   value={newPhoneNumber}
                   onChange={(e) => setNewPhoneNumber(e.target.value)}
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500"
                 />
-                <p className="text-[10px] text-neutral-400 mt-1">
+                <p className="text-[9.5px] sm:text-[10px] text-neutral-400 mt-1">
                   Incoming payments from this number will immediately resolve to {selectedUser.full_name}&apos;s legal name.
                 </p>
               </div>
@@ -561,13 +605,13 @@ export default function UserManagementPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddPhoneModalOpen(false)}
-                  className="rounded-xl border border-neutral-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                  className="rounded-xl border border-neutral-200 bg-white px-3 sm:px-3.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs"
+                  className="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-3 sm:px-3.5 py-1.5 text-xs font-bold text-white shadow-xs"
                 >
                   Link Phone Line
                 </button>

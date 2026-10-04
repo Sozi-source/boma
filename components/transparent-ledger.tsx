@@ -35,22 +35,18 @@ export default function TransparentLedger({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       return (
-        entry.description.toLowerCase().includes(q) ||
-        entry.reference_code.toLowerCase().includes(q)
+        entry.description.toLowerCase().includes(q)
       );
     }
     return true;
   });
 
   const exportCSV = () => {
-    const headers = ['Timestamp', 'Type', 'Amount', 'Currency', 'Balance After', 'Reference Code', 'Description'];
+    const headers = ['Date', 'Activity', 'Amount', 'Description'];
     const rows = entries.map((e) => [
-      new Date(e.created_at).toISOString(),
-      e.entry_type.toUpperCase(),
+      new Date(e.created_at).toLocaleDateString(),
+      e.entry_type === 'credit' ? 'Contribution' : 'Payout',
       e.amount,
-      e.currency,
-      e.balance_after,
-      e.reference_code,
       `"${e.description.replace(/"/g, '""')}"`,
     ]);
 
@@ -58,7 +54,7 @@ export default function TransparentLedger({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${bomaTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-ledger.csv`);
+    link.setAttribute('download', `${bomaTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-activity.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -71,7 +67,7 @@ export default function TransparentLedger({
       <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5">
           <h3 className="text-xs sm:text-sm font-semibold text-slate-900">
-            Public Ledger
+            Fund activity
           </h3>
           <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-200">
             <ShieldCheckIcon className="w-3 h-3 text-emerald-700" />
@@ -86,7 +82,7 @@ export default function TransparentLedger({
             className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
           >
             <DownloadIcon className="w-3 h-3 text-slate-500" />
-            <span>CSV</span>
+            <span>Download</span>
           </button>
 
           {onOpenStatement && (
@@ -125,7 +121,7 @@ export default function TransparentLedger({
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            In
+            Contributions
           </button>
           <button
             type="button"
@@ -136,7 +132,7 @@ export default function TransparentLedger({
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Out
+            Payouts
           </button>
         </div>
 
@@ -144,7 +140,7 @@ export default function TransparentLedger({
           <SearchIcon className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search ledger..."
+            placeholder="Search activity..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-7 pr-2.5 py-1 text-[11px] text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-hidden"
@@ -156,7 +152,7 @@ export default function TransparentLedger({
       <div className="mt-3 block sm:hidden divide-y divide-slate-100">
         {filteredEntries.length === 0 ? (
           <div className="py-6 text-center text-xs text-slate-400">
-            No ledger entries.
+            No activity yet.
           </div>
         ) : (
           filteredEntries.map((entry) => {
@@ -180,7 +176,7 @@ export default function TransparentLedger({
                     <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
                       <span>{new Date(entry.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                       <span>•</span>
-                      <span className="font-mono text-[9px]">{entry.reference_code}</span>
+                      <span>{isCredit ? 'Contribution' : 'Payout'}</span>
                     </div>
                   </div>
                 </div>
@@ -191,9 +187,6 @@ export default function TransparentLedger({
                   }`}>
                     {isCredit ? '+' : '-'}{formatCurrency(entry.amount, currency)}
                   </span>
-                  <p className="text-[9px] text-slate-400 font-mono">
-                    Bal: {formatCurrency(entry.balance_after, currency)}
-                  </p>
                 </div>
               </div>
             );
@@ -202,21 +195,18 @@ export default function TransparentLedger({
       </div>
 
       {/* Desktop & Tablet Table (Screens >= 640px) */}
-      <div className="mt-4 hidden sm:block overflow-x-auto">
+      <div className="mt-4 hidden sm:block">
         {filteredEntries.length === 0 ? (
           <div className="py-8 text-center text-xs text-slate-400">
-            No ledger entries found.
+            No activity found.
           </div>
         ) : (
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-[9px]">
                 <th className="py-2.5 px-2">Date</th>
-                <th className="py-2.5 px-2">Type</th>
                 <th className="py-2.5 px-2">Description</th>
-                <th className="py-2.5 px-2">Reference</th>
                 <th className="py-2.5 px-2 text-right">Amount</th>
-                <th className="py-2.5 px-2 text-right">Balance</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -227,26 +217,13 @@ export default function TransparentLedger({
                     <td className="py-2 px-2 text-slate-500 whitespace-nowrap text-[11px]">
                       {new Date(entry.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                     </td>
-                    <td className="py-2 px-2 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold ${
-                        isCredit ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}>
-                        {entry.entry_type.toUpperCase()}
-                      </span>
-                    </td>
                     <td className="py-2 px-2 font-medium text-slate-900 max-w-xs truncate text-[11px]">
                       {entry.description}
-                    </td>
-                    <td className="py-2 px-2 font-mono text-[10px] text-slate-400 whitespace-nowrap">
-                      {entry.reference_code}
                     </td>
                     <td className={`py-2 px-2 text-right font-semibold font-mono text-[11px] whitespace-nowrap ${
                       isCredit ? 'text-emerald-700' : 'text-amber-700'
                     }`}>
                       {isCredit ? '+' : '-'}{formatCurrency(entry.amount, currency)}
-                    </td>
-                    <td className="py-2 px-2 text-right font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                      {formatCurrency(entry.balance_after, currency)}
                     </td>
                   </tr>
                 );

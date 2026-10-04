@@ -6,19 +6,13 @@ import { Boma, Account, LedgerEntry, Disbursement, Transaction } from '@/lib/typ
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import ContributionModal from '@/components/contribution-modal';
-import DisbursementModal from '@/components/disbursement-modal';
-import TransparentLedger from '@/components/transparent-ledger';
 import ContributorTracker from '@/components/contributor-tracker';
-import GovernancePanel from '@/components/governance-panel';
 import ShareModal from '@/components/share-modal';
-import ChamaStatementModal from '@/components/chama-statement-modal';
+import DisbursementModal from '@/components/disbursement-modal';
 import { 
   ShieldCheckIcon, 
   UsersIcon, 
-  ClockIcon, 
   ShareIcon, 
-  WalletIcon,
-  PrinterIcon,
 } from '@/components/ui/icons';
 
 interface PageProps {
@@ -35,11 +29,11 @@ export default function BomaDetailPage({ params }: PageProps) {
   const [disbursements, setDisbursements] = useState<Disbursement[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'story' | 'contributors' | 'ledger' | 'disbursements' | 'governance'>('story');
+  const [activeTab, setActiveTab] = useState<'story' | 'contributors'>('story');
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
-  const [isDisburseModalOpen, setIsDisburseModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
   const [paymentNotice, setPaymentNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
   // Reloads data in place (no spinner) so open tabs keep their state.
@@ -62,6 +56,8 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   useEffect(() => {
     const init = async () => {
+      const currentUser = await bomaService.getCurrentUser();
+      if (currentUser && currentUser.id !== 'user-guest') setCurrentUserId(currentUser.id);
       // Returning from Paystack checkout: verify, then book the ledger once.
       const params = new URLSearchParams(window.location.search);
       const reference = params.get('reference') || params.get('trxref');
@@ -73,12 +69,12 @@ export default function BomaDetailPage({ params }: PageProps) {
             body: JSON.stringify({ reference }),
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Payment could not be verified');
-          setPaymentNotice({ ok: true, text: `Payment confirmed. Ref ${reference}` });
-        } catch (err: unknown) {
+          if (!res.ok) throw new Error('Payment could not be confirmed');
+          setPaymentNotice({ ok: true, text: 'Your contribution was received. Thank you!' });
+        } catch {
           setPaymentNotice({
             ok: false,
-            text: err instanceof Error ? err.message : 'Payment verification failed',
+            text: 'We couldn’t confirm your payment. Please check again shortly.',
           });
         }
         window.history.replaceState({}, '', window.location.pathname);
@@ -93,7 +89,7 @@ export default function BomaDetailPage({ params }: PageProps) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-16 text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-        <p className="mt-3 text-xs text-neutral-400">Loading ledger records...</p>
+        <p className="mt-3 text-xs text-neutral-400">Loading fund...</p>
       </div>
     );
   }
@@ -113,43 +109,32 @@ export default function BomaDetailPage({ params }: PageProps) {
   }
 
   const percentage = Math.min(100, Math.round((boma.current_amount / boma.target_amount) * 100));
+  const canRequestPayout = currentUserId === boma.creator_id && /^[0-9a-f-]{36}$/i.test(boma.id);
   const daysLeft = Math.max(
     0,
     Math.ceil((new Date(boma.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   );
 
   return (
-    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
-      <div className="w-full max-w-7xl space-y-6">
+    <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
+      <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
       
       {/* Top Breadcrumb & Share */}
       <div className="flex items-center justify-between text-xs text-slate-400">
-        <div className="flex items-center gap-2">
-          <Link href="/bomas" className="hover:text-emerald-700 font-medium">Funds</Link>
-          <span>/</span>
-          <span className="capitalize font-mono text-slate-600">{boma.category}</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <Link href="/bomas" className="hover:text-emerald-700 font-medium transition-colors">← Funds</Link>
+          <span className="text-slate-300">/</span>
+          <span className="capitalize font-mono text-slate-600 truncate max-w-[140px] sm:max-w-none">{boma.category}</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsStatementModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-          >
-            <PrinterIcon className="w-3.5 h-3.5 text-slate-500" />
-            <span>Statement</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsShareModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-          >
-            <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
-            <span>Share &amp; QR</span>
-          </button>
-
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsShareModalOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+        >
+          <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
+          <span>Share</span>
+        </button>
       </div>
 
       {/* Payment Confirmation / Alert Banner */}
@@ -256,76 +241,31 @@ export default function BomaDetailPage({ params }: PageProps) {
 
           {/* Navigation Tabs */}
           <div className="border-b border-slate-200">
-            <nav className="flex space-x-3 sm:space-x-4 overflow-x-auto no-scrollbar whitespace-nowrap">
+            <nav className="flex flex-wrap gap-x-6">
               <button
                 type="button"
                 onClick={() => setActiveTab('story')}
-                className={`py-2 text-xs font-semibold border-b-2 transition-colors ${
+                className={`py-2.5 text-xs font-semibold border-b-2 transition-colors ${
                   activeTab === 'story'
                     ? 'border-emerald-600 text-emerald-700'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                Story
+                About this Fund
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('contributors')}
-                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
+                className={`py-2.5 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeTab === 'contributors'
                     ? 'border-emerald-600 text-emerald-700'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <span>Contributors</span>
-                <span className="rounded-full bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-mono">
-                  {boma.contributors_count || transactions.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('ledger')}
-                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
-                  activeTab === 'ledger'
-                    ? 'border-emerald-600 text-emerald-700'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <span>Ledger</span>
-                <span className="rounded-full bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-mono">
-                  {ledgerEntries.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('disbursements')}
-                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
-                  activeTab === 'disbursements'
-                    ? 'border-emerald-600 text-emerald-700'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <span>Payouts</span>
-                <span className="rounded-full bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-mono">
-                  {disbursements.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('governance')}
-                className={`py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
-                  activeTab === 'governance'
-                    ? 'border-emerald-600 text-emerald-700'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <span>Governance</span>
-                <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase">
-                  Multi-Sig
+                <span>Contributions</span>
+                <span className="rounded-full bg-slate-100 text-slate-700 px-2 py-0.5 text-[10px] font-mono">
+                  {transactions.length}
                 </span>
               </button>
             </nav>
@@ -337,11 +277,6 @@ export default function BomaDetailPage({ params }: PageProps) {
               <p className="whitespace-pre-line text-xs sm:text-sm text-slate-600 leading-relaxed">
                 {boma.description}
               </p>
-
-              <div className="rounded-lg bg-emerald-50/70 p-3 border border-emerald-200/80 flex items-center gap-2.5 text-xs text-emerald-900">
-                <ShieldCheckIcon className="w-4 h-4 shrink-0 text-emerald-700" />
-                <span>All funds are held in segregated trust accounts and audited in real time.</span>
-              </div>
             </div>
           )}
 
@@ -354,188 +289,118 @@ export default function BomaDetailPage({ params }: PageProps) {
             />
           )}
 
-          {activeTab === 'ledger' && (
-            <TransparentLedger
-              entries={ledgerEntries}
-              currency={boma.currency}
-              bomaTitle={boma.title}
-              onOpenStatement={() => setIsStatementModalOpen(true)}
-            />
-          )}
-
-          {activeTab === 'disbursements' && (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Documented Payouts
-                </h3>
-                <span className="text-xs font-mono text-slate-500">
-                  Disbursed: {formatCurrency(account.total_disbursed, boma.currency)}
-                </span>
-              </div>
-
-              {disbursements.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">
-                  No disbursements requested yet. Raised funds are intact.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {disbursements.map((d) => (
-                    <div
-                      key={d.id}
-                      className="rounded-lg border border-slate-200 p-3 flex justify-between items-center text-xs hover:border-slate-300 transition-colors"
-                    >
-                      <div>
-                        <span className="font-semibold text-slate-900 block">
-                          {d.recipient_name}
-                        </span>
-                        <p className="text-[11px] text-slate-500">
-                          {d.purpose}
-                        </p>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="font-semibold font-mono text-amber-700">
-                          -{formatCurrency(d.amount, d.currency)}
-                        </span>
-                        <span className="block font-mono text-[10px] text-slate-400">
-                          {d.reference}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'governance' && (
-            <GovernancePanel bomaId={boma.id} onPayoutExecuted={loadBomaData} />
-          )}
+          {/* Discreet link to Admin for administrators and organizers */}
+          <div className="pt-2 text-center">
+            <Link
+              href="/admin"
+              className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              Organizer &amp; Admin Dashboard →
+            </Link>
+          </div>
         </div>
 
-        {/* Right Column (Financial Progress Card - Desktop Sticky) */}
+        {/* Right Column (Financial Progress & Contribute Card - Desktop Sticky) */}
         <div className="space-y-4">
-          <div className="hidden lg:block sticky top-20 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-5">
-            
+          <div className="hidden lg:block sticky top-20 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
             {/* Amount Stats */}
             <div>
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Raised of {formatCurrency(boma.target_amount, boma.currency)}
+                Collected of {formatCurrency(boma.target_amount, boma.currency)}
               </span>
-              <div className="mt-1 text-2xl font-semibold font-mono text-slate-900">
+              <div className="mt-1 text-2xl font-bold font-mono text-slate-900">
                 {formatCurrency(boma.current_amount, boma.currency)}
               </div>
 
               {/* Progress Bar */}
-              <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-emerald-600"
+                  className="h-full rounded-full bg-emerald-600 transition-all duration-300"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
 
               <div className="mt-2 flex justify-between text-xs text-slate-500 font-mono">
-                <span>{percentage}% funded</span>
-                <span>{daysLeft}d left</span>
+                <span>{percentage}% reached</span>
+                <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
               </div>
             </div>
 
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-3 border-y border-slate-100 py-3 text-xs">
+            {/* Quick Contributors count */}
+            <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs">
               <button
                 type="button"
                 onClick={() => setActiveTab('contributors')}
-                className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1.5 text-left hover:text-emerald-700 transition-colors"
               >
                 <UsersIcon className="w-4 h-4 text-emerald-700 shrink-0" />
-                <div>
-                  <span className="font-semibold font-mono text-slate-900 block">
-                    {boma.contributors_count || transactions.length}
-                  </span>
-                  <span className="block text-[10px] text-slate-400">Members →</span>
-                </div>
+                <span className="font-semibold font-mono text-slate-900">
+                  {transactions.length}
+                </span>
+                <span className="text-slate-500">contributions →</span>
               </button>
 
-              <div className="flex items-center gap-2">
-                <WalletIcon className="w-4 h-4 text-slate-600 shrink-0" />
-                <div>
-                  <span className="font-semibold font-mono text-slate-900 truncate block">
-                    {formatCurrency(account.available_balance, boma.currency)}
-                  </span>
-                  <span className="block text-[10px] text-slate-400">Available</span>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                <ShareIcon className="w-3.5 h-3.5" />
+                <span>Share</span>
+              </button>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="space-y-2">
+            {/* Simple Pay Action */}
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => setIsContributeModalOpen(true)}
-                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors"
+                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-2xs transition-all active:scale-98"
               >
-                Contribute Now (M-Pesa / Card)
+                Contribute to this Fund
               </button>
-
-              <button
-                type="button"
-                onClick={() => setIsDisburseModalOpen(true)}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 py-2 text-xs font-semibold text-slate-700 transition-colors"
-              >
-                Request Payout
-              </button>
-
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              {canRequestPayout && (
                 <button
                   type="button"
-                  onClick={() => setIsShareModalOpen(true)}
-                  className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 py-2 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  onClick={() => setIsPayoutModalOpen(true)}
+                  className="mt-2 w-full rounded-lg border border-emerald-700 bg-white py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors"
                 >
-                  <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Share &amp; QR</span>
+                  Request payout · {formatCurrency(account.available_balance, boma.currency)} available
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsStatementModalOpen(true)}
-                  className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 py-2 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                >
-                  <PrinterIcon className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Statement</span>
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Floating Sticky Mobile Action Bar (Above Mobile Nav) */}
-      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-slate-200 p-2.5 px-3 flex items-center gap-2 backdrop-blur-md shadow-lg">
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-slate-200 p-2.5 px-4 flex items-center gap-2.5 backdrop-blur-md shadow-lg">
         <button
           type="button"
           onClick={() => setIsContributeModalOpen(true)}
-          className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors"
+          className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-2xs transition-colors"
         >
           Contribute Now
         </button>
 
-        <button
-          type="button"
-          onClick={() => setIsDisburseModalOpen(true)}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700"
-        >
-          Payout
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setIsShareModalOpen(true)}
-          className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-slate-700"
-          aria-label="Share & QR"
-        >
-          <ShareIcon className="w-4 h-4 text-slate-500" />
-        </button>
+        {canRequestPayout ? (
+          <button
+            type="button"
+            onClick={() => setIsPayoutModalOpen(true)}
+            className="rounded-lg border border-emerald-700 bg-white px-3 py-2.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 transition-colors"
+          >
+            Payout
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-slate-700 hover:bg-slate-100 transition-colors"
+            aria-label="Share"
+          >
+            <ShareIcon className="w-4 h-4 text-slate-500" />
+          </button>
+        )}
       </div>
 
       {/* Modals */}
@@ -545,27 +410,18 @@ export default function BomaDetailPage({ params }: PageProps) {
         onClose={() => setIsContributeModalOpen(false)}
       />
 
-      <DisbursementModal
-        boma={boma}
-        account={account}
-        isOpen={isDisburseModalOpen}
-        onClose={() => setIsDisburseModalOpen(false)}
-        onSuccess={loadBomaData}
-      />
-
       <ShareModal
         boma={boma}
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
 
-      <ChamaStatementModal
+      <DisbursementModal
         boma={boma}
         account={account}
-        entries={ledgerEntries}
-        disbursements={disbursements}
-        isOpen={isStatementModalOpen}
-        onClose={() => setIsStatementModalOpen(false)}
+        isOpen={isPayoutModalOpen && canRequestPayout}
+        onClose={() => setIsPayoutModalOpen(false)}
+        onSuccess={() => { void loadBomaData(); }}
       />
       </div>
     </div>

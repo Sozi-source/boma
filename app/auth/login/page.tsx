@@ -47,9 +47,6 @@ export default function LoginPage() {
         <h1 className="text-xl sm:text-2xl font-black text-neutral-900 ">
           Welcome to Boma
         </h1>
-        <p className="text-xs text-neutral-500">
-          Sign in to manage your contributions and inspect ledger activity.
-        </p>
       </div>
 
       <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">

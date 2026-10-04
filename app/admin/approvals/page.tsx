@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { bomaService } from '@/lib/services/boma-service';
 import { SignupRequest, UserRole } from '@/lib/types/fintech';
 import { formatPhoneDisplay } from '@/lib/utils/phone';
@@ -83,15 +84,24 @@ export default function ApprovalsPage() {
         </div>
       )}
 
+      {/* Top Navigation Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+        <Link href="/admin" className="hover:text-emerald-700 font-medium transition-colors">
+          ← Admin Dashboard
+        </Link>
+        <span>/</span>
+        <span className="text-slate-600 font-medium">Signup Approvals Queue</span>
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-3.5 border-b border-slate-200/80">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
-              Signup Approvals Queue
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <h1 className="text-base sm:text-xl font-semibold text-slate-800 tracking-tight">
+              Approvals
             </h1>
             {pendingCount > 0 && (
-              <span className="rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold px-2.5 py-0.5">
+              <span className="rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5">
                 {pendingCount} Pending
               </span>
             )}
@@ -99,13 +109,13 @@ export default function ApprovalsPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
+        <div className="flex max-w-full flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-lg">
           <button
             type="button"
             onClick={() => setFilter('pending_approval')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold transition-all ${
               filter === 'pending_approval'
-                ? 'bg-white text-slate-900 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -114,9 +124,9 @@ export default function ApprovalsPage() {
           <button
             type="button"
             onClick={() => setFilter('active')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold transition-all ${
               filter === 'active'
-                ? 'bg-white text-slate-900 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -125,9 +135,9 @@ export default function ApprovalsPage() {
           <button
             type="button"
             onClick={() => setFilter('rejected')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold transition-all ${
               filter === 'rejected'
-                ? 'bg-white text-slate-900 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -136,9 +146,9 @@ export default function ApprovalsPage() {
           <button
             type="button"
             onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold transition-all ${
               filter === 'all'
-                ? 'bg-white text-slate-900 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -172,27 +182,27 @@ export default function ApprovalsPage() {
             return (
               <div
                 key={req.id}
-                className={`bg-white rounded-xl border p-4 sm:p-5 shadow-2xs transition-all ${
+                className={`bg-white rounded-xl border p-3 sm:p-5 shadow-2xs transition-all ${
                   isPending
                     ? 'border-amber-300 ring-1 ring-amber-200/50 bg-amber-50/20'
                     : 'border-slate-200'
                 }`}
               >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
                   
                   {/* Left: User Details & Associated Phones */}
-                  <div className="space-y-2 min-w-0">
+                  <div className="space-y-1.5 sm:space-y-2 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 text-slate-700 font-semibold text-[11px] sm:text-xs flex items-center justify-center shrink-0">
                         {req.full_name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm font-semibold text-slate-900">
+                      <span className="text-xs sm:text-sm font-semibold text-slate-900">
                         {req.full_name}
                       </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold uppercase">
+                      <span className="text-[9px] sm:text-[10px] font-mono px-1.5 sm:px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold uppercase">
                         Role: {req.role}
                       </span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${
+                      <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full capitalize ${
                         isPending
                           ? 'bg-amber-100 text-amber-900 border border-amber-300'
                           : isApproved
@@ -203,7 +213,7 @@ export default function ApprovalsPage() {
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-600 flex flex-wrap items-center gap-2">
+                    <div className="text-[11px] sm:text-xs text-slate-600 flex flex-wrap items-center gap-1.5 sm:gap-2">
                       <span className="font-mono text-slate-500">{req.email}</span>
                       <span>•</span>
                       <span className="text-slate-400">
@@ -220,13 +230,13 @@ export default function ApprovalsPage() {
                     </div>
 
                     {/* Associated Mobile Lines */}
-                    <div className="flex items-center gap-2 pt-1 flex-wrap">
-                      <span className="text-[11px] font-semibold text-slate-500">Phone Numbers:</span>
-                      <span className="font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-medium">
+                    <div className="flex items-center gap-1.5 sm:gap-2 pt-0.5 flex-wrap">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500">Phones:</span>
+                      <span className="font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-medium">
                         Primary: {formatPhoneDisplay(req.phone)}
                       </span>
                       {req.additional_phones?.map((p, idx) => (
-                        <span key={idx} className="font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
+                        <span key={idx} className="font-mono bg-slate-100 text-slate-700 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px]">
                           Line {idx + 2}: {formatPhoneDisplay(p)}
                         </span>
                       ))}
@@ -245,7 +255,7 @@ export default function ApprovalsPage() {
                       <button
                         type="button"
                         onClick={() => handleApprove(req.id, req.full_name)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-2xs transition-colors"
                       >
                         <CheckCircleIcon className="w-3.5 h-3.5" />
                         <span>Approve</span>
@@ -254,7 +264,7 @@ export default function ApprovalsPage() {
                       <button
                         type="button"
                         onClick={() => handleReject(req.id, req.full_name)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-red-700 transition-colors"
                       >
                         <XMarkIcon className="w-3.5 h-3.5" />
                         <span>Reject</span>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Boma, Account, Disbursement } from '../lib/types/fintech';
 import { formatCurrency } from '../lib/ledger/ledger-service';
 import { bomaService } from '../lib/services/boma-service';
+import { supabase } from '../lib/supabase/client';
 import { 
   XMarkIcon, 
   SmartphoneIcon, 
@@ -29,7 +30,6 @@ export default function DisbursementModal({
 }: DisbursementModalProps) {
   const [amount, setAmount] = useState<string>('');
   const [recipientType, setRecipientType] = useState<'mpesa' | 'bank'>('mpesa');
-  const [recipientName, setRecipientName] = useState<string>('');
   const [recipientPhone, setRecipientPhone] = useState<string>('');
   const [recipientBankName, setRecipientBankName] = useState<string>('Equity Bank');
   const [recipientAccountNumber, setRecipientAccountNumber] = useState<string>('');
@@ -38,10 +38,67 @@ export default function DisbursementModal({
   const [error, setError] = useState<string>('');
   const [completedDisbursement, setCompletedDisbursement] = useState<Disbursement | null>(null);
   const [approvalRequested, setApprovalRequested] = useState<boolean>(false);
+  const [mfaMode, setMfaMode] = useState<'idle' | 'enroll' | 'challenge' | 'ready'>('idle');
+  const [mfaFactorId, setMfaFactorId] = useState('');
+  const [mfaQrCode, setMfaQrCode] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
 
   if (!isOpen) return null;
 
   const availableBalance = Number(account.available_balance);
+
+  const prepareMfa = async (): Promise<boolean> => {
+    if (!supabase) throw new Error('Sign in before requesting a payout.');
+    const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceError) throw assuranceError;
+    if (assurance.currentLevel === 'aal2') return true;
+
+    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+    if (factorsError) throw factorsError;
+    const verifiedFactor = factors.totp.find((factor) => factor.status === 'verified');
+    if (verifiedFactor) {
+      setMfaFactorId(verifiedFactor.id);
+      setMfaMode('challenge');
+      return false;
+    }
+
+    for (const factor of factors.all.filter((item) => item.factor_type === 'totp' && item.status === 'unverified')) {
+      await supabase.auth.mfa.unenroll({ factorId: factor.id });
+    }
+    const { data: enrollment, error: enrollmentError } = await supabase.auth.mfa.enroll({
+      factorType: 'totp',
+      friendlyName: 'BomaPay payouts',
+    });
+    if (enrollmentError) throw enrollmentError;
+    setMfaFactorId(enrollment.id);
+    setMfaQrCode(enrollment.totp.qr_code);
+    setMfaMode('enroll');
+    return false;
+  };
+
+  const verifyMfa = async () => {
+    if (!supabase || !mfaFactorId || !/^\d{6}$/.test(mfaCode.trim())) {
+      setError('Enter the 6-digit code from your authenticator app.');
+      return;
+    }
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
+        factorId: mfaFactorId,
+        code: mfaCode.trim(),
+      });
+      if (verifyError) throw verifyError;
+      setMfaMode('ready');
+      setMfaQrCode('');
+      setMfaCode('');
+      setError('Security check passed. Submit the payout again to continue.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not verify the security code.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +111,7 @@ export default function DisbursementModal({
     }
 
     if (numericAmount > availableBalance) {
-      setError(`Exceeds available balance: ${formatCurrency(availableBalance, boma.currency)}`);
-      return;
-    }
-
-    if (!recipientName.trim()) {
-      setError('Enter legal recipient or vendor name.');
+      setError(`Insufficient fund balance. Available: ${formatCurrency(availableBalance, boma.currency)}.`);
       return;
     }
 
@@ -70,11 +122,12 @@ export default function DisbursementModal({
 
     setIsSubmitting(true);
     try {
+      if (!(await prepareMfa())) return;
       const payload = {
         boma_id: boma.id,
         amount: numericAmount,
         recipient_type: recipientType,
-        recipient_name: recipientName.trim(),
+        recipient_name: boma.creator_name,
         recipient_phone: recipientType === 'mpesa' ? recipientPhone.trim() : undefined,
         recipient_bank_name: recipientType === 'bank' ? recipientBankName : undefined,
         recipient_account_number: recipientType === 'bank' ? recipientAccountNumber.trim() : undefined,
@@ -102,9 +155,12 @@ export default function DisbursementModal({
     setCompletedDisbursement(null);
     setApprovalRequested(false);
     setAmount('');
-    setRecipientName('');
     setPurpose('');
     setError('');
+    setMfaMode('idle');
+    setMfaFactorId('');
+    setMfaQrCode('');
+    setMfaCode('');
     onClose();
   };
 
@@ -159,10 +215,6 @@ export default function DisbursementModal({
 
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-xs space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-slate-500 text-[11px]">Payee:</span>
-                <span className="font-semibold text-slate-900">{completedDisbursement.recipient_name}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-slate-500 text-[11px]">Amount:</span>
                 <span className="font-semibold font-mono text-slate-900">{formatCurrency(completedDisbursement.amount, completedDisbursement.currency)}</span>
               </div>
@@ -207,8 +259,38 @@ export default function DisbursementModal({
         ) : (
           <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto">
             {error && (
-              <div className="rounded-lg bg-rose-50 p-2.5 text-xs text-rose-800 border border-rose-200">
+              <div className={`rounded-lg p-2.5 text-xs border ${mfaMode === 'ready' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`}>
                 {error}
+              </div>
+            )}
+
+            {(mfaMode === 'enroll' || mfaMode === 'challenge') && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2.5">
+                <p className="text-xs font-semibold text-slate-800">Confirm it’s you</p>
+                {mfaMode === 'enroll' && mfaQrCode && (
+                  <>
+                    <p className="text-[11px] text-slate-600">Scan this code with an authenticator app.</p>
+                    <img src={mfaQrCode} alt="Authenticator setup QR code" className="mx-auto h-36 w-36 rounded bg-white p-1" />
+                  </>
+                )}
+                {mfaMode === 'challenge' && (
+                  <p className="text-[11px] text-slate-600">Enter the code from your authenticator app.</p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="6-digit code"
+                    aria-label="Authenticator code"
+                    className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm tracking-widest"
+                  />
+                  <button type="button" onClick={verifyMfa} disabled={isSubmitting || mfaCode.length !== 6} className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">
+                    Verify
+                  </button>
+                </div>
               </div>
             )}
 
@@ -254,19 +336,6 @@ export default function DisbursementModal({
                   <span className="text-[10px] sm:text-xs font-semibold leading-tight">Bank (Unavailable)</span>
                 </button>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-                Payee Legal Name / Vendor
-              </label>
-              <input
-                type="text"
-                required
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-hidden"
-              />
             </div>
 
             {recipientType === 'mpesa' ? (

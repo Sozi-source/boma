@@ -79,9 +79,6 @@ export default function SignUpPage() {
         <h1 className="text-xl sm:text-2xl font-black text-neutral-900 ">
           Create Organizer Account
         </h1>
-        <p className="text-xs text-neutral-500">
-          Start pooling funds with verified transparency.
-        </p>
       </div>
 
       <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">

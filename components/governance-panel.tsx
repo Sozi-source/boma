@@ -170,39 +170,58 @@ export default function GovernancePanel({ bomaId, onPayoutExecuted }: Governance
           </ul>
         )}
 
-        <form onSubmit={addMember} className="grid grid-cols-2 gap-2 pt-1">
-          <input
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-hidden"
-            aria-label="Member name"
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-hidden"
-            aria-label="Phone number (optional)"
-            placeholder="Phone (optional)"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <select
-            className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:border-emerald-500 focus:outline-hidden"
-            value={role}
-            onChange={(e) => setRole(e.target.value as CommitteeRole)}
-          >
-            {ROLES.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-emerald-600 hover:bg-emerald-700 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
-          >
-            Add Member
-          </button>
+        <form onSubmit={addMember} className="space-y-2 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                Full Name *
+              </label>
+              <input
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
+                aria-label="Member name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                Phone Number (Optional)
+              </label>
+              <input
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
+                aria-label="Phone number (optional)"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                Role
+              </label>
+              <select
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:border-emerald-500 focus:outline-hidden"
+                value={role}
+                onChange={(e) => setRole(e.target.value as CommitteeRole)}
+              >
+                {ROLES.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
+              >
+                Add Member
+              </button>
+            </div>
+          </div>
         </form>
       </div>
 

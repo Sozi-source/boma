@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BomaCategory, Currency } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
@@ -79,15 +80,24 @@ export default function CreateBomaPage() {
   };
 
   return (
-    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
-      <div className="w-full max-w-2xl space-y-6">
-        <div className="pb-3.5 border-b border-slate-200/80">
-          <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
-            Start a Community Fund
+    <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
+      <div className="w-full max-w-2xl space-y-4 sm:space-y-6">
+        {/* Navigation Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Link href="/bomas" className="hover:text-emerald-700 font-medium transition-colors">
+            ← Community Funds
+          </Link>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-700 font-medium">Start a Fund</span>
+        </div>
+
+        <div className="pb-3 sm:pb-3.5 border-b border-slate-200/80">
+          <h1 className="text-base sm:text-xl font-semibold text-slate-800 tracking-tight">
+            Start a Fund
           </h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-2xs">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xs">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 border border-red-200">
               {error}

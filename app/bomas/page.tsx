@@ -4,10 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Boma, BomaCategory } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
-import { formatCurrency } from '@/lib/ledger/ledger-service';
 import BomaCard from '@/components/boma-card';
 import ContributionModal from '@/components/contribution-modal';
-import { SearchIcon, PlusIcon, BuildingLibraryIcon, WalletIcon, UsersIcon } from '@/components/ui/icons';
+import { SearchIcon, PlusIcon, BuildingLibraryIcon } from '@/components/ui/icons';
 
 const CATEGORIES: { id: BomaCategory | 'all'; label: string }[] = [
   { id: 'all', label: 'All Categories' },
@@ -52,70 +51,34 @@ export default function ExploreBomasPage() {
     setIsModalOpen(true);
   };
 
-  const totalRaised = bomas.reduce((acc, b) => acc + (Number(b.current_amount) || 0), 0);
-  const totalContributors = bomas.reduce((acc, b) => acc + (Number(b.contributors_count) || 0), 0);
-
   return (
-    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
-      <div className="w-full max-w-7xl space-y-6">
+    <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
+      <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
         
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-slate-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-3.5 border-b border-slate-200/80">
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
+            <h1 className="text-base sm:text-xl font-semibold text-slate-800 tracking-tight">
               Community Funds
             </h1>
           </div>
 
           <Link
             href="/bomas/create"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-2xs transition-colors self-start sm:self-auto"
           >
             <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Start a Fund</span>
           </Link>
         </div>
 
-        {/* Executive Metric Cards Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-500">Active Campaigns</span>
-              <BuildingLibraryIcon className="w-4 h-4 text-slate-400" />
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
-              {bomas.length}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-500">Total Volume Raised</span>
-              <WalletIcon className="w-4 h-4 text-emerald-600" />
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
-              {formatCurrency(totalRaised, 'KES')}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-500">Direct Contributors</span>
-              <UsersIcon className="w-4 h-4 text-slate-400" />
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
-              {totalContributors}
-            </p>
-          </div>
-        </div>
-
         {/* Filter & Search Bar */}
-        <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-3.5 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3">
           <div className="relative w-full sm:max-w-md">
             <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search funds by name or description..."
+              aria-label="Search funds"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-9 pr-3 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
@@ -166,7 +129,7 @@ export default function ExploreBomasPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {bomas.map((boma) => (
               <BomaCard
                 key={boma.id}

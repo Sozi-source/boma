@@ -46,11 +46,8 @@ export default function AdminFundsPage() {
       <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-black text-neutral-900 tracking-tight">
-            Fund Directory &amp; Treasury Controls
+            Funds
           </h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Audit pooled balances, verify authenticity, and supervise community disbursements.
-          </p>
         </div>
 
         <Link
@@ -106,7 +103,7 @@ export default function AdminFundsPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden 2xl:block">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-neutral-200/80 bg-neutral-50/70 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
@@ -176,6 +173,23 @@ export default function AdminFundsPage() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="grid grid-cols-2 gap-3 2xl:hidden">
+          {filteredBomas.length === 0 ? (
+            <p className="col-span-2 py-8 text-center text-xs text-neutral-400">No funds found.</p>
+          ) : filteredBomas.map((b) => {
+            const pct = b.target_amount > 0 ? Math.min(100, Math.round((b.current_amount / b.target_amount) * 100)) : 0;
+            return (
+              <Link key={b.id} href={`/bomas/${b.id}`} className="min-w-0 rounded-xl border border-neutral-200 p-3 hover:border-emerald-300">
+                <span className="block truncate text-[9px] font-semibold uppercase text-emerald-800">{b.category}</span>
+                <span className="mt-1 line-clamp-2 block min-h-9 text-xs font-bold text-neutral-900">{b.title}</span>
+                <span className="mt-2 block truncate text-[11px] text-neutral-600">{b.creator_name}</span>
+                <span className="mt-2 block truncate text-xs font-bold text-emerald-800">{formatCurrency(b.current_amount, b.currency)}</span>
+                <span className="block truncate text-[10px] text-neutral-500">of {formatCurrency(b.target_amount, b.currency)} · {pct}%</span>
+                <span className="mt-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold capitalize text-emerald-800">{b.status}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

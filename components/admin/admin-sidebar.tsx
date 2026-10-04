@@ -110,8 +110,6 @@ export default function AdminSidebar() {
     },
   ];
 
-  const isAdminRoute = pathname.startsWith('/admin');
-
   return (
     <>
       {/* Laptop & Desktop Vibrant Teal Green Fintech Sidebar */}
@@ -202,57 +200,6 @@ export default function AdminSidebar() {
           <span className="text-[10px] font-mono font-medium text-teal-300/80">v1.2</span>
         </div>
       </aside>
-
-      {/* Mobile/Tablet Sub-Navigation Bar (Shown when in /admin) */}
-      {isAdminRoute && (
-        <div className="lg:hidden w-full bg-[#0f8579] text-white border-b border-teal-700 px-3 py-2 overflow-x-auto scrollbar-none flex items-center gap-1.5">
-          <Link
-            href="/admin"
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
-              pathname === '/admin' ? 'bg-amber-400 text-slate-950 shadow-2xs' : 'bg-teal-800/40 text-teal-100 hover:bg-teal-800/70 hover:text-white'
-            }`}
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/admin/users"
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
-              pathname === '/admin/users' ? 'bg-amber-400 text-slate-950 shadow-2xs' : 'bg-teal-800/40 text-teal-100 hover:bg-teal-800/70 hover:text-white'
-            }`}
-          >
-            Users
-          </Link>
-          <Link
-            href="/admin/approvals"
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 ${
-              pathname === '/admin/approvals' ? 'bg-amber-400 text-slate-950 shadow-2xs' : 'bg-teal-800/40 text-teal-100 hover:bg-teal-800/70 hover:text-white'
-            }`}
-          >
-            <span>Approvals</span>
-            {stats.pendingApprovals > 0 && (
-              <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-semibold font-mono">
-                {stats.pendingApprovals}
-              </span>
-            )}
-          </Link>
-          <Link
-            href="/admin/subaccounts"
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
-              pathname === '/admin/subaccounts' ? 'bg-amber-400 text-slate-950 shadow-2xs' : 'bg-teal-800/40 text-teal-100 hover:bg-teal-800/70 hover:text-white'
-            }`}
-          >
-            Subaccounts
-          </Link>
-          <Link
-            href="/admin/ledger"
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
-              pathname === '/admin/ledger' ? 'bg-amber-400 text-slate-950 shadow-2xs' : 'bg-teal-800/40 text-teal-100 hover:bg-teal-800/70 hover:text-white'
-            }`}
-          >
-            Transactions
-          </Link>
-        </div>
-      )}
     </>
   );
 }

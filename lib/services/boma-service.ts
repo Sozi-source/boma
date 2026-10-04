@@ -506,43 +506,6 @@ class BomaService {
         console.warn('Unable to query transactions table:', err);
       }
 
-      // 2. Fetch paid payment_intents to ensure no Paystack payment is missed
-      try {
-        const { data: intents } = await supabase
-          .from('payment_intents')
-          .select('*')
-          .eq('boma_id', bomaId)
-          .eq('status', 'paid')
-          .order('created_at', { ascending: false });
-
-        if (intents) {
-          for (const pi of intents) {
-            if (!resultsMap.has(pi.reference)) {
-              const meta = (pi.metadata || {}) as Record<string, unknown>;
-              resultsMap.set(pi.reference, {
-                id: pi.id || pi.reference,
-                boma_id: pi.boma_id,
-                reference: pi.reference,
-                idempotency_key: pi.reference,
-                contributor_name: String(meta.contributor_name || 'Member'),
-                contributor_email: typeof meta.contributor_email === 'string' ? meta.contributor_email : undefined,
-                contributor_phone: typeof meta.contributor_phone === 'string' ? meta.contributor_phone : undefined,
-                is_anonymous: Boolean(meta.is_anonymous),
-                amount: Number(pi.amount_minor) / 100,
-                fee: 0,
-                net_amount: Number(pi.amount_minor) / 100,
-                currency: (pi.currency || 'KES') as Currency,
-                payment_method: (meta.payment_method as PaymentMethod) || 'mpesa',
-                status: 'completed',
-                created_at: pi.created_at || new Date().toISOString(),
-              });
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Unable to query payment_intents table:', err);
-      }
-
       const list = Array.from(resultsMap.values());
       const sorted = list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       return sorted.map((t) => {
@@ -842,6 +805,14 @@ class BomaService {
 
   async getUsers(): Promise<UserProfile[]> {
     return this.getStore<UserProfile>(STORAGE_KEYS.USERS, INITIAL_USERS);
+  }
+
+  /** Keep registered Supabase profiles available to the local sender resolver. */
+  syncRegisteredUsers(registeredUsers: UserProfile[]): void {
+    const existingUsers = this.getStore<UserProfile>(STORAGE_KEYS.USERS, INITIAL_USERS);
+    const registeredIds = new Set(registeredUsers.map((user) => user.id));
+    const localUsers = existingUsers.filter((user) => !registeredIds.has(user.id));
+    this.setStore(STORAGE_KEYS.USERS, [...registeredUsers, ...localUsers]);
   }
 
   async getUserById(id: string): Promise<UserProfile | null> {

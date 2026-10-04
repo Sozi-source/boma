@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { bomaService } from '@/lib/services/boma-service';
 import { LedgerEntry, Boma, Transaction, UserProfile } from '@/lib/types/fintech';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
@@ -24,17 +25,40 @@ export default function AdminLedgerPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'credit' | 'debit' | 'unclaimed'>('all');
   const [loading, setLoading] = useState(true);
-  const [linkingTx, setLinkingTx] = useState<{ phone: string; ref: string } | null>(null);
+  const [linkingTx, setLinkingTx] = useState<{ phone: string } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const loadLedgerData = async () => {
     try {
-      const [allBomas, allTxns, allUsers] = await Promise.all([
+      const [allBomas, localUsers] = await Promise.all([
         bomaService.getBomas(),
-        bomaService.getAllTransactions(),
         bomaService.getUsers(),
       ]);
+      let allUsers = localUsers;
+      try {
+        const response = await fetch('/api/admin/profiles', { cache: 'no-store' });
+        if (response.ok) {
+          const { users: profiles } = await response.json();
+          const registeredUsers: UserProfile[] = profiles.map((profile: {
+            id: string; full_name: string; email: string | null; phone: string | null;
+            role: string; created_at: string;
+          }) => ({
+            id: profile.id,
+            full_name: profile.full_name,
+            email: profile.email || '',
+            phones: profile.phone ? [profile.phone] : [],
+            role: profile.role === 'admin' ? 'admin' : 'organizer',
+            status: 'active',
+            created_at: profile.created_at,
+          }));
+          allUsers = [...registeredUsers, ...localUsers.filter((user) => !registeredUsers.some((registered) => registered.id === user.id))];
+        }
+      } catch {
+        // Keep locally managed accounts available if registered accounts cannot be loaded.
+      }
+      bomaService.syncRegisteredUsers(allUsers.filter((user) => /^[0-9a-f-]{36}$/i.test(user.id)));
+      const allTxns = await bomaService.getAllTransactions();
       setBomas(allBomas);
       setTransactions(allTxns);
       setUsers(allUsers);
@@ -71,8 +95,17 @@ export default function AdminLedgerPage() {
     if (!linkingTx || !selectedUserId) return;
 
     try {
-      await bomaService.addPhoneToUser(selectedUserId, linkingTx.phone);
-      showToast(`Phone line ${linkingTx.phone} linked! All transactions auto-reconciled.`);
+      if (/^[0-9a-f-]{36}$/i.test(selectedUserId)) {
+        const response = await fetch('/api/admin/profiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: selectedUserId, phone: linkingTx.phone }),
+        });
+        if (!response.ok) throw new Error('Could not link this phone to the account');
+      } else {
+        await bomaService.addPhoneToUser(selectedUserId, linkingTx.phone);
+      }
+      showToast('Phone linked to account');
       setLinkingTx(null);
       setSelectedUserId('');
       await loadLedgerData();
@@ -135,11 +168,20 @@ export default function AdminLedgerPage() {
         </div>
       )}
 
+      {/* Top Navigation Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+        <Link href="/admin" className="hover:text-emerald-700 font-medium transition-colors">
+          ← Admin Dashboard
+        </Link>
+        <span>/</span>
+        <span className="text-slate-600 font-medium">Central Ledger</span>
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-3.5 border-b border-slate-200/80">
         <div className="flex items-center gap-2.5">
-          <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
-            Double-Entry Ledger Audit
+          <h1 className="text-base sm:text-xl font-semibold text-slate-800 tracking-tight">
+            Fund Activity
           </h1>
           <span className="rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-mono font-medium px-2 py-0.5">
             Immutable
@@ -147,43 +189,43 @@ export default function AdminLedgerPage() {
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Total Credits In (Deposits)</span>
-            <ArrowDownLeftIcon className="w-4 h-4 text-emerald-600" />
+      {/* Metric Cards — Responsive Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-medium">
+            <span className="truncate">Total Credits In</span>
+            <ArrowDownLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
           </div>
-          <span className="text-2xl font-semibold text-slate-900 font-mono mt-2 block">
+          <span className="text-base sm:text-2xl font-semibold text-slate-900 font-mono mt-1.5 sm:mt-2 block truncate">
             {formatCurrency(totalCredits, 'KES')}
           </span>
-          <span className="text-[11px] text-slate-400 mt-1 block font-mono">
+          <span className="text-[9.5px] sm:text-[11px] text-slate-400 mt-1 block font-mono truncate">
             {entries.filter((e) => e.entry_type === 'credit').length} credit postings
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Total Debits Out (Disbursements)</span>
-            <ArrowUpRightIcon className="w-4 h-4 text-slate-400" />
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-medium">
+            <span className="truncate">Total Debits Out</span>
+            <ArrowUpRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
           </div>
-          <span className="text-2xl font-semibold text-slate-900 font-mono mt-2 block">
+          <span className="text-base sm:text-2xl font-semibold text-slate-900 font-mono mt-1.5 sm:mt-2 block truncate">
             {formatCurrency(totalDebits, 'KES')}
           </span>
-          <span className="text-[11px] text-slate-400 mt-1 block font-mono">
+          <span className="text-[9.5px] sm:text-[11px] text-slate-400 mt-1 block font-mono truncate">
             {entries.filter((e) => e.entry_type === 'debit').length} disbursements
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Net Vault Available</span>
-            <BuildingLibraryIcon className="w-4 h-4 text-emerald-600" />
+        <div className="col-span-2 lg:col-span-1 rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-medium">
+            <span className="truncate">Net Vault Available</span>
+            <BuildingLibraryIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
           </div>
-          <span className="text-2xl font-semibold text-slate-900 font-mono mt-2 block">
+          <span className="text-base sm:text-2xl font-semibold text-slate-900 font-mono mt-1.5 sm:mt-2 block truncate">
             {formatCurrency(netPlatformBalance, 'KES')}
           </span>
-          <span className="text-[11px] text-emerald-700 font-medium mt-1 block">
+          <span className="text-[9.5px] sm:text-[11px] text-emerald-700 font-medium mt-1 block truncate">
             Reconciled across {bomas.length} funds
           </span>
         </div>
@@ -203,15 +245,15 @@ export default function AdminLedgerPage() {
             />
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
+          <div className="flex max-w-full flex-wrap items-center gap-1 sm:gap-1.5 bg-slate-100 p-1 rounded-lg">
             {(['all', 'credit', 'debit'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-all ${
+                className={`px-2.5 sm:px-3 py-1 rounded-md text-[11px] sm:text-xs font-semibold capitalize transition-all ${
                   typeFilter === t
-                    ? 'bg-white text-slate-900 shadow-2xs'
+                    ? 'bg-white text-slate-900 shadow-2xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -222,7 +264,7 @@ export default function AdminLedgerPage() {
             <button
               type="button"
               onClick={() => setTypeFilter('unclaimed')}
-              className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3 py-1 rounded-md text-[11px] sm:text-xs font-semibold capitalize transition-all flex items-center gap-1.5 ${
                 typeFilter === 'unclaimed'
                   ? 'bg-amber-400 text-slate-950 font-bold shadow-2xs'
                   : 'text-amber-800 hover:text-amber-950'
@@ -230,7 +272,7 @@ export default function AdminLedgerPage() {
             >
               <span>Unclaimed</span>
               {unclaimedCount > 0 && (
-                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
                   typeFilter === 'unclaimed' ? 'bg-slate-900 text-amber-300' : 'bg-amber-200 text-amber-900'
                 }`}>
                   {unclaimedCount}
@@ -240,8 +282,41 @@ export default function AdminLedgerPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        <div className="space-y-2 2xl:hidden">
+          {loading ? (
+            <p className="py-8 text-center text-xs text-slate-400">Loading activity...</p>
+          ) : filteredEntries.length === 0 ? (
+            <p className="py-8 text-center text-xs text-slate-400">{typeFilter === 'unclaimed' ? 'All contributions are linked to member accounts.' : 'No activity found.'}</p>
+          ) : filteredEntries.map((e) => {
+            const isCredit = e.entry_type === 'credit';
+            const tx = getEntryTransaction(e);
+            const unclaimed = isEntryUnclaimed(e);
+            return (
+              <article key={e.id} className="rounded-lg border border-slate-200 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="break-words text-xs font-semibold text-slate-900">{e.description}</p>
+                    <p className="mt-1 text-[10px] text-slate-500">{new Date(e.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                  <span className={`shrink-0 text-xs font-semibold ${isCredit ? 'text-emerald-700' : 'text-slate-800'}`}>
+                    {isCredit ? '+' : '-'}{formatCurrency(e.amount, e.currency)}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2 text-[10px]">
+                  <span className="text-slate-500">Balance {formatCurrency(e.balance_after, e.currency)}</span>
+                  {unclaimed && tx?.contributor_phone ? (
+                    <button type="button" onClick={() => setLinkingTx({ phone: tx.contributor_phone! })} className="font-semibold text-emerald-700">Link {formatPhoneDisplay(tx.contributor_phone)}</button>
+                  ) : tx?.contributor_phone ? (
+                    <span className="text-emerald-700">Member linked</span>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="hidden 2xl:block">
+          <table className="w-full table-fixed text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-100 text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
                 <th className="py-2.5 px-3">Type</th>
@@ -303,7 +378,7 @@ export default function AdminLedgerPage() {
                             <div className="flex items-center gap-2 mt-0.5">
                               <button
                                 type="button"
-                                onClick={() => setLinkingTx({ phone: tx.contributor_phone!, ref: e.reference_code })}
+                                onClick={() => setLinkingTx({ phone: tx.contributor_phone! })}
                                 className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:underline inline-flex items-center gap-1"
                               >
                                 <UsersIcon className="w-3 h-3" />
@@ -324,7 +399,7 @@ export default function AdminLedgerPage() {
                         {formatCurrency(e.balance_after, e.currency)}
                       </td>
 
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-500">
+                      <td className="break-all py-3 px-3 font-mono text-[11px] text-slate-500">
                         {e.reference_code}
                       </td>
 
@@ -343,12 +418,12 @@ export default function AdminLedgerPage() {
       {/* Quick Link Unclaimed Line Modal */}
       {linkingTx && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-2xs p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <UsersIcon className="w-4 h-4 text-emerald-700" />
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Link Unclaimed Number
+                  Link phone
                 </h3>
               </div>
               <button
@@ -360,37 +435,29 @@ export default function AdminLedgerPage() {
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1 font-mono">
-                <div>Phone Line: <span className="font-bold">{formatPhoneDisplay(linkingTx.phone)}</span></div>
-                <div className="text-[11px] text-amber-700">Reference: {linkingTx.ref}</div>
-              </div>
-
-              <p className="text-xs text-slate-600">
-                Select the registered member who owns this phone line. All past and future contributions from this line will auto-reconcile to their legal name.
-              </p>
-
-              <form onSubmit={handleLinkPhone} className="space-y-4">
+            <div className="space-y-4">
+              <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800">{formatPhoneDisplay(linkingTx.phone)}</p>
+              <form onSubmit={handleLinkPhone} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Select Registered Member
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Account
                   </label>
                   <select
                     value={selectedUserId}
                     onChange={(e) => setSelectedUserId(e.target.value)}
                     required
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-hidden"
                   >
-                    <option value="">-- Choose Member Profile --</option>
+                    <option value="">Choose account</option>
                     {users.map((u) => (
                       <option key={u.id} value={u.id}>
-                        {u.full_name} ({u.email})
+                        {u.full_name}{u.email ? ` · ${u.email}` : ''}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2">
+                <div className="flex items-center justify-end gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setLinkingTx(null)}
@@ -402,7 +469,7 @@ export default function AdminLedgerPage() {
                     type="submit"
                     className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors"
                   >
-                    Confirm &amp; Auto-Reconcile
+                    Link phone
                   </button>
                 </div>
               </form>

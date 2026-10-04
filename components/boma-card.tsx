@@ -40,7 +40,7 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
   );
 
   return (
-    <div className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all duration-150">
+    <div className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all duration-150">
       
       {/* Top Meta Bar */}
       <div>
@@ -80,7 +80,7 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
             {boma.title}
           </h3>
           <p className="mt-1 text-xs text-slate-500 line-clamp-2 leading-relaxed">
-            {boma.description || 'Community pooled fund with transparent real-time ledger accounting.'}
+            {boma.description || 'Community support fund.'}
           </p>
         </Link>
       </div>
@@ -89,13 +89,13 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
       <div className="mt-4 pt-3 border-t border-slate-100 space-y-2.5">
         <div className="flex justify-between items-baseline">
           <div>
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Raised</span>
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Collected</span>
             <span className="text-base font-semibold font-mono text-slate-900">
               {formatCurrency(boma.current_amount, boma.currency)}
             </span>
           </div>
           <div className="text-right">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Target</span>
+            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Goal</span>
             <span className="text-xs font-medium font-mono text-slate-500">
               {formatCurrency(boma.target_amount, boma.currency)}
             </span>
@@ -111,8 +111,8 @@ export default function BomaCard({ boma, onContributeClick }: BomaCardProps) {
             />
           </div>
           <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
-            <span className="text-emerald-700 font-semibold">{percentage}% Funded</span>
-            <span>{boma.contributors_count || 0} members • {daysLeft}d left</span>
+            <span className="text-emerald-700 font-semibold">{percentage}% reached</span>
+            <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
           </div>
         </div>
 

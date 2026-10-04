@@ -1,6 +1,20 @@
 import crypto from 'crypto';
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
+
+export class PaystackTransferError extends Error {
+  constructor(message: string, readonly statusCode: number) {
+    super(message);
+    this.name = 'PaystackTransferError';
+  }
+}
+
+export class PaystackRecipientError extends Error {
+  constructor(message: string, readonly statusCode: number) {
+    super(message);
+    this.name = 'PaystackRecipientError';
+  }
+}
 const PAYSTACK_ENV = process.env.NODE_ENV === 'production' ? 'live' : (process.env.PAYSTACK_ENV || 'live');
 export const isPaystackLiveConfigured = PAYSTACK_ENV === 'test'
   ? /^sk_test_[A-Za-z0-9]+$/.test(PAYSTACK_SECRET)
@@ -162,7 +176,7 @@ class PaystackService {
 
     const data = await res.json();
     if (!res.ok || !data.status) {
-      throw new Error(data.message || 'Failed to create Paystack transfer recipient');
+      throw new PaystackRecipientError(data.message || 'Failed to create Paystack transfer recipient', res.status);
     }
 
     return { recipient_code: data.data.recipient_code };
@@ -189,8 +203,11 @@ class PaystackService {
     });
 
     const data = await res.json();
+    if (res.status >= 500) {
+      throw new Error('Paystack transfer status could not be confirmed');
+    }
     if (!res.ok || !data.status) {
-      throw new Error(data.message || 'Paystack transfer initiation failed');
+      throw new PaystackTransferError(data.message || 'Paystack transfer initiation failed', res.status);
     }
 
     return {
