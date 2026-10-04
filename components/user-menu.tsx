@@ -19,25 +19,33 @@ export default function UserMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      // 1. Check Supabase Auth
-      try {
-        const supabase = createClient();
-        const { data: { user: sbUser } } = await supabase.auth.getUser();
+    const supabase = createClient();
+    let authEventReceived = false;
+    const applyUser = (sbUser: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user']) => {
+      setUser(sbUser ? {
+        id: sbUser.id,
+        name: sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Organizer',
+        email: sbUser.email || '',
+        phone: sbUser.user_metadata?.phone,
+      } : null);
+      if (!sbUser) setMenuOpen(false);
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authEventReceived = true;
+      applyUser(session?.user ?? null);
+    });
 
-        if (sbUser) {
-          setUser({
-            id: sbUser.id,
-            name: sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Organizer',
-            email: sbUser.email || '',
-            phone: sbUser.user_metadata?.phone,
-          });
-          return;
-        }
-      } catch { setUser(null); }
+    const fetchUser = async () => {
+      try {
+        const { data: { user: sbUser } } = await supabase.auth.getUser();
+        if (!authEventReceived) applyUser(sbUser);
+      } catch {
+        if (!authEventReceived) applyUser(null);
+      }
     };
 
-    fetchUser();
+    void fetchUser();
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSignOut = async () => {

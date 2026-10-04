@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { 
   PlusIcon, 
   WalletIcon, 
@@ -19,28 +18,14 @@ function HomeNavIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export default function MobileNav() {
+export default function MobileNav({ authenticated }: { authenticated: boolean }) {
   const pathname = usePathname();
-  const [hasUser, setHasUser] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    const readUser = async () => {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (active) setHasUser(Boolean(user));
-      } catch {
-        if (active) setHasUser(false);
-      }
-    };
-    void readUser();
-    return () => { active = false; };
-  }, [pathname]);
 
   const isHome = pathname === '/';
   const isExplore = pathname === '/bomas';
-  const isDashboard = pathname === '/dashboard';
+  const isDashboard = authenticated && pathname === '/dashboard';
+  const createHref = authenticated ? '/bomas/create' : '/auth/signup';
+  const dashboardHref = authenticated ? '/dashboard' : '/auth/login';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 select-none border-t border-slate-200 bg-white h-[calc(5rem+env(safe-area-inset-bottom))] px-3 pb-[env(safe-area-inset-bottom)] transition-colors lg:hidden">
@@ -73,20 +58,20 @@ export default function MobileNav() {
 
         {/* Create (Elevated Action) */}
         <Link
-          href="/bomas/create"
+          href={createHref}
           className="group flex flex-col items-center justify-center rounded-xl px-3 py-0.5"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs transition-transform group-active:scale-95">
             <PlusIcon className="w-5 h-5 stroke-[2.5]" />
           </div>
           <span className="text-[10px] mt-0.5 font-semibold text-slate-800">
-            Start
+            {authenticated ? 'Start' : 'Join'}
           </span>
         </Link>
 
         {/* Ledger & Dashboard */}
         <Link
-          href="/dashboard"
+          href={dashboardHref}
           className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all active:scale-95 ${
             isDashboard
               ? 'text-emerald-700 font-semibold'
@@ -95,11 +80,11 @@ export default function MobileNav() {
         >
           <div className="relative">
             <WalletIcon className="w-5 h-5" />
-            {hasUser && (
+            {authenticated && (
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
             )}
           </div>
-          <span className="text-[10px] mt-0.5 tracking-tight">Activity</span>
+          <span className="text-[10px] mt-0.5 tracking-tight">{authenticated ? 'Activity' : 'Sign In'}</span>
         </Link>
       </div>
     </nav>
