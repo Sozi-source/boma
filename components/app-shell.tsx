@@ -42,10 +42,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const requiresSignIn = pathname === '/dashboard'
-    || pathname.startsWith('/admin')
-    || pathname === '/bomas/create';
   const isAuthPage = pathname.startsWith('/auth/');
+  const requiresSignIn = !isAuthPage;
 
   useEffect(() => {
     if (authReady && requiresSignIn && !hasUser) {
@@ -53,7 +51,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [authReady, hasUser, requiresSignIn, router]);
 
-  const showPage = !requiresSignIn || (authReady && hasUser);
+  const showPage = isAuthPage || (authReady && hasUser);
   const showAppChrome = !isAuthPage && authReady && hasUser;
 
   return (
@@ -66,17 +64,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="lg:hidden"><Navbar authenticated /></div>
             <div className="sticky top-0 z-30 hidden lg:block"><DesktopHeader /></div>
           </>
-        ) : !isAuthPage && authReady ? (
-          <Navbar authenticated={false} />
         ) : null}
 
-        <main className="w-full min-w-0 flex-1 pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-8">
+        <main className={`w-full min-w-0 flex-1 ${showAppChrome ? 'pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-8' : ''}`}>
           {showPage ? children : (
-            <div className="px-4 py-12 text-center text-sm text-slate-500">Checking your sign-in…</div>
+            authReady ? null : (
+              <div className="px-4 py-12 text-center text-sm text-slate-500">Checking your sign-in…</div>
+            )
           )}
         </main>
 
-        {!isAuthPage && authReady && <MobileNav authenticated={hasUser} />}
+        {showAppChrome && <MobileNav authenticated />}
 
         {showAppChrome && (
           <footer className="hidden items-center justify-between border-t border-slate-200 bg-white px-5 py-2.5 text-[11px] text-slate-500 select-none lg:flex sm:px-8 lg:px-10 xl:px-12">
