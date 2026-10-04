@@ -16,20 +16,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
-    let authEventReceived = false;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      authEventReceived = true;
+    let authChangeReceived = false;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // INITIAL_SESSION can contain a stale browser-cached session. Verify it
+      // with getUser() below before showing authenticated navigation.
+      if (event === 'INITIAL_SESSION') return;
+
+      authChangeReceived = true;
       setHasUser(Boolean(session?.user));
       setAuthReady(true);
     });
 
     void supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!authEventReceived) {
+      if (!authChangeReceived) {
         setHasUser(Boolean(user));
         setAuthReady(true);
       }
     }).catch(() => {
-      if (!authEventReceived) {
+      if (!authChangeReceived) {
         setHasUser(false);
         setAuthReady(true);
       }
@@ -41,6 +45,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const requiresSignIn = pathname === '/dashboard'
     || pathname.startsWith('/admin')
     || pathname === '/bomas/create';
+  const isAuthPage = pathname.startsWith('/auth/');
 
   useEffect(() => {
     if (authReady && requiresSignIn && !hasUser) {
@@ -49,20 +54,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [authReady, hasUser, requiresSignIn, router]);
 
   const showPage = !requiresSignIn || (authReady && hasUser);
+  const showAppChrome = !isAuthPage && authReady && hasUser;
 
   return (
     <>
-      {hasUser && <AdminSidebar />}
+      {showAppChrome && <AdminSidebar />}
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-        {hasUser ? (
+        {showAppChrome ? (
           <>
             <div className="lg:hidden"><Navbar authenticated /></div>
             <div className="sticky top-0 z-30 hidden lg:block"><DesktopHeader /></div>
           </>
-        ) : (
+        ) : !isAuthPage && authReady ? (
           <Navbar authenticated={false} />
-        )}
+        ) : null}
 
         <main className="w-full min-w-0 flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8">
           {showPage ? children : (
@@ -70,9 +76,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </main>
 
-        <MobileNav authenticated={hasUser} />
+        {!isAuthPage && authReady && <MobileNav authenticated={hasUser} />}
 
-        {hasUser && (
+        {showAppChrome && (
           <footer className="hidden items-center justify-between border-t border-slate-200 bg-white px-5 py-2.5 text-[11px] text-slate-500 select-none lg:flex sm:px-8 lg:px-10 xl:px-12">
             <span>Boma — Contributions, open and transparent to every member</span>
             <div className="flex items-center gap-4 font-mono text-[10px]">
