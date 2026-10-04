@@ -1,15 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Boma, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import ContributorTracker from '@/components/contributor-tracker';
-import { 
-  ShieldCheckIcon, 
+import {
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
+  BellIcon,
+  CreditCardIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  PlusIcon,
+  ShareIcon,
   WalletIcon,
-  PlusIcon, 
 } from '@/components/ui/icons';
 
 export default function DashboardPage() {
@@ -17,13 +23,12 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [viewMode, setViewMode] = useState<'contributors' | 'receipts'>('contributors');
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
+  const [showBalance, setShowBalance] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
       const currentUser = await bomaService.getCurrentUser();
-      if (currentUser && currentUser.id !== 'user-guest') {
-        setUser(currentUser);
-      }
+      if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
 
       const allBomas = await bomaService.getBomas();
       setBomas(allBomas);
@@ -37,225 +42,244 @@ export default function DashboardPage() {
       setTransactions(allTxns);
     };
 
-    loadDashboard();
+    void loadDashboard();
   }, []);
 
-  const totalRaised = bomas.reduce((acc, b) => acc + Number(b.current_amount), 0);
+  const totalRaised = useMemo(
+    () => bomas.reduce((acc, b) => acc + Number(b.current_amount), 0),
+    [bomas]
+  );
+
+  const firstName = user?.name?.split(' ')[0] || 'there';
+  const balance = showBalance ? formatCurrency(totalRaised, 'KES') : '••••••';
 
   return (
-    <div className="w-full min-w-0 px-5 sm:px-8 lg:px-10 xl:px-12 py-6 sm:py-8">
-      <div className="w-full max-w-7xl space-y-6">
-        
-        {/* Dashboard Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-slate-200/80">
+    <div className="min-h-full bg-[#f5f7f8]">
+      <div className="mx-auto w-full max-w-5xl px-4 pb-8 pt-4 sm:px-6 sm:pt-6 lg:px-10">
+        {/* Mobile / compact greeting */}
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold text-slate-800 tracking-tight">
-              {user ? `${user.name.split(' ')[0]}'s funds` : 'Your funds'}
+            <p className="text-[11px] font-medium text-slate-500">Good day</p>
+            <h1 className="mt-0.5 text-[20px] font-bold tracking-tight text-slate-950 sm:text-2xl">
+              {firstName} 👋
             </h1>
           </div>
-
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
-            >
-              <ShieldCheckIcon className="w-3.5 h-3.5 text-slate-500" />
-              <span>Manage</span>
-            </Link>
-
-            <Link
-              href="/bomas/create"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors"
-            >
-              <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Start a Fund</span>
-            </Link>
-          </div>
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm"
+          >
+            <BellIcon className="h-5 w-5" />
+            {transactions.length > 0 && (
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+            )}
+          </button>
         </div>
 
-        {/* Quick overview */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
-              <span>Collected</span>
-              <WalletIcon className="w-4 h-4 text-emerald-600" />
+        {/* Main account / fund hero */}
+        <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#063f43] via-[#087f78] to-[#13a092] p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.22)] sm:p-7">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-cyan-300/10 blur-3xl" />
+
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-medium text-white/75">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15">
+                  <WalletIcon className="h-4 w-4" />
+                </span>
+                Total funds
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowBalance((v) => !v)}
+                className="rounded-full bg-white/10 p-2 text-white/80 transition hover:bg-white/15"
+                aria-label={showBalance ? 'Hide balance' : 'Show balance'}
+              >
+                {showBalance ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+              </button>
             </div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
-              {formatCurrency(totalRaised, 'KES')}
+
+            <div className="mt-5">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-white/60">Available across your funds</p>
+              <p className="mt-1 text-[34px] font-bold tracking-tight sm:text-[42px]">{balance}</p>
             </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Across {bomas.length} funds</span>
+
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[11px] text-white/60">Active funds</p>
+                <p className="mt-1 text-sm font-semibold">{bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</p>
+              </div>
+              <Link
+                href="/bomas/create"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#087f78] shadow-sm transition hover:bg-white/90"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Start a fund
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Quick actions */}
+        <section className="mt-5">
+          <div className="mb-2.5 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900">Quick actions</h2>
+            <Link href="/bomas" className="text-[11px] font-semibold text-emerald-700">Explore funds</Link>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
-              <span>Contributions</span>
-              <WalletIcon className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900 font-mono">
-              {transactions.length}
-            </div>
-            <span className="text-[11px] text-emerald-700 mt-1 block">Across your funds</span>
+          <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
+            <Link href="/bomas/create" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                <PlusIcon className="h-5 w-5" />
+              </span>
+              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Start fund</span>
+            </Link>
+            <Link href="/bomas" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+                <ArrowUpRightIcon className="h-5 w-5" />
+              </span>
+              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Contribute</span>
+            </Link>
+            <Link href="/dashboard" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                <CreditCardIcon className="h-5 w-5" />
+              </span>
+              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Activity</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof navigator !== 'undefined' && navigator.share) {
+                  void navigator.share({ title: 'Boma', text: 'Join my Boma fund.' });
+                }
+              }}
+              className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"
+            >
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                <ShareIcon className="h-5 w-5" />
+              </span>
+              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Share</span>
+            </button>
           </div>
-        </div>
+        </section>
 
-        {/* Your Active Contributions Card */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        {/* Overview cards */}
+        <section className="mt-5 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-slate-500">Collected</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <ArrowDownLeftIcon className="h-4 w-4" />
+              </span>
+            </div>
+            <p className="mt-3 text-[23px] font-bold tracking-tight text-slate-950">{balance}</p>
+            <p className="mt-1 text-[10px] text-slate-400">Across {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-slate-500">Contributions</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 text-sky-700">
+                <CreditCardIcon className="h-4 w-4" />
+              </span>
+            </div>
+            <p className="mt-3 text-[23px] font-bold tracking-tight text-slate-950">{transactions.length}</p>
+            <p className="mt-1 text-[10px] text-slate-400">Across your funds</p>
+          </div>
+        </section>
+
+        {/* Funds */}
+        <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-slate-800">
-                Your funds
-              </h2>
+              <p className="text-sm font-bold text-slate-950">Your funds</p>
+              <p className="mt-0.5 text-[10px] text-slate-400">Track every shilling in one place</p>
             </div>
-            <span className="text-xs text-slate-400 font-mono">
-              {bomas.length} funds
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+              {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
             </span>
           </div>
 
-          {/* Contributions List & Table with Empty State */}
           {bomas.length === 0 ? (
-            <div className="py-10 text-center border border-dashed border-slate-200 rounded-lg bg-slate-50/50">
-              <p className="text-xs text-slate-500 mb-3">You haven’t started a fund yet.</p>
-              <Link
-                href="/bomas/create"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700 transition-colors"
-              >
-                <PlusIcon className="w-3.5 h-3.5" />
-                <span>Start Your First Fund</span>
+            <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+              <p className="text-xs font-semibold text-slate-700">You haven’t started a fund yet.</p>
+              <Link href="/bomas/create" className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white">
+                <PlusIcon className="h-4 w-4" /> Start your first fund
               </Link>
             </div>
           ) : (
-            <div className={`grid gap-3 sm:gap-4 ${bomas.length === 1 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 lg:grid-cols-3'}`}>
+            <div className="mt-4 space-y-3">
               {bomas.map((b) => {
-                const pct = Math.min(100, Math.round((b.current_amount / b.target_amount) * 100));
+                const pct = Math.min(100, Math.round((Number(b.current_amount) / Number(b.target_amount || 1)) * 100));
                 return (
                   <Link
                     key={b.id}
                     href={`/bomas/${b.id}`}
-                    className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-2xs transition-colors hover:border-emerald-300 hover:bg-emerald-50/20 sm:p-4"
+                    className="block rounded-2xl border border-slate-200 bg-[#fbfcfc] p-4 transition hover:border-emerald-300 hover:bg-emerald-50/20"
                   >
-                    <span className="truncate text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-[10px]">
-                      {b.category}
-                    </span>
-                    <span className="mt-1 line-clamp-2 min-h-10 text-xs font-semibold leading-snug text-slate-900 sm:text-sm">
-                      {b.title}
-                    </span>
-                    <div className="mt-3 flex items-baseline justify-between gap-1">
-                      <span className="truncate text-xs font-semibold text-slate-900 sm:text-sm">
-                        {formatCurrency(b.current_amount, b.currency)}
-                      </span>
-                      <span className="shrink-0 text-[10px] text-slate-500">{pct}%</span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                          {b.category}
+                        </span>
+                        <h3 className="mt-1 truncate text-sm font-bold text-slate-950">{b.title}</h3>
+                      </div>
+                      <span className="shrink-0 text-[10px] font-semibold text-slate-400">{pct}%</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-emerald-600" style={{ width: `${pct}%` }} />
+                    <div className="mt-4 flex items-baseline justify-between gap-3">
+                      <span className="font-mono text-sm font-bold text-slate-950">{formatCurrency(b.current_amount, b.currency)}</span>
+                      <span className="text-[10px] text-slate-400">Goal {formatCurrency(b.target_amount, b.currency)}</span>
                     </div>
-                    <span className="mt-2 truncate text-[10px] text-slate-500">
-                      Goal {formatCurrency(b.target_amount, b.currency)}
-                    </span>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-400" style={{ width: `${pct}%` }} />
+                    </div>
                   </Link>
                 );
               })}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Contributions */}
-        <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs flex items-center justify-between flex-wrap gap-3">
+        {/* Recent activity */}
+        <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-slate-800">
-                Contributions
-              </h2>
+              <p className="text-sm font-bold text-slate-950">Recent activity</p>
+              <p className="mt-0.5 text-[10px] text-slate-400">Latest contributions across your funds</p>
             </div>
-
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
-              <button
-                type="button"
-                onClick={() => setViewMode('contributors')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'contributors'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Contributors
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('receipts')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'receipts'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Recent ({transactions.length})
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setViewMode((v) => v === 'contributors' ? 'receipts' : 'contributors')}
+              className="text-[10px] font-semibold text-emerald-700"
+            >
+              {viewMode === 'contributors' ? 'View receipts' : 'View contributors'}
+            </button>
           </div>
 
-          {viewMode === 'contributors' ? (
-            <ContributorTracker
-              transactions={transactions}
-              currency="KES"
-              bomaTitle="Your funds"
-            />
+          {transactions.length === 0 ? (
+            <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-7 text-center text-[11px] text-slate-500">
+              No contributions yet. They’ll appear here when received.
+            </div>
+          ) : viewMode === 'receipts' ? (
+            <div className="mt-3 divide-y divide-slate-100">
+              {transactions.slice(0, 6).map((t) => (
+                <div key={t.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-slate-900">{t.is_anonymous ? 'Anonymous' : t.contributor_name}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-400">{new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 font-mono text-[10px] font-bold text-emerald-700">
+                    +{formatCurrency(t.amount, t.currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-sm font-semibold text-slate-900">
-                  Recent contributions
-                </h2>
-              </div>
-
-              {transactions.length === 0 ? (
-                <div className="py-10 text-center border border-dashed border-slate-200 rounded-lg bg-slate-50/50">
-              <p className="text-xs text-slate-500">No contributions yet. They’ll appear here when received.</p>
-                </div>
-              ) : (
-                <>
-                <div className="divide-y divide-slate-100 sm:hidden">
-                  {transactions.slice(0, 10).map((t) => (
-                    <div key={t.id} className="flex items-center justify-between gap-2 py-3 text-xs">
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-slate-900">{t.is_anonymous ? 'Anonymous' : t.contributor_name}</p>
-                        <p className="mt-0.5 text-[10px] text-slate-500">{new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
-                      </div>
-                      <span className="shrink-0 text-right font-mono text-xs font-semibold text-emerald-700">+{formatCurrency(t.amount, t.currency)}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="hidden sm:block">
-                  <table className="w-full table-fixed text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-                        <th className="py-2.5 px-3">Date</th>
-                        <th className="py-2.5 px-3">Contributor</th>
-                        <th className="py-2.5 px-3 text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {transactions.slice(0, 10).map((t) => (
-                        <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">
-                            {new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                          </td>
-                          <td className="truncate py-3 px-3 font-semibold text-slate-900">
-                            {t.is_anonymous ? 'Anonymous' : t.contributor_name}
-                          </td>
-                          <td className="py-3 px-3 text-right font-mono font-semibold text-emerald-700">
-                            +{formatCurrency(t.amount, t.currency)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                </>
-              )}
+            <div className="mt-4">
+              <ContributorTracker transactions={transactions} currency="KES" bomaTitle="Your funds" />
             </div>
           )}
-        </div>
-
+        </section>
       </div>
     </div>
   );

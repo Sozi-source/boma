@@ -70,7 +70,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Navbar authenticated={false} />
         ) : null}
 
-        <main className="w-full min-w-0 flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8">
+        <main className="w-full min-w-0 flex-1 pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-8">
           {showPage ? children : (
             <div className="px-4 py-12 text-center text-sm text-slate-500">Checking your sign-in…</div>
           )}
