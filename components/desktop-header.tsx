@@ -80,13 +80,13 @@ export default function DesktopHeader() {
           <span>Approved</span>
         </div>
 
-        {/* Quick New Contribution Button */}
+        {/* Quick New Fund Button */}
         <Link
           href="/bomas/create"
           className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
         >
           <PlusIcon className="w-3.5 h-3.5 stroke-[2]" />
-          <span>New Contribution</span>
+          <span>Start a Fund</span>
         </Link>
 
         {/* Notification Bell */}

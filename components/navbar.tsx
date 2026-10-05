@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PlusIcon } from './ui/icons';
 import UserMenu from './user-menu';
 
 export default function Navbar({ authenticated }: { authenticated: boolean }) {
@@ -11,10 +10,10 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/bomas', label: 'Explore' },
+    { href: '/bomas', label: 'Funds' },
     ...(authenticated ? [
-      { href: '/dashboard', label: 'Dashboard' },
-      { href: '/admin', label: 'Admin' },
+      { href: '/dashboard', label: 'Activity' },
+      { href: '/admin', label: 'Admin Console' },
     ] : []),
   ];
 
@@ -38,7 +37,7 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
           {/* Desktop App Nav Items (Pill Style) */}
           <nav className="hidden md:flex items-center gap-1 rounded-lg bg-slate-100 p-1">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
@@ -58,17 +57,6 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
 
         {/* Right Fintech Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
-
-          {authenticated && (
-            <Link
-              href="/bomas/create"
-              className="hidden sm:inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors"
-            >
-              <PlusIcon className="w-3.5 h-3.5 stroke-[2]" />
-              <span>New Contribution</span>
-            </Link>
-          )}
-
           <UserMenu />
         </div>
       </div>

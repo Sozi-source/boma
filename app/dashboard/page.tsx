@@ -126,11 +126,11 @@ export default function DashboardPage() {
                 <p className="mt-1 text-sm font-semibold">{bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</p>
               </div>
               <Link
-                href="/bomas/create"
+                href="/bomas"
                 className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#087f78] shadow-sm transition hover:bg-white/90"
               >
-                <PlusIcon className="h-4 w-4" />
-                Start a fund
+                <ArrowUpRightIcon className="h-4 w-4" />
+                Explore funds
               </Link>
             </div>
           </div>
@@ -143,15 +143,9 @@ export default function DashboardPage() {
             <Link href="/bomas" className="text-[11px] font-semibold text-emerald-700">Explore funds</Link>
           </div>
 
-          <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
-            <Link href="/bomas/create" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <PlusIcon className="h-5 w-5" />
-              </span>
-              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Start fund</span>
-            </Link>
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
             <Link href="/bomas" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                 <ArrowUpRightIcon className="h-5 w-5" />
               </span>
               <span className="mt-2 block text-[10px] font-semibold text-slate-700">Contribute</span>
@@ -218,9 +212,9 @@ export default function DashboardPage() {
 
           {bomas.length === 0 ? (
             <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-              <p className="text-xs font-semibold text-slate-700">You haven’t started a fund yet.</p>
-              <Link href="/bomas/create" className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white">
-                <PlusIcon className="h-4 w-4" /> Start your first fund
+              <p className="text-xs font-semibold text-slate-700">No active funds found.</p>
+              <Link href="/bomas" className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 transition">
+                <ArrowUpRightIcon className="h-4 w-4" /> Explore community funds
               </Link>
             </div>
           ) : (

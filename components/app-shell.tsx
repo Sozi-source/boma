@@ -43,6 +43,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isAuthPage = pathname.startsWith('/auth/');
+  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/bomas/create');
   const requiresSignIn = !isAuthPage;
 
   useEffect(() => {
@@ -56,14 +57,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {showAppChrome && <AdminSidebar />}
+      {showAppChrome && isAdminRoute && <AdminSidebar />}
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         {showAppChrome ? (
-          <>
-            <div className="lg:hidden"><Navbar authenticated /></div>
-            <div className="sticky top-0 z-30 hidden lg:block"><DesktopHeader /></div>
-          </>
+          isAdminRoute ? (
+            <>
+              <div className="lg:hidden"><Navbar authenticated /></div>
+              <div className="sticky top-0 z-30 hidden lg:block"><DesktopHeader /></div>
+            </>
+          ) : (
+            <Navbar authenticated />
+          )
         ) : null}
 
         <main className={`w-full min-w-0 flex-1 ${showAppChrome ? 'pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-8' : ''}`}>

@@ -141,10 +141,18 @@ export default function AdminOverviewPage() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5">
+          <Link
+            href="/bomas/create"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-2xs transition-colors"
+          >
+            <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Start a Fund</span>
+          </Link>
+
           <button
             type="button"
             onClick={() => setIsAddUserOpen(true)}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-2xs transition-colors"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
           >
             <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Add User</span>
