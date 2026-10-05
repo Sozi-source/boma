@@ -16,16 +16,36 @@ export function parseCurrency(value: unknown): string | null {
 
 export function sameOrigin(request: Request): boolean {
   const configuredOrigin = process.env.APP_URL;
-  const origin = request.headers.get('origin');
-  if (!configuredOrigin || !origin) return false;
+  if (!configuredOrigin) return false;
+
+  let expected: URL;
   try {
-    const expected = new URL(configuredOrigin);
-    return (expected.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(expected.hostname))
-      && new URL(origin).origin === expected.origin;
+    expected = new URL(configuredOrigin);
+  } catch {
+    return false;
+  }
+
+  const isAllowedHost =
+    expected.protocol === 'https:' ||
+    ['localhost', '127.0.0.1'].includes(expected.hostname);
+
+  if (!isAllowedHost) return false;
+
+  const origin = request.headers.get('origin');
+  // Same-origin fetches from certain browsers/environments omit the Origin
+  // header (e.g. some server-side fetch paths). Fall back to Host matching.
+  if (!origin) {
+    const host = request.headers.get('host') || '';
+    return host === expected.host;
+  }
+
+  try {
+    return new URL(origin).origin === expected.origin;
   } catch {
     return false;
   }
 }
+
 
 export function validReference(value: unknown): value is string {
   return typeof value === 'string' && /^BP-[A-Z0-9-]{8,48}$/.test(value);
