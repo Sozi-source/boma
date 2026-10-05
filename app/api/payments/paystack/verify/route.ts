@@ -67,6 +67,12 @@ export async function GET(request: Request) {
 
   try {
     const db = createAdminClient();
+    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!await allowPaymentAttempt(db, 'verify-ip', ip, 30, 60)
+      || !await allowPaymentAttempt(db, 'verify-ref', reference, 5, 60)) {
+      return NextResponse.json({ error: 'Too many verification attempts. Please try again later.' }, { status: 429 });
+    }
+
     const { data: intent, error } = await db.from('payment_intents')
       .select('reference,boma_id,amount_minor,currency,metadata,status,refunded_minor')
       .eq('reference', reference).maybeSingle();

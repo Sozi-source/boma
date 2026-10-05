@@ -415,6 +415,7 @@ export default function BomaDetailPage({ params }: PageProps) {
         boma={boma}
         isOpen={isContributeModalOpen}
         onClose={() => setIsContributeModalOpen(false)}
+        onSuccess={() => { void loadBomaData(); }}
       />
 
       <ShareModal
