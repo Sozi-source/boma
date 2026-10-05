@@ -489,15 +489,33 @@ class BomaService {
       const supabase = createClient();
       const resultsMap = new Map<string, Transaction>();
 
-      // 1. Fetch transactions table
+      // 1. Fetch transactions table.
+      // NOTE: select('*') silently fails for the anon role — Postgres rejects
+      // the entire query when any column in * isn't granted (idempotency_key,
+      // contributor_email, contributor_phone, fee, metadata are creator-only).
+      // The error is swallowed by the catch block, leaving the list empty.
+      // Try the full column set first (works for creator); fall back to the
+      // public-granted columns for everyone else.
       try {
-        const { data: txns } = await supabase
+        const { data: txns, error: txnError } = await supabase
           .from('transactions')
-          .select('*')
+          .select('id,boma_id,reference,idempotency_key,contributor_name,contributor_email,contributor_phone,is_anonymous,amount,fee,net_amount,currency,payment_method,status,note,metadata,created_at')
           .eq('boma_id', bomaId)
           .order('created_at', { ascending: false });
 
-        if (txns) {
+        if (txnError) {
+          // Anon / non-creator path: retry with only the publicly-granted columns.
+          const { data: publicTxns } = await supabase
+            .from('transactions')
+            .select('id,boma_id,reference,contributor_name,is_anonymous,amount,net_amount,currency,payment_method,status,note,created_at')
+            .eq('boma_id', bomaId)
+            .order('created_at', { ascending: false });
+          if (publicTxns) {
+            for (const t of publicTxns) {
+              resultsMap.set(t.reference, { fee: 0, idempotency_key: t.reference, ...t } as Transaction);
+            }
+          }
+        } else if (txns) {
           for (const t of txns) {
             resultsMap.set(t.reference, t as Transaction);
           }
