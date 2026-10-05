@@ -1,5 +1,4 @@
 import React from 'react';
-import AdminSubnav from '@/components/admin/admin-subnav';
 
 export default function AdminLayout({
   children,
@@ -8,7 +7,6 @@ export default function AdminLayout({
 }) {
   return (
     <div className="w-full min-w-0">
-      <AdminSubnav />
       <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
         <div className="w-full max-w-7xl">
           {children}

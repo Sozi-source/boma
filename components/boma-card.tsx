@@ -64,8 +64,8 @@ export default function BomaCard({ boma, onContributeClick, coverSizes }: BomaCa
 
         <BomaCover
           boma={boma}
-          className="mb-4 h-32 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-40 lg:h-44"
-          imageClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="mb-4 h-44 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-48 lg:h-52"
+          imageClassName="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           sizes={coverSizes}
         />
 

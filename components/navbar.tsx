@@ -11,8 +11,8 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/bomas', label: 'Funds' },
+    { href: '/activity', label: 'Activity' },
     ...(authenticated ? [
-      { href: '/activity', label: 'Activity' },
       { href: '/admin', label: 'Admin Console' },
     ] : []),
   ];

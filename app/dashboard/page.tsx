@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Boma, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
-import ContributorTracker from '@/components/contributor-tracker';
 import BomaCover from '@/components/boma-cover';
+import ContributionModal from '@/components/contribution-modal';
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
@@ -22,29 +22,30 @@ import {
 export default function DashboardPage() {
   const [bomas, setBomas] = useState<Boma[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [viewMode, setViewMode] = useState<'contributors' | 'receipts'>('contributors');
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
   const [showBalance, setShowBalance] = useState(true);
+  const [selectedBomaForModal, setSelectedBomaForModal] = useState<Boma | null>(null);
+  const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
+
+  const loadDashboard = useCallback(async () => {
+    const currentUser = await bomaService.getCurrentUser();
+    if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
+
+    const allBomas = await bomaService.getBomas();
+    setBomas(allBomas);
+
+    const allTxns: Transaction[] = [];
+    for (const b of allBomas) {
+      const txns = await bomaService.getBomaTransactions(b.id);
+      allTxns.push(...txns);
+    }
+    allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setTransactions(allTxns);
+  }, []);
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      const currentUser = await bomaService.getCurrentUser();
-      if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
-
-      const allBomas = await bomaService.getBomas();
-      setBomas(allBomas);
-
-      const allTxns: Transaction[] = [];
-      for (const b of allBomas) {
-        const txns = await bomaService.getBomaTransactions(b.id);
-        allTxns.push(...txns);
-      }
-      allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      setTransactions(allTxns);
-    };
-
     void loadDashboard();
-  }, []);
+  }, [loadDashboard]);
 
   const totalRaised = useMemo(
     () => bomas.reduce((acc, b) => acc + Number(b.current_amount), 0),
@@ -102,7 +103,7 @@ export default function DashboardPage() {
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-xs">
                   <WalletIcon className="h-4 w-4 text-emerald-200" />
                 </span>
-                Total Community Funds
+                Total Funds
               </div>
               <button
                 type="button"
@@ -149,12 +150,21 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-            <Link href="/bomas" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
+            <button
+              type="button"
+              onClick={() => {
+                if (bomas.length > 0) {
+                  setSelectedBomaForModal(bomas[0]);
+                  setIsContributeModalOpen(true);
+                }
+              }}
+              className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"
+            >
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                 <ArrowUpRightIcon className="h-5 w-5" />
               </span>
               <span className="mt-2 block text-[10px] font-semibold text-slate-700">Contribute</span>
-            </Link>
+            </button>
             <Link href="/activity" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
                 <CreditCardIcon className="h-5 w-5" />
@@ -207,8 +217,8 @@ export default function DashboardPage() {
         <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-slate-950">Your funds</p>
-              <p className="mt-0.5 text-[10px] text-slate-400">Track every shilling in one place</p>
+              <p className="text-sm font-bold text-slate-950">Active Funds</p>
+              <p className="mt-0.5 text-[10px] text-slate-400">Transparent giving with live tracking</p>
             </div>
             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
               {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
@@ -219,97 +229,107 @@ export default function DashboardPage() {
             <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
               <p className="text-xs font-semibold text-slate-700">No active funds found.</p>
               <Link href="/bomas" className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 transition">
-                <ArrowUpRightIcon className="h-4 w-4" /> Explore community funds
+                <ArrowUpRightIcon className="h-4 w-4" /> Explore funds
               </Link>
             </div>
           ) : (
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-4">
               {bomas.map((b) => {
                 const pct = Math.min(100, Math.round((Number(b.current_amount) / Number(b.target_amount || 1)) * 100));
                 return (
-                  <Link
+                  <div
                     key={b.id}
-                    href={`/bomas/${b.id}`}
-                    className="block rounded-2xl border border-slate-200 bg-[#fbfcfc] p-4 transition hover:border-emerald-300 hover:bg-emerald-50/20"
+                    className="block rounded-2xl border border-slate-200 bg-[#fbfcfc] p-4 sm:p-5 shadow-xs transition hover:border-emerald-300"
                   >
                     <BomaCover
                       boma={b}
-                      className="mb-3 h-32 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-40 lg:h-44"
+                      className="mb-4 h-44 sm:h-52 w-full overflow-hidden rounded-2xl bg-slate-100 shadow-2xs"
+                      imageClassName="h-full w-full object-cover object-center transition-transform duration-300 hover:scale-102"
                       sizes="(max-width: 639px) calc(100vw - 64px), (max-width: 1023px) calc(100vw - 96px), 840px"
                     />
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md">
                           {b.category}
                         </span>
-                        <h3 className="mt-1 truncate text-sm font-bold text-slate-950">{b.title}</h3>
+                        <Link href={`/bomas/${b.id}`} className="block group">
+                          <h3 className="mt-1.5 text-base sm:text-lg font-bold text-slate-950 group-hover:text-emerald-800 transition-colors">{b.title}</h3>
+                        </Link>
+                        {b.description && (
+                          <p className="mt-1 text-xs text-slate-600 line-clamp-2">{b.description}</p>
+                        )}
                       </div>
-                      <span className="shrink-0 text-[10px] font-semibold text-slate-400">{pct}%</span>
+                      <span className="shrink-0 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{pct}%</span>
                     </div>
                     <div className="mt-4 flex items-baseline justify-between gap-3">
-                      <span className="font-mono text-sm font-bold text-slate-950">{formatCurrency(b.current_amount, b.currency)}</span>
-                      <span className="text-[10px] text-slate-400">Goal {formatCurrency(b.target_amount, b.currency)}</span>
+                      <span className="font-mono text-base sm:text-lg font-bold text-slate-950">{formatCurrency(b.current_amount, b.currency)}</span>
+                      <span className="text-xs text-slate-500 font-medium">Goal {formatCurrency(b.target_amount, b.currency)}</span>
                     </div>
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100">
                       <div className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-400" style={{ width: `${pct}%` }} />
                     </div>
-                  </Link>
+
+                    {/* Action buttons directly on card */}
+                    <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedBomaForModal(b);
+                          setIsContributeModalOpen(true);
+                        }}
+                        className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors"
+                      >
+                        <PlusIcon className="h-3.5 w-3.5" />
+                        <span>Contribute</span>
+                      </button>
+                      <Link
+                        href={`/bomas/${b.id}`}
+                        className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors"
+                      >
+                        <span>Details</span>
+                        <ArrowUpRightIcon className="h-3.5 w-3.5 text-slate-400" />
+                      </Link>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           )}
         </section>
 
-        {/* Recent activity */}
-        <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-          <div className="flex items-center justify-between">
+        {/* Public Audit Teaser linking directly to dedicated Activity */}
+        <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+              <CreditCardIcon className="h-5 w-5" />
+            </div>
             <div>
-              <p className="text-sm font-bold text-slate-950">Recent activity</p>
-              <p className="mt-0.5 text-[10px] text-slate-400">Latest contributions across your funds</p>
+              <p className="text-sm font-bold text-slate-950">Transparent Community Ledger</p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Track every transaction.
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setViewMode((v) => v === 'contributors' ? 'receipts' : 'contributors')}
-              className="text-[10px] font-semibold text-emerald-700"
-            >
-              {viewMode === 'contributors' ? 'View receipts' : 'View contributors'}
-            </button>
           </div>
-
-          {transactions.length === 0 ? (
-            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 text-left text-[11px] text-slate-500 sm:p-4">
-              <img
-                src="/assets/images/dashboard/empty-state/empty_state_240w_mobile-sm.webp"
-                srcSet="/assets/images/dashboard/empty-state/empty_state_240w_mobile-sm.webp 240w, /assets/images/dashboard/empty-state/empty_state_360w_mobile.webp 360w, /assets/images/dashboard/empty-state/empty_state_720w_tablet.webp 720w, /assets/images/dashboard/empty-state/empty_state_1080w_web.webp 1080w"
-                sizes="72px"
-                alt=""
-                aria-hidden="true"
-                className="h-[72px] w-[72px] shrink-0 rounded-xl object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-              No contributions yet. They’ll appear here when received.
-            </div>
-          ) : viewMode === 'receipts' ? (
-            <div className="mt-3 divide-y divide-slate-100">
-              {transactions.slice(0, 6).map((t) => (
-                <div key={t.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-slate-900">{t.is_anonymous ? 'Anonymous' : t.contributor_name}</p>
-                    <p className="mt-0.5 text-[10px] text-slate-400">{new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 font-mono text-[10px] font-bold text-emerald-700">
-                    +{formatCurrency(t.amount, t.currency)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-4">
-              <ContributorTracker transactions={transactions} currency="KES" bomaTitle="Your funds" />
-            </div>
-          )}
+          <Link
+            href="/activity"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/80 px-4 py-2 text-xs font-semibold text-emerald-800 transition-colors shrink-0"
+          >
+            <span>View All Receipts ({transactions.length})</span>
+            <span>→</span>
+          </Link>
         </section>
+
+        {/* Live Contribution Modal (Paystack Card + M-Pesa) */}
+        {selectedBomaForModal && (
+          <ContributionModal
+            isOpen={isContributeModalOpen}
+            onClose={() => setIsContributeModalOpen(false)}
+            boma={selectedBomaForModal}
+            onSuccess={() => {
+              void loadDashboard();
+            }}
+          />
+        )}
       </div>
     </div>
   );

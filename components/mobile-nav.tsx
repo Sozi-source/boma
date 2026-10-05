@@ -40,15 +40,14 @@ export default function MobileNav({ authenticated }: { authenticated: boolean })
           <span>Funds</span>
         </Link>
 
-        <Link href={authenticated ? '/activity' : '/auth/login'} className={item(isActivity)}>
+        <Link href="/activity" className={item(isActivity)}>
           <span className={`relative flex h-8 w-8 items-center justify-center rounded-xl ${isActivity ? 'bg-emerald-50' : ''}`}>
             <WalletIcon className="h-[19px] w-[19px]" />
-            {authenticated && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white" />}
           </span>
-          <span>{authenticated ? 'Activity' : 'Sign in'}</span>
+          <span>Activity</span>
         </Link>
 
-        <Link href={authenticated ? '/admin' : '/auth/login'} className={item(isAdmin)}>
+        <Link href={authenticated ? '/admin' : '/auth/login?next=/admin'} className={item(isAdmin)}>
           <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${isAdmin ? 'bg-emerald-50' : ''}`}>
             <ShieldCheckIcon className="h-[19px] w-[19px]" />
           </span>

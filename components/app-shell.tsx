@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/admin-sidebar';
+import AdminMobileHeader from '@/components/admin/admin-mobile-header';
 import DesktopHeader from '@/components/desktop-header';
 import MobileNav from '@/components/mobile-nav';
 import Navbar from '@/components/navbar';
@@ -63,7 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {showAppChrome ? (
           isAdminRoute ? (
             <>
-              <div className="lg:hidden"><Navbar authenticated /></div>
+              <div className="lg:hidden"><AdminMobileHeader /></div>
               <div className="sticky top-0 z-30 hidden lg:block"><DesktopHeader /></div>
             </>
           ) : (

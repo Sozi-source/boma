@@ -9,6 +9,7 @@ import ContributionModal from '@/components/contribution-modal';
 import ContributorTracker from '@/components/contributor-tracker';
 import ShareModal from '@/components/share-modal';
 import DisbursementModal from '@/components/disbursement-modal';
+import BomaCover from '@/components/boma-cover';
 import { 
   ShieldCheckIcon, 
   UsersIcon, 
@@ -171,40 +172,25 @@ export default function BomaDetailPage({ params }: PageProps) {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Cover Media */}
-          {boma.image_url ? (
-            <div className="relative h-56 sm:h-80 w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200">
-              <img
-                src={boma.image_url}
-                alt={boma.title}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                <span className="rounded-md bg-slate-900/80 text-white px-2.5 py-1 text-[10px] font-semibold uppercase backdrop-blur-xs">
-                  {boma.category}
+          <div className="relative h-48 sm:h-64 lg:h-72 w-full overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-xs">
+            <BomaCover
+              boma={boma}
+              className="h-full w-full"
+              imageClassName="h-full w-full object-cover object-center"
+              sizes="(min-width: 1024px) 66vw, 100vw"
+            />
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
+              <span className="rounded-md bg-slate-900/80 text-white px-2.5 py-1 text-[10px] font-semibold uppercase backdrop-blur-xs">
+                {boma.category}
+              </span>
+              {boma.verified && (
+                <span className="rounded-md bg-amber-500/90 text-amber-950 font-bold px-2.5 py-1 text-[10px] backdrop-blur-xs flex items-center gap-1 shadow-xs">
+                  <ShieldCheckIcon className="w-3 h-3 text-amber-950" />
+                  Verified Fund
                 </span>
-                {boma.verified && (
-                  <span className="rounded-md bg-amber-500/90 text-amber-950 font-bold px-2.5 py-1 text-[10px] backdrop-blur-xs flex items-center gap-1 shadow-xs">
-                    <ShieldCheckIcon className="w-3 h-3 text-amber-950" />
-                    Verified Fund
-                  </span>
-                )}
-              </div>
+              )}
             </div>
-          ) : (
-            <div className="relative h-28 sm:h-36 w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-200 flex items-end p-4">
-              <div className="flex items-center gap-2">
-                <span className="rounded-md bg-white text-slate-700 border border-slate-200 px-2.5 py-1 text-[10px] font-semibold uppercase shadow-2xs">
-                  {boma.category}
-                </span>
-                {boma.verified && (
-                  <span className="rounded-md bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 text-[10px] font-semibold flex items-center gap-1">
-                    <ShieldCheckIcon className="w-3 h-3 text-amber-600" />
-                    Verified Fund
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
+          </div>
 
           {/* Title & Organizer Info */}
           <div className="pb-3 border-b border-slate-200/80">
