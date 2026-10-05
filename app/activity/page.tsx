@@ -182,35 +182,16 @@ export default function ActivityPage() {
       <div className="w-full max-w-7xl mx-auto space-y-5 sm:space-y-6">
         
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Activity &amp; Receipts
-              </h1>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
-                <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Public Audit Log</span>
-              </span>
-              {bomas.length === 1 && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-semibold">
-                  <span>{bomas[0].title}</span>
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Real-time ledger of contributors and receipts.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
-            >
-              <span>← Back to Home</span>
-            </Link>
-          </div>
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-200">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Activity
+          </h1>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+          >
+            ← Back to Home
+          </Link>
         </div>
 
         {/* Financial KPI Summary Cards */}

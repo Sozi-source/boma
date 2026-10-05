@@ -42,15 +42,15 @@ export default function BomaCard({ boma, onContributeClick, coverSizes }: BomaCa
   );
 
   return (
-    <article className="group flex min-w-0 flex-col justify-between rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-white to-emerald-50/40 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md sm:p-5">
+    <article className="group flex min-w-0 flex-col justify-between rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-white to-emerald-50/40 p-3 shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg sm:p-4">
       <div>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-600 sm:text-[10px]">
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-50 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-600 sm:text-[10px]">
             {categoryLabel}
           </span>
 
           {boma.verified ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-800">
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
               <ShieldCheckIcon className="h-3.5 w-3.5 text-amber-600" />
               <span>Verified</span>
             </span>
@@ -64,56 +64,58 @@ export default function BomaCard({ boma, onContributeClick, coverSizes }: BomaCa
 
         <BomaCover
           boma={boma}
-          className="mb-4 h-44 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-48 lg:h-52"
+          className="mb-3 h-44 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-48 lg:h-52"
           imageClassName="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           sizes={coverSizes}
         />
 
         {/* Title & Description */}
         <Link href={`/bomas/${boma.id}`} className="block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
-          <h3 className="text-base font-bold tracking-tight text-slate-950 transition-colors group-hover:text-emerald-800 sm:text-lg">
+          <h3 className="text-sm font-bold tracking-tight text-slate-950 transition-colors group-hover:text-emerald-800 sm:text-base">
             {boma.title}
           </h3>
-          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
             {boma.description || 'Community support fund.'}
           </p>
         </Link>
       </div>
 
-      <div className="mt-5 space-y-4 border-t border-slate-100 pt-4">
-        <div className="flex items-end justify-between gap-3 rounded-xl border border-slate-100 bg-white/80 p-3.5">
+      <div className="mt-3 space-y-2.5 border-t border-slate-100 pt-3">
+        {/* Collected / Goal */}
+        <div className="flex items-end justify-between gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5">
           <div>
-            <span className="mb-1 block text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500 sm:text-[10px]">Collected</span>
-            <span className="font-mono text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+            <span className="mb-0.5 block text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Collected</span>
+            <span className="font-mono text-lg font-bold tracking-tight text-slate-950 sm:text-xl">
               {formatCurrency(boma.current_amount, boma.currency)}
             </span>
           </div>
-          <div className="max-w-[48%] pb-0.5 text-right">
-            <span className="mb-1 block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Goal</span>
-            <span className="block truncate font-mono text-xs font-semibold text-slate-600 sm:text-sm">
+          <div className="max-w-[48%] text-right">
+            <span className="mb-0.5 block text-[9px] font-semibold uppercase tracking-wider text-slate-400">Goal</span>
+            <span className="block truncate font-mono text-xs font-semibold text-slate-500">
               {formatCurrency(boma.target_amount, boma.currency)}
             </span>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/60">
+        {/* Progress bar — standalone, outside the stats box */}
+        <div className="space-y-1.5 px-0.5">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/60">
             <div
               className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300"
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <div className="flex items-center justify-between gap-2 text-[10px] sm:text-xs">
+          <div className="flex items-center justify-between gap-2 text-[10px]">
             <span className="font-semibold text-emerald-800">{percentage}% of goal</span>
-            <span className="text-slate-500">{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
+            <span className="text-slate-400">{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-0.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => onContributeClick?.(boma)}
-            className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span>Contribute</span>
@@ -121,7 +123,7 @@ export default function BomaCard({ boma, onContributeClick, coverSizes }: BomaCa
           
           <Link
             href={`/bomas/${boma.id}`}
-            className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
           >
             <span>Details</span>
             <ArrowUpRightIcon className="h-3.5 w-3.5 text-slate-400" />
