@@ -59,25 +59,32 @@ export default function BomaDetailPage({ params }: PageProps) {
       const currentUser = await bomaService.getCurrentUser();
       if (currentUser && currentUser.id !== 'user-guest') setCurrentUserId(currentUser.id);
       // Returning from Paystack checkout: verify, then book the ledger once.
-      const params = new URLSearchParams(window.location.search);
-      const reference = params.get('reference') || params.get('trxref');
-      if (reference && params.get('paystack') === 'true') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const reference = urlParams.get('reference') || urlParams.get('trxref');
+      let verifiedPayment = false;
+      if (reference && urlParams.get('paystack') === 'true') {
         try {
           const res = await fetch('/api/payments/paystack/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ reference }),
           });
-          const data = await res.json();
           if (!res.ok) throw new Error('Payment could not be confirmed');
+          verifiedPayment = true;
           setPaymentNotice({ ok: true, text: 'Your contribution was received. Thank you!' });
         } catch {
           setPaymentNotice({
             ok: false,
-            text: 'We couldn’t confirm your payment. Please check again shortly.',
+            text: 'We couldn\'t confirm your payment. Please check again shortly.',
           });
         }
         window.history.replaceState({}, '', window.location.pathname);
+      }
+      // If we just settled a payment, wait briefly so the DB write propagates
+      // before re-fetching — otherwise we race the settle_paystack_payment RPC
+      // and read stale balance/transaction data.
+      if (verifiedPayment) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
       }
       await loadBomaData();
     };
