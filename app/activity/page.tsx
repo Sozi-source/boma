@@ -2,23 +2,23 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Transaction, Boma, PaymentMethod } from '@/lib/types/fintech';
+import { Transaction, Boma, PaymentMethod, Currency } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import { normalizePhoneNumber } from '@/lib/utils/phone';
 import { 
   CreditCardIcon, 
   SearchIcon, 
-  SmartphoneIcon,
-  ShieldCheckIcon,
-  ClockIcon,
-  CopyIcon,
-  CheckCircleIcon,
-  UsersIcon,
-  XMarkIcon,
-  PrinterIcon,
-  ArrowUpRightIcon,
-  BuildingLibraryIcon
+  SmartphoneIcon, 
+  ShieldCheckIcon, 
+  ClockIcon, 
+  CopyIcon, 
+  CheckCircleIcon, 
+  UsersIcon, 
+  XMarkIcon, 
+  PrinterIcon, 
+  ArrowUpRightIcon, 
+  BuildingLibraryIcon 
 } from '@/components/ui/icons';
 
 interface ContributorStat {
@@ -28,7 +28,7 @@ interface ContributorStat {
   email?: string;
   isAnonymous: boolean;
   totalAmount: number;
-  currency: string;
+  currency: Currency;
   count: number;
   funds: string[];
   lastDate: string;
@@ -118,7 +118,7 @@ export default function ActivityPage() {
           email: tx.contributor_email,
           isAnonymous,
           totalAmount: Number(tx.amount || 0),
-          currency: tx.currency || 'KES',
+          currency: (tx.currency as Currency) || 'KES',
           count: 1,
           funds: [fundTitle],
           lastDate: tx.created_at,
