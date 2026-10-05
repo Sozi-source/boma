@@ -12,7 +12,7 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
     { href: '/', label: 'Home' },
     { href: '/bomas', label: 'Funds' },
     ...(authenticated ? [
-      { href: '/dashboard', label: 'Activity' },
+      { href: '/activity', label: 'Activity' },
       { href: '/admin', label: 'Admin Console' },
     ] : []),
   ];

@@ -15,7 +15,7 @@ export default function MobileNav({ authenticated }: { authenticated: boolean })
 
   const isHome = pathname === '/';
   const isFunds = pathname === '/bomas' || pathname.startsWith('/bomas/');
-  const isActivity = pathname === '/dashboard';
+  const isActivity = pathname === '/activity';
   const isAdmin = pathname.startsWith('/admin');
 
   const item = (active: boolean) =>
@@ -40,7 +40,7 @@ export default function MobileNav({ authenticated }: { authenticated: boolean })
           <span>Funds</span>
         </Link>
 
-        <Link href={authenticated ? '/dashboard' : '/auth/login'} className={item(isActivity)}>
+        <Link href={authenticated ? '/activity' : '/auth/login'} className={item(isActivity)}>
           <span className={`relative flex h-8 w-8 items-center justify-center rounded-xl ${isActivity ? 'bg-emerald-50' : ''}`}>
             <WalletIcon className="h-[19px] w-[19px]" />
             {authenticated && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white" />}

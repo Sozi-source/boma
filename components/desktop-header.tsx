@@ -13,6 +13,7 @@ export default function DesktopHeader() {
   // Derive human-readable page section for the desktop breadcrumb
   const getPageTitle = () => {
     if (pathname === '/') return 'Home Overview';
+    if (pathname === '/activity') return 'Activity & Receipts Audit';
     if (pathname === '/dashboard') return 'Treasury & Member Portal';
     if (pathname === '/bomas') return 'Community Funds';
     if (pathname.startsWith('/bomas/create')) return 'Launch New Boma';

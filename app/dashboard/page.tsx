@@ -78,37 +78,36 @@ export default function DashboardPage() {
         </div>
 
         {/* Main account / fund hero */}
-        <section className="relative overflow-hidden rounded-[24px] bg-[#064c41] bg-cover bg-right bg-no-repeat p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.22)] sm:p-7">
+        <section className="relative overflow-hidden rounded-[24px] bg-[#0A4F43] p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.18)] sm:p-7">
+          {/* Full-bleed seamless background illustration (no nested card frame) */}
           <picture className="pointer-events-none absolute inset-0">
             <source
-              media="(max-width: 639px)"
-              srcSet="/assets/images/dashboard/hero_card_bg_640w_mobile.webp 640w"
-              sizes="calc(100vw - 32px)"
-            />
-            <source
-              media="(min-width: 640px)"
               srcSet="/assets/images/dashboard/hero_card_bg_944w_web.webp 944w, /assets/images/dashboard/hero_card_bg_1416w_web-xl.webp 1416w, /assets/images/dashboard/hero_card_bg_1888w_web-2x.webp 1888w"
-              sizes="(min-width: 1024px) 944px, calc(100vw - 48px)"
+              sizes="(min-width: 1024px) 1024px, 100vw"
             />
             <img
-              src="/assets/images/dashboard/hero_card_bg_640w_mobile.webp"
+              src="/assets/images/dashboard/hero_card_bg_944w_web.webp"
               alt=""
               className="h-full w-full object-cover object-right"
             />
           </picture>
 
-          <div className="relative">
+          {/* Gentle soft scrim behind the text on the left; leaves the 3D art on the right 100% bright & vibrant */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-full sm:w-3/5 bg-gradient-to-r from-[#0A4F43] via-[#0A4F43]/50 to-transparent" />
+
+          {/* Foreground content with guaranteed readability */}
+          <div className="relative z-10 max-w-md sm:max-w-lg">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-medium text-white/90">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15">
-                  <WalletIcon className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-teal-100">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-xs">
+                  <WalletIcon className="h-4 w-4 text-emerald-200" />
                 </span>
-                Total funds
+                Total Community Funds
               </div>
               <button
                 type="button"
                 onClick={() => setShowBalance((v) => !v)}
-                className="rounded-full bg-white/10 p-2 text-white/80 transition hover:bg-white/15"
+                className="rounded-full bg-white/10 p-2 text-white/80 transition hover:bg-white/20 active:scale-95 backdrop-blur-xs"
                 aria-label={showBalance ? 'Hide balance' : 'Show balance'}
               >
                 {showBalance ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
@@ -116,21 +115,27 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/90">Available across your funds</p>
-              <p className="mt-1 text-[34px] font-bold tracking-tight sm:text-[42px]">{balance}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-200/90">
+                Funds Available
+              </p>
+              <p className="mt-1 text-[32px] sm:text-[40px] font-bold font-mono tracking-tight tabular-nums drop-shadow-xs">
+                {balance}
+              </p>
             </div>
 
-            <div className="mt-6 flex items-end justify-between gap-4">
+            <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-xs text-white/85">Active funds</p>
-                <p className="mt-1 text-sm font-semibold">{bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</p>
+                <p className="text-[11px] text-teal-200/80">Active campaigns</p>
+                <p className="mt-0.5 text-sm font-bold font-mono text-white">
+                  {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
+                </p>
               </div>
               <Link
                 href="/bomas"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#087f78] shadow-sm transition hover:bg-white/90"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#064c41] shadow-sm transition hover:bg-teal-50 active:scale-98"
               >
                 <ArrowUpRightIcon className="h-4 w-4" />
-                Explore funds
+                <span>Explore funds</span>
               </Link>
             </div>
           </div>
@@ -150,7 +155,7 @@ export default function DashboardPage() {
               </span>
               <span className="mt-2 block text-[10px] font-semibold text-slate-700">Contribute</span>
             </Link>
-            <Link href="/dashboard" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
+            <Link href="/activity" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
                 <CreditCardIcon className="h-5 w-5" />
               </span>
