@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { WalletIcon, ShieldCheckIcon } from './ui/icons';
+import { WalletIcon } from './ui/icons';
 
 interface AuthUser {
   id: string;
@@ -121,14 +121,6 @@ export default function UserMenu() {
               >
                 <WalletIcon className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Dashboard &amp; Wallet</span>
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <ShieldCheckIcon className="w-3.5 h-3.5 text-amber-600" />
-                <span>Admin Controls</span>
               </Link>
             </div>
 

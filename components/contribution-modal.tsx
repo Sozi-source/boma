@@ -1,16 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Boma, PaymentMethod, Transaction, LedgerEntry, UserProfile } from '../lib/types/fintech';
+import { Boma, Transaction, LedgerEntry, UserProfile } from '../lib/types/fintech';
 import { formatCurrency } from '../lib/ledger/ledger-service';
 import { createClient } from '../lib/supabase/client';
 import { bomaService } from '../lib/services/boma-service';
 import { formatPhoneDisplay, normalizePhoneNumber } from '../lib/utils/phone';
 import { 
   XMarkIcon, 
-  SmartphoneIcon, 
-  CreditCardIcon, 
-  BuildingLibraryIcon, 
   ShieldCheckIcon, 
   CheckCircleIcon,
   CopyIcon,
@@ -44,7 +41,6 @@ export default function ContributionModal({
   const [showAddLine, setShowAddLine] = useState<boolean>(false);
   const [newPhoneNumber, setNewPhoneNumber] = useState<string>('');
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mpesa');
   const [copied, setCopied] = useState<boolean>(false);
   const [processingStatus, setProcessingStatus] = useState<string>('');
   const [receiptData, setReceiptData] = useState<{ transaction: Transaction; ledgerEntry: LedgerEntry } | null>(null);
@@ -118,18 +114,18 @@ export default function ContributionModal({
     e.preventDefault();
     setErrorMessage('');
 
-    if (selectedAmount <= 0) {
-      setErrorMessage('Enter a valid amount.');
+    if (selectedAmount <= 0 || !Number.isInteger(selectedAmount)) {
+      setErrorMessage('Enter a whole-number amount in KES.');
       return;
     }
 
-    if (!contributorEmail) {
-      setErrorMessage('Please sign in to contribute.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contributorEmail.trim())) {
+      setErrorMessage('Enter an email address so we can send your receipt.');
       return;
     }
 
     setStep('processing');
-    setProcessingStatus('Opening secure payment...');
+    setProcessingStatus('Sending an M-Pesa payment prompt to your phone...');
 
     try {
       // Auto-link newly entered phone to user profile if logged in
@@ -147,7 +143,6 @@ export default function ContributionModal({
         }
       }
 
-      // 1. Initialize Paystack Transaction
       const initRes = await fetch('/api/payments/paystack/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,7 +153,6 @@ export default function ContributionModal({
           contributor_email: contributorEmail,
           contributor_phone: contributorPhone,
           is_anonymous: isAnonymous,
-          payment_method: paymentMethod,
           currency: boma.currency,
         }),
       });
@@ -169,11 +163,27 @@ export default function ContributionModal({
       }
 
       const initData = await initRes.json();
-      if (typeof initData.authorization_url !== 'string' || !initData.authorization_url.startsWith('https://')) {
-        throw new Error('Secure checkout is unavailable. Please try again later.');
+      if (typeof initData.reference !== 'string') throw new Error('M-Pesa could not start. Please try again.');
+      setProcessingStatus(typeof initData.display_text === 'string'
+        ? initData.display_text
+        : 'Check your phone and approve the M-Pesa prompt.');
+      for (let attempt = 0; attempt < 18; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 10_000));
+        const verifyRes = await fetch('/api/payments/paystack/verify', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reference: initData.reference }),
+        });
+        const verifyData = await verifyRes.json().catch(() => ({}));
+        if (verifyRes.ok && verifyData.status === 'success') {
+          window.location.assign(`/bomas/${boma.id}?reference=${encodeURIComponent(initData.reference)}&paystack=true`);
+          return;
+        }
+        if (!verifyRes.ok && ![202, 503].includes(verifyRes.status)) {
+          throw new Error(verifyData.error || 'Unable to confirm your payment.');
+        }
       }
-      setProcessingStatus('Taking you to secure payment...');
-      window.location.assign(initData.authorization_url);
+      setStep('input');
+      setErrorMessage('Payment is still pending. Check your M-Pesa messages before starting another payment.');
     } catch (err: unknown) {
       setStep('input');
       setErrorMessage(err instanceof Error ? err.message : 'Contribution failed.');
@@ -270,65 +280,19 @@ export default function ContributionModal({
                   aria-label="Custom Amount"
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
+                  step="1"
                   min="10"
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
                 />
               </div>
-            </div>
-
-            {/* Payment Method Selector */}
-            <div>
-              <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                Payment Method
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('mpesa')}
-                  className={`flex flex-col items-center justify-center p-2.5 rounded-lg border text-center transition-all ${
-                    paymentMethod === 'mpesa'
-                      ? 'border-emerald-600 bg-emerald-50/70 text-emerald-900 ring-1 ring-emerald-600'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <SmartphoneIcon className="w-4 h-4 text-emerald-700 mb-1" />
-                  <span className="text-xs font-semibold">M-Pesa</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('card')}
-                  className={`flex flex-col items-center justify-center p-2.5 rounded-lg border text-center transition-all ${
-                    paymentMethod === 'card'
-                      ? 'border-emerald-600 bg-emerald-50/70 text-emerald-900 ring-1 ring-emerald-600'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <CreditCardIcon className="w-4 h-4 text-teal-600 mb-1" />
-                  <span className="text-xs font-semibold">Card</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('bank_transfer')}
-                  className={`flex flex-col items-center justify-center p-2.5 rounded-lg border text-center transition-all ${
-                    paymentMethod === 'bank_transfer'
-                      ? 'border-emerald-600 bg-emerald-50/70 text-emerald-900 ring-1 ring-emerald-600'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <BuildingLibraryIcon className="w-4 h-4 text-slate-500 mb-1" />
-                  <span className="text-xs font-semibold">Bank</span>
-                </button>
-              </div>
+              <p className="mt-2 text-[10px] leading-4 text-slate-500">BomaPay keeps 2.5% of each contribution. The remaining share settles to the organizer’s registered M-Pesa destination.</p>
             </div>
 
             {/* Inputs */}
             <div className="space-y-3">
-              {paymentMethod === 'mpesa' && (
-                <div>
+              <div>
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    Mobile Phone Number *
+                    M-Pesa number for STK prompt *
                   </label>
                   {userPhones.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pb-2">
@@ -362,8 +326,29 @@ export default function ContributionModal({
                     aria-label="Mobile Phone Number"
                     value={contributorPhone}
                     onChange={(e) => setContributorPhone(e.target.value)}
+                    placeholder="0712 345 678"
+                    autoComplete="tel"
+                    inputMode="tel"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
                   />
+              </div>
+
+              {!contributorEmail && (
+                <div>
+                  <label className="mb-1 block text-[11px] font-semibold text-slate-700" htmlFor="contribution-email">
+                    Email for your receipt *
+                  </label>
+                  <input
+                    id="contribution-email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={contributorEmail}
+                    onChange={(e) => setContributorEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-hidden"
+                  />
+                  <p className="mt-1 text-[10px] text-slate-500">No account needed to contribute.</p>
                 </div>
               )}
 
@@ -398,7 +383,7 @@ export default function ContributionModal({
                 type="submit"
                 className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-semibold text-white shadow-2xs transition-all active:scale-98 flex items-center justify-center gap-1.5"
               >
-                <span>Pay {formatCurrency(selectedAmount, boma.currency)}</span>
+                <span>Pay with M-Pesa {formatCurrency(selectedAmount, boma.currency)}</span>
               </button>
             </div>
           </form>

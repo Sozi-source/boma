@@ -34,6 +34,32 @@ export interface PaystackInitParams {
   channels?: string[]; // ['mobile_money', 'card', 'bank']
 }
 
+export interface PaystackMpesaChargeParams {
+  email: string;
+  amount: number;
+  currency: 'KES';
+  reference: string;
+  phone: string;
+  subaccount: string;
+  platformFeePercent: number;
+}
+
+export interface PaystackSubaccountParams {
+  businessName: string;
+  accountNumber: string;
+  primaryContactEmail: string;
+  primaryContactName: string;
+  primaryContactPhone?: string;
+  percentageCharge: number;
+}
+
+export interface PaystackSubaccount {
+  subaccount_code: string;
+  is_verified: boolean;
+  active: boolean;
+  currency: string;
+}
+
 export interface PaystackInitResponse {
   status: boolean;
   message: string;
@@ -49,7 +75,7 @@ export interface PaystackVerifyResponse {
   message: string;
   data: {
     id: number;
-    status: 'success' | 'failed' | 'abandoned';
+    status: 'success' | 'failed' | 'abandoned' | 'pending';
     reference: string;
     amount: number; // in sub-units (e.g. 100000 = 1000 KES)
     currency: string;
@@ -133,6 +159,70 @@ class PaystackService {
     }
 
     return await res.json();
+  }
+
+  async chargeMpesa(params: PaystackMpesaChargeParams): Promise<{
+    status: boolean;
+    data: { reference: string; status: string; display_text?: string };
+  }> {
+    requirePaystack();
+    const feeMinor = Math.round(this.toSubUnits(params.amount) * params.platformFeePercent / 100);
+    const res = await fetch('https://api.paystack.co/charge', {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        email: params.email,
+        amount: this.toSubUnits(params.amount),
+        currency: params.currency,
+        reference: params.reference,
+        mobile_money: { phone: params.phone.startsWith('+') ? params.phone : `+${params.phone}`, provider: 'mpesa' },
+        subaccount: params.subaccount,
+        transaction_charge: feeMinor,
+        bearer: 'account',
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.status || data.data?.reference !== params.reference) {
+      throw new Error(data.message || 'Failed to start M-Pesa payment');
+    }
+    return data;
+  }
+
+  async createSubaccount(params: PaystackSubaccountParams): Promise<PaystackSubaccount> {
+    requirePaystack();
+    const res = await fetch('https://api.paystack.co/subaccount', {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        business_name: params.businessName,
+        settlement_bank: 'MPESA',
+        account_number: params.accountNumber,
+        percentage_charge: params.percentageCharge,
+        primary_contact_email: params.primaryContactEmail,
+        primary_contact_name: params.primaryContactName,
+        ...(params.primaryContactPhone ? { primary_contact_phone: params.primaryContactPhone } : {}),
+        description: 'Boma group contribution settlement',
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const result = await res.json();
+    if (!res.ok || !result.status || !result.data?.subaccount_code) {
+      throw new Error(result.message || 'Paystack could not create the group subaccount');
+    }
+    return result.data as PaystackSubaccount;
+  }
+
+  async getSubaccount(code: string): Promise<PaystackSubaccount> {
+    requirePaystack();
+    const res = await fetch(`https://api.paystack.co/subaccount/${encodeURIComponent(code)}`, {
+      headers: this.getHeaders(), signal: AbortSignal.timeout(10_000),
+    });
+    const result = await res.json();
+    if (!res.ok || !result.status || !result.data?.subaccount_code) {
+      throw new Error(result.message || 'Paystack subaccount could not be verified');
+    }
+    return result.data as PaystackSubaccount;
   }
 
   /**

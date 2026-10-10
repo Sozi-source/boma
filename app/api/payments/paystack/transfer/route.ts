@@ -47,8 +47,13 @@ export async function POST(request: Request) {
     if (!await allowPaymentAttempt(db, 'payout-user', user.id, 5, 3600)) {
       return NextResponse.json({ error: 'Payout request limit reached. Please try again later.' }, { status: 429 });
     }
-    const { data: boma, error: bomaError } = await db.from('bomas').select('currency').eq('id', bomaId).maybeSingle();
+    const { data: boma, error: bomaError } = await db.from('bomas').select('currency,creator_id').eq('id', bomaId).maybeSingle();
     if (bomaError || !boma) return NextResponse.json({ error: 'Fund not found' }, { status: 404 });
+    const { data: directSettlement } = await db.from('paystack_subaccounts')
+      .select('subaccount_code').eq('creator_id', boma.creator_id).maybeSingle();
+    if (directSettlement) {
+      return NextResponse.json({ error: 'This organizer receives contributions directly through their Paystack subaccount.' }, { status: 409 });
+    }
     if (boma.currency !== 'KES') {
       return NextResponse.json({ error: 'M-Pesa payouts are only available for KES funds.' }, { status: 400 });
     }

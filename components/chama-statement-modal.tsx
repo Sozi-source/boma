@@ -104,7 +104,7 @@ export default function ChamaStatementModal({
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-500 font-mono mt-0.5">
-                    Regulated Custody & Real-Time Double-Entry Escrow Ledger
+                    M-Pesa group contributions &amp; transparent ledger
                   </p>
                 </div>
                 <div className="text-left sm:text-right">

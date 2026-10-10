@@ -10,7 +10,6 @@ import ContributionModal from '@/components/contribution-modal';
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
-  BellIcon,
   CreditCardIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -32,10 +31,13 @@ export default function DashboardPage() {
     if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
 
     const allBomas = await bomaService.getBomas();
-    setBomas(allBomas);
+    const ownedBomas = currentUser?.id && currentUser.id !== 'user-guest'
+      ? allBomas.filter((boma) => boma.creator_id === currentUser.id)
+      : [];
+    setBomas(ownedBomas);
 
     const allTxns: Transaction[] = [];
-    for (const b of allBomas) {
+    for (const b of ownedBomas) {
       const txns = await bomaService.getBomaTransactions(b.id);
       allTxns.push(...txns);
     }
@@ -57,25 +59,16 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-full bg-[#f5f7f8]">
-      <div className="mx-auto w-full max-w-5xl px-4 pb-8 pt-4 sm:px-6 sm:pt-6 lg:px-10">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-8 pt-5 sm:px-8 sm:pt-8 lg:px-10">
         {/* Mobile / compact greeting */}
-        <div className="mb-4 flex items-center justify-between">
+          <div className="mb-5 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-medium text-slate-500">Good day</p>
             <h1 className="mt-0.5 text-[20px] font-bold tracking-tight text-slate-950 sm:text-2xl">
               {firstName} 👋
             </h1>
           </div>
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm"
-          >
-            <BellIcon className="h-5 w-5" />
-            {transactions.length > 0 && (
-              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-            )}
-          </button>
+          <Link href="/bomas/create" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-700 px-3.5 text-xs font-semibold text-white transition hover:bg-emerald-800 sm:px-4 sm:text-sm">Start a group fund</Link>
         </div>
 
         {/* Main account / fund hero */}
@@ -103,7 +96,7 @@ export default function DashboardPage() {
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-xs">
                   <WalletIcon className="h-4 w-4 text-emerald-200" />
                 </span>
-                Total Funds
+                Your group funds
               </div>
               <button
                 type="button"
@@ -117,16 +110,17 @@ export default function DashboardPage() {
 
             <div className="mt-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-200/90">
-                Funds Available
+                Recorded in group ledgers
               </p>
               <p className="mt-1 text-[32px] sm:text-[40px] font-bold font-mono tracking-tight tabular-nums drop-shadow-xs">
                 {balance}
               </p>
+              <p className="mt-1 text-[10px] text-teal-100/80">After BomaPay’s 2.5% platform share</p>
             </div>
 
             <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-[11px] text-teal-200/80">Active campaigns</p>
+                <p className="text-[11px] text-teal-200/80">Your active goals</p>
                 <p className="mt-0.5 text-sm font-bold font-mono text-white">
                   {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
                 </p>
@@ -150,21 +144,12 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (bomas.length > 0) {
-                  setSelectedBomaForModal(bomas[0]);
-                  setIsContributeModalOpen(true);
-                }
-              }}
-              className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"
-            >
+            <Link href="/bomas" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                 <ArrowUpRightIcon className="h-5 w-5" />
               </span>
               <span className="mt-2 block text-[10px] font-semibold text-slate-700">Contribute</span>
-            </button>
+            </Link>
             <Link href="/activity" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
                 <CreditCardIcon className="h-5 w-5" />
@@ -175,7 +160,13 @@ export default function DashboardPage() {
               type="button"
               onClick={() => {
                 if (typeof navigator !== 'undefined' && navigator.share) {
-                  void navigator.share({ title: 'Boma', text: 'Join my Boma fund.' });
+                  const featured = bomas[0];
+                  const url = featured ? `${window.location.origin}/bomas/${featured.id}` : `${window.location.origin}/bomas`;
+                  void navigator.share({
+                    title: featured?.title || 'BomaPay group goals',
+                    text: featured ? `See the goal and follow our progress: ${featured.title}` : 'Explore group goals on BomaPay.',
+                    url,
+                  });
                 }
               }}
               className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"
@@ -198,7 +189,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="mt-3 text-[23px] font-bold tracking-tight text-slate-950">{balance}</p>
-            <p className="mt-1 text-[10px] text-slate-400">Across {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</p>
+              <p className="mt-1 text-[10px] text-slate-400">After BomaPay’s 2.5% share</p>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -217,8 +208,8 @@ export default function DashboardPage() {
         <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-slate-950">Active Funds</p>
-              <p className="mt-0.5 text-[10px] text-slate-400">Transparent giving with live tracking</p>
+              <p className="text-sm font-bold text-slate-950">Your group funds</p>
+              <p className="mt-0.5 text-[10px] text-slate-400">Member-visible progress and contribution records</p>
             </div>
             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
               {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
@@ -227,9 +218,10 @@ export default function DashboardPage() {
 
           {bomas.length === 0 ? (
             <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-              <p className="text-xs font-semibold text-slate-700">No active funds found.</p>
-              <Link href="/bomas" className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 transition">
-                <ArrowUpRightIcon className="h-4 w-4" /> Explore funds
+              <p className="text-sm font-semibold text-slate-800">Your group goals will appear here.</p>
+              <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">Create your first fund, add the group’s M-Pesa destination, then share its link with members.</p>
+              <Link href="/bomas/create" className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-emerald-700 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-800">
+                <PlusIcon className="h-4 w-4" /> Start a group fund
               </Link>
             </div>
           ) : (
@@ -319,7 +311,7 @@ export default function DashboardPage() {
           </Link>
         </section>
 
-        {/* Live Contribution Modal (Paystack Card + M-Pesa) */}
+        {/* Live Contribution Modal (Paystack M-Pesa split payment) */}
         {selectedBomaForModal && (
           <ContributionModal
             isOpen={isContributeModalOpen}

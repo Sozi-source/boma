@@ -17,6 +17,10 @@ export default function CreateBomaPage() {
   const [deadlineDays, setDeadlineDays] = useState(30);
   const [creatorName, setCreatorName] = useState('');
   const [creatorPhone, setCreatorPhone] = useState('');
+  const [destinationType, setDestinationType] = useState<'mpesa_till' | 'mpesa_paybill'>('mpesa_till');
+  const [destinationNumber, setDestinationNumber] = useState('');
+  const [hasPaystackAccount, setHasPaystackAccount] = useState(false);
+  const [checkingPaystackAccount, setCheckingPaystackAccount] = useState(true);
   const [imageUrl, setImageUrl] = useState('');
   const [agreedToTransparency, setAgreedToTransparency] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,11 +35,21 @@ export default function CreateBomaPage() {
       }
     };
     loadUser();
+    fetch('/api/payments/paystack/subaccount').then(async (response) => {
+      if (!response.ok) return;
+      const data = await response.json();
+      setHasPaystackAccount(Boolean(data.account?.subaccount_code));
+    }).catch(() => {}).finally(() => setCheckingPaystackAccount(false));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (checkingPaystackAccount) {
+      setError('Checking your Paystack payout setup. Please try again in a moment.');
+      return;
+    }
 
     const target = parseFloat(targetAmount);
     if (!title.trim()) {
@@ -43,8 +57,8 @@ export default function CreateBomaPage() {
       return;
     }
 
-    if (!target || target <= 0) {
-      setError('Enter a valid fundraising goal target.');
+    if (!target || target <= 0 || !Number.isInteger(target)) {
+      setError('Enter a whole-number fundraising goal in Kenyan shillings.');
       return;
     }
 
@@ -60,6 +74,21 @@ export default function CreateBomaPage() {
 
     setIsSubmitting(true);
     try {
+      if (!hasPaystackAccount) {
+        const setupResponse = await fetch('/api/payments/paystack/subaccount', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            destination_type: destinationType,
+            account_number: destinationNumber.trim(),
+            business_name: creatorName.trim(),
+            contact_name: creatorName.trim(),
+            contact_phone: creatorPhone.trim(),
+          }),
+        });
+        const setupResult = await setupResponse.json().catch(() => ({}));
+        if (!setupResponse.ok) throw new Error(setupResult.error || 'Unable to set up your M-Pesa payout account.');
+        setHasPaystackAccount(true);
+      }
       const newBoma = await bomaService.createBoma({
         title: title.trim(),
         description: description.trim(),
@@ -80,24 +109,25 @@ export default function CreateBomaPage() {
   };
 
   return (
-    <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
-      <div className="w-full max-w-2xl space-y-4 sm:space-y-6">
+    <div className="w-full min-w-0 px-4 py-7 sm:px-8 sm:py-10 lg:px-12">
+      <div className="mx-auto w-full max-w-4xl space-y-5 sm:space-y-7">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <Link href="/bomas" className="hover:text-emerald-700 font-medium transition-colors">
             ← Community Funds
           </Link>
           <span className="text-slate-300">/</span>
-          <span className="text-slate-700 font-medium">Start a Fund</span>
+          <span className="text-slate-700 font-medium">Create a group fund</span>
         </div>
 
-        <div className="pb-3 sm:pb-3.5 border-b border-slate-200/80">
-          <h1 className="text-base sm:text-xl font-semibold text-slate-800 tracking-tight">
-            Start a Fund
+        <div className="border-b border-slate-200/80 pb-5">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+            Create a group fund
           </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Tell members what you are working toward. Set the amount, explain the plan, and connect the group’s M-Pesa destination.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xs">
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 border border-red-200">
               {error}
@@ -187,6 +217,7 @@ export default function CreateBomaPage() {
                 type="number"
                 required
                 min="100"
+                step="1"
                 placeholder="50000"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
@@ -204,9 +235,8 @@ export default function CreateBomaPage() {
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-medium text-slate-800 focus:border-emerald-600 focus:outline-hidden"
               >
                 <option value="KES">KES</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
               </select>
+              <p className="mt-1 text-[10px] leading-4 text-slate-500">M-Pesa contributions currently support KES.</p>
             </div>
           </div>
 
@@ -228,7 +258,7 @@ export default function CreateBomaPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                M-Pesa Primary Contact Line
+                Organizer Contact Phone
               </label>
               <input
                 type="tel"
@@ -239,6 +269,38 @@ export default function CreateBomaPage() {
               />
             </div>
           </div>
+
+          {!checkingPaystackAccount && !hasPaystackAccount && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 space-y-3">
+              <div>
+                  <h2 className="text-xs font-bold text-slate-900">Organizer’s M-Pesa destination</h2>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+                  Contributors approve a payment prompt on their phone. Paystack sends 2.5% to BomaPay and settles the remainder to your registered Till or Paybill. Clarix verifies the destination in Paystack before its first payout.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Destination type *</label>
+                  <select value={destinationType} onChange={(e) => setDestinationType(e.target.value as 'mpesa_till' | 'mpesa_paybill')}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900">
+                    <option value="mpesa_till">M-Pesa Till</option>
+                    <option value="mpesa_paybill">M-Pesa Paybill</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Your Till or Paybill number *</label>
+                  <input type="text" inputMode="numeric" required value={destinationNumber}
+                    onChange={(e) => setDestinationNumber(e.target.value)} placeholder="e.g. 1234567"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900" />
+                </div>
+              </div>
+            </div>
+          )}
+          {hasPaystackAccount && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-[11px] text-emerald-900">
+              Your Paystack M-Pesa destination is registered. Verify it in the Paystack Dashboard before its first payout. This destination is used for funds you organize.
+            </div>
+          )}
 
           {/* Cover Image URL */}
           <div>
@@ -271,10 +333,10 @@ export default function CreateBomaPage() {
           <div className="pt-3">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || checkingPaystackAccount}
               className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? 'Launching Fund...' : 'Launch Fund'}
+              {isSubmitting ? 'Setting Up Payments...' : checkingPaystackAccount ? 'Checking Payout Setup...' : 'Launch Fund'}
             </button>
           </div>
         </form>

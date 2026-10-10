@@ -8,7 +8,6 @@ import { formatCurrency } from '@/lib/ledger/ledger-service';
 import ContributionModal from '@/components/contribution-modal';
 import ContributorTracker from '@/components/contributor-tracker';
 import ShareModal from '@/components/share-modal';
-import DisbursementModal from '@/components/disbursement-modal';
 import BomaCover from '@/components/boma-cover';
 import { 
   ShieldCheckIcon, 
@@ -33,7 +32,6 @@ export default function BomaDetailPage({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState<'story' | 'contributors'>('story');
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
   const [paymentNotice, setPaymentNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -117,7 +115,7 @@ export default function BomaDetailPage({ params }: PageProps) {
   }
 
   const percentage = Math.min(100, Math.round((boma.current_amount / boma.target_amount) * 100));
-  const canRequestPayout = currentUserId === boma.creator_id && /^[0-9a-f-]{36}$/i.test(boma.id);
+  const isFundOrganizer = currentUserId === boma.creator_id;
   const daysLeft = Math.max(
     0,
     Math.ceil((new Date(boma.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -352,14 +350,10 @@ export default function BomaDetailPage({ params }: PageProps) {
               >
                 Contribute to this Fund
               </button>
-              {canRequestPayout && (
-                <button
-                  type="button"
-                  onClick={() => setIsPayoutModalOpen(true)}
-                  className="mt-2 w-full rounded-lg border border-emerald-700 bg-white py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors"
-                >
-                  Request payout · {formatCurrency(account.available_balance, boma.currency)} available
-                </button>
+              {isFundOrganizer && (
+                <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-relaxed text-emerald-900">
+                  The group&apos;s share settles directly to its verified Paystack M-Pesa destination.
+                </p>
               )}
             </div>
           </div>
@@ -376,14 +370,10 @@ export default function BomaDetailPage({ params }: PageProps) {
           Contribute Now
         </button>
 
-        {canRequestPayout ? (
-          <button
-            type="button"
-            onClick={() => setIsPayoutModalOpen(true)}
-            className="rounded-lg border border-emerald-700 bg-white px-3 py-2.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 transition-colors"
-          >
-            Payout
-          </button>
+        {isFundOrganizer ? (
+          <span className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-[10px] font-medium text-emerald-900">
+            Paystack settles to your verified M-Pesa destination
+          </span>
         ) : (
           <button
             type="button"
@@ -410,13 +400,6 @@ export default function BomaDetailPage({ params }: PageProps) {
         onClose={() => setIsShareModalOpen(false)}
       />
 
-      <DisbursementModal
-        boma={boma}
-        account={account}
-        isOpen={isPayoutModalOpen && canRequestPayout}
-        onClose={() => setIsPayoutModalOpen(false)}
-        onSuccess={() => { void loadBomaData(); }}
-      />
       </div>
     </div>
   );

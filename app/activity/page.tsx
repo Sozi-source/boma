@@ -225,7 +225,7 @@ export default function ActivityPage() {
             <p className="mt-1.5 text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-950">
               {bomas.length}
             </p>
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Escrow accounts</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Group funds</span>
           </div>
         </div>
 
@@ -348,7 +348,7 @@ export default function ActivityPage() {
               <ClockIcon className="mx-auto h-8 w-8 text-slate-300 mb-2" />
               <p className="text-sm font-semibold text-slate-700">No receipts found</p>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                {searchQuery ? 'No transactions matched your search criteria.' : 'Live payments completed through Paystack M-Pesa or Card will appear here.'}
+                {searchQuery ? 'No transactions matched your search criteria.' : 'Confirmed M-Pesa Till contributions will appear here.'}
               </p>
             </div>
           ) : (
@@ -832,10 +832,10 @@ export default function ActivityPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Escrow Ledger Status</span>
+                  <span className="text-slate-400">Group ledger status</span>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Booked &amp; Irrevocable
+                    Payment recorded
                   </span>
                 </div>
               </div>

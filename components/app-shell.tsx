@@ -44,8 +44,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isAuthPage = pathname.startsWith('/auth/');
-  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/bomas/create');
-  const requiresSignIn = !isAuthPage;
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isPublicPage = pathname === '/' || pathname === '/bomas'
+    || (pathname.startsWith('/bomas/') && pathname !== '/bomas/create');
+  const requiresSignIn = !isAuthPage && !isPublicPage;
 
   useEffect(() => {
     if (authReady && requiresSignIn && !hasUser) {
@@ -53,8 +55,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [authReady, hasUser, requiresSignIn, router]);
 
-  const showPage = isAuthPage || (authReady && hasUser);
-  const showAppChrome = !isAuthPage && authReady && hasUser;
+  const showPage = isAuthPage || isPublicPage || (authReady && hasUser);
+  const showAppChrome = !isAuthPage && !isPublicPage && authReady && hasUser;
+  const showPublicChrome = isPublicPage;
 
   return (
     <>
@@ -70,7 +73,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           ) : (
             <Navbar authenticated />
           )
-        ) : null}
+        ) : showPublicChrome ? <Navbar authenticated={authReady && hasUser} /> : null}
 
         <main className={`w-full min-w-0 flex-1 ${showAppChrome ? 'pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-8' : ''}`}>
           {showPage ? children : (
@@ -80,17 +83,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </main>
 
-        {showAppChrome && <MobileNav authenticated />}
+        {showAppChrome && !isAdminRoute && <MobileNav authenticated />}
+
+        {showPublicChrome && pathname !== '/' && (
+          <footer className="border-t border-slate-200 bg-white px-5 py-5 text-center text-xs text-slate-500 lg:text-left">
+            <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <span>BomaPay — Clear contributions, together.</span>
+              <span>Payments are approved on your phone through M-Pesa.</span>
+            </div>
+          </footer>
+        )}
 
         {showAppChrome && (
           <footer className="hidden items-center justify-between border-t border-slate-200 bg-white px-5 py-2.5 text-[11px] text-slate-500 select-none lg:flex sm:px-8 lg:px-10 xl:px-12">
             <span>Boma — Contributions, open and transparent to every member</span>
             <div className="flex items-center gap-4 font-mono text-[10px]">
               <span className="flex items-center gap-1.5 font-bold text-emerald-700">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                M-Pesa &amp; Card Gateway Live
+                Paystack M-Pesa payments
               </span>
-              <span>Merchant ID: 1938784</span>
             </div>
           </footer>
         )}

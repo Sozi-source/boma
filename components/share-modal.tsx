@@ -49,7 +49,7 @@ ${boma.verified ? '✅ Verified on Boma\n' : ''}
 💰 *Raised:* ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%)
 👥 *Members:* ${boma.contributors_count} contributors${defaultNote}
 
-Every contribution counts! Give transparently via M-Pesa or Card:
+Every contribution counts! Give transparently with an M-Pesa payment prompt:
 👉 ${shareUrl}`;
 
   const handleCopyLink = async () => {
@@ -189,7 +189,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-400 pt-0.5">
                   <span>{boma.contributors_count} contributors</span>
-                  <span>M-Pesa / Cards accepted</span>
+                  <span>Pay with M-Pesa</span>
                 </div>
               </div>
 
@@ -260,7 +260,7 @@ Every contribution counts! Give transparently via M-Pesa or Card:
               <QrCode
                 value={shareUrl}
                 size={180}
-                label="Scan to contribute via M-Pesa / Card"
+                label="Scan to contribute via M-Pesa"
               />
             </div>
 

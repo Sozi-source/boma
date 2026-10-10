@@ -39,11 +39,8 @@ Built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and *
 - **Integrity Check**:
   $$\text{Available Balance} = \sum(\text{Credits}) - \sum(\text{Debits})$$
 
-### 2. Multi-Rail Contribution Gateway
-Supports multi-rail payment flows with instant simulated authorization and receipt issuance:
-- **M-Pesa STK Push** (Safaricom mobile money prompt)
-- **Credit / Debit Cards** (Visa, Mastercard)
-- **Direct Bank Transfer** (EFT / PesaLink)
+### 2. M-Pesa Till Contributions
+Contributions use Paystack M-Pesa to send an STK prompt to the contributor's Kenyan number. Paystack splits successful payments between BomaPay and the organizer's verified M-Pesa Till or Paybill subaccount. M-Pesa contributions require a KES fund.
 
 ### 3. Transparent Audit Feed
 Every Boma has a **Public Transparent Ledger** tab allowing any contributor or community member to inspect all transactions, running balances, and export signed CSV audit reports.
@@ -77,7 +74,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🗄️ Supabase Database Migration
 
-To enable payments, apply both SQL files in order. The second migration removes permissive starter policies and adds server-side payment and payout settlement routines:
+To enable payments, apply all SQL files in order. The security migration removes permissive starter policies, and the final migration adds group Paystack subaccounts and fee-aware contribution settlement:
 
 1. Open your [Supabase Dashboard](https://supabase.com/dashboard).
 2. Go to the **SQL Editor**.
@@ -89,7 +86,11 @@ To enable payments, apply both SQL files in order. The second migration removes 
    ```
    supabase/migrations/20261003_enterprise_payment_security.sql
    ```
-Do not enable payment routes until both scripts have succeeded. The base schema creates:
+5. Finally run:
+   ```
+   supabase/migrations/20261010_paystack_group_subaccounts.sql
+   ```
+Do not enable payment routes until all scripts have succeeded. The base schema creates:
 - `bomas` (causes & community pools)
 - `accounts` (financial wallets & balances)
 - `transactions` (payment receipts & metadata)
@@ -97,16 +98,17 @@ Do not enable payment routes until both scripts have succeeded. The base schema 
 - `disbursements` (withdrawal requests & justifications)
 - Complete Row-Level Security (RLS) policies and indexes.
 
-The security migration intentionally stops if existing Boma totals do not reconcile to ledger entries. Reconcile historical balances before retrying it. Ensure your hosting proxy overwrites `x-real-ip` before the app uses it for payment rate limits. Payouts remain reserved until a signed Paystack settlement webhook arrives; investigate any long-pending payout against Paystack before changing its state. Charge disputes are recorded in the private `payment_incidents` table for manual review.
+The security migration intentionally stops if existing Boma totals do not reconcile to ledger entries. Reconcile historical balances before retrying it. Ensure your hosting proxy overwrites `x-real-ip` before the app uses it for payment rate limits. Payouts remain reserved until a signed Paystack settlement webhook arrives; investigate any long-pending payout against Paystack before changing its state. Charge disputes and processed refunds are recorded in the private `payment_incidents` table for manual review. Since the organizer's share settles directly to its Till/Paybill, do not automatically reverse the group's net ledger when Clarix processes a refund; Clarix bears Paystack's refund/dispute liability.
 
-Configure these server environment variables in your deployment secret manager. Never expose the service role or Paystack secret with a `NEXT_PUBLIC_` prefix:
+Configure these server environment variables in your deployment secret manager. Never expose service credentials with a `NEXT_PUBLIC_` prefix:
 ```env
 APP_URL=https://your-production-domain.example
 SUPABASE_SERVICE_ROLE_KEY=...
 PAYSTACK_ENV=live
 PAYSTACK_SECRET_KEY=...
+PAYSTACK_PLATFORM_FEE_PERCENT=2.5
 ```
-For local Paystack test mode, use `PAYSTACK_ENV=test` with a matching test secret. Production defaults to live mode and rejects test keys. Configure the Paystack webhook URL as `/api/payments/paystack/webhook`.
+Contributors approve an M-Pesa prompt through Paystack. Each organizer registers a group M-Pesa Till or Paybill as a Paystack subaccount. BomaPay keeps 2.5% and the remaining share settles to that subaccount. Clarix must verify each new or changed destination in the Paystack Dashboard before its first payout. Configure the Paystack webhook URL as `/api/payments/paystack/webhook`; Paystack processing charges and refunds/disputes are borne by Clarix's main account.
 Payouts also require Supabase MFA to be enabled and enrolled for the organizer account; requests without an `aal2` session are rejected. Update the hosted Supabase Auth password policy to at least 12 characters with upper/lowercase letters, digits, and symbols to match `supabase/config.toml`.
 
 ---
@@ -126,7 +128,7 @@ bomapay/
 ├── components/
 │   ├── navbar.tsx             # Sticky navigation with live ledger indicator
 │   ├── boma-card.tsx          # Cause card with progress bar and action triggers
-│   ├── contribution-modal.tsx # Multi-rail payment modal with M-Pesa STK simulation
+│   ├── contribution-modal.tsx # Paystack M-Pesa contribution flow
 │   ├── disbursement-modal.tsx # Withdrawal modal requiring documented justification
 │   ├── transparent-ledger.tsx # Real-time public audit table & CSV export
 │   └── ui/icons.tsx           # Clean, zero-dependency fintech SVG icons
@@ -144,7 +146,7 @@ bomapay/
 ## 🔮 Roadmap for Advanced Features
 
 As outlined in our architecture plan, the foundation is built to seamlessly layer on:
-1. **Live Daraja M-Pesa API integration** (STK push callbacks, C2B paybill validation).
+1. **Organizer payout account management** (change and re-verify group settlement destinations).
 2. **Multi-Sig Escrow Approvals** (requiring 2 of 3 committee members to sign off on large disbursements).
 3. **Automated WhatsApp / SMS Receipts** (instant notification to contributors with reference link).
 4. **Milestone-Based Fund Releases** (disbursing funds only upon milestone verification).

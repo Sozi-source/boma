@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { bomaService } from '@/lib/services/boma-service';
-import { UserRole } from '@/lib/types/fintech';
 import { ShieldCheckIcon, CheckCircleIcon, SmartphoneIcon } from '@/components/ui/icons';
 
 export default function SignUpPage() {
@@ -14,7 +13,6 @@ export default function SignUpPage() {
   const [phone, setPhone] = useState('');
   const [secondaryPhone, setSecondaryPhone] = useState('');
   const [showSecondary, setShowSecondary] = useState(false);
-  const [role, setRole] = useState<UserRole>('organizer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,8 +24,8 @@ export default function SignUpPage() {
     setError('');
     setLoading(true);
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (password.length < 12) {
+      setError('Choose a password with at least 12 characters.');
       setLoading(false);
       return;
     }
@@ -40,7 +38,7 @@ export default function SignUpPage() {
         email: email.trim(),
         phone: phone.trim(),
         additional_phones: additionalPhones,
-        role,
+        role: 'organizer',
       });
 
       // 2. Register with Supabase if configured
@@ -54,7 +52,7 @@ export default function SignUpPage() {
               full_name: fullName.trim(),
               phone: phone.trim(),
               additional_phones: additionalPhones,
-              role,
+              role: 'organizer',
             },
           },
         });
@@ -71,14 +69,16 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-8 sm:py-14">
-      <div className="text-center mb-6 space-y-1">
-        <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-mono font-black text-xl shadow-xs mb-2">
-          B
-        </div>
-        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 ">
-          Create Organizer Account
+    <div className="mx-auto w-full max-w-xl px-4 py-5 sm:px-8 sm:py-10">
+      <Link href="/" className="mx-auto mb-8 inline-flex items-center gap-2.5 text-sm font-bold text-slate-800">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-700 font-mono text-sm text-white">B</span>
+        BomaPay <span className="ml-1 text-xs font-normal text-slate-500">· Back to home</span>
+      </Link>
+      <div className="mb-6 space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
+          Bring your group together
         </h1>
+        <p className="mx-auto max-w-md text-sm leading-6 text-slate-600">Create an organizer account to set up a shared goal, invite members and keep everyone up to date. Organizer requests are reviewed before you can create a fund.</p>
       </div>
 
       <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
@@ -95,7 +95,7 @@ export default function SignUpPage() {
               <h3 className="font-bold text-sm">Signup Request Submitted</h3>
             </div>
             <p className="text-neutral-600 leading-relaxed">
-              Your registration request has been submitted and is currently in the <strong>Admin Approval Queue</strong>.
+              Your request is with the BomaPay team for review. Once approved, you can sign in and create your group fund.
             </p>
             <div className="rounded-lg bg-white p-3 border border-emerald-100 space-y-1.5 text-[11px]">
               <div><span className="text-neutral-400">Name:</span> <strong className="text-neutral-800">{fullName}</strong></div>
@@ -136,7 +136,7 @@ export default function SignUpPage() {
           <form onSubmit={handleSignUp} className="space-y-3">
             <div>
               <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                Full Legal Name *
+                Your full name *
               </label>
               <input
                 type="text"
@@ -219,41 +219,12 @@ export default function SignUpPage() {
 
             <div>
               <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                Requested Account Type
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRole('organizer')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold text-center transition-all ${
-                    role === 'organizer'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
-                  }`}
-                >
-                  Boma Organizer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('member')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold text-center transition-all ${
-                    role === 'member'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-500'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
-                  }`}
-                >
-                  General Member
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
-                Password (min 6 chars) *
+                Password (at least 12 characters) *
               </label>
               <input
                 type="password"
                 required
+                minLength={12}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 focus:border-emerald-500 "
@@ -265,7 +236,7 @@ export default function SignUpPage() {
               disabled={loading}
               className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition-colors active:scale-98 disabled:opacity-50 mt-1"
             >
-              {loading ? 'Submitting Registration...' : 'Submit for Admin Approval'}
+              {loading ? 'Sending your request…' : 'Create account and request access'}
             </button>
           </form>
         )}
@@ -280,7 +251,7 @@ export default function SignUpPage() {
 
       <div className="mt-6 text-center text-[11px] text-neutral-400 flex items-center justify-center gap-1.5">
         <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-700" />
-        <span>Strict KYC & Double-Entry Ledger Protection</span>
+        <span>Your account details are protected. We review organizer requests before fund creation.</span>
       </div>
     </div>
   );

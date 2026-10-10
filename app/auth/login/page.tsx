@@ -40,10 +40,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100svh-4.75rem)] w-full bg-[#f9f4ea] lg:min-h-[calc(100svh-2rem)]">
+    <div className="min-h-screen w-full bg-[#f9f4ea] lg:min-h-[calc(100svh-4rem)]">
       <div className={`mx-auto grid w-full items-center md:min-h-[calc(100svh-2rem)] ${showAuthImage ? 'md:grid-cols-2' : 'max-w-sm py-7 sm:py-12'}`}>
         {showAuthImage && (
-          <div className="relative h-[48svh] min-h-[280px] max-h-[520px] w-full overflow-hidden bg-[#f9f4ea] md:h-[calc(100svh-2rem)] md:min-h-0 md:max-h-none">
+          <div className="relative h-40 min-h-[160px] max-h-[240px] w-full overflow-hidden bg-[#f9f4ea] sm:h-56 sm:max-h-[300px] md:h-[calc(100svh-4rem)] md:min-h-0 md:max-h-none">
             <picture className="absolute inset-0">
               <source
                 media="(min-width: 1280px)"
@@ -76,7 +76,7 @@ export default function LoginPage() {
               B
             </div>
             <h1 className="text-xl font-black text-neutral-900 sm:text-2xl">
-              Welcome to Boma
+              Welcome back
             </h1>
           </div>
 
@@ -124,16 +124,20 @@ export default function LoginPage() {
             </form>
 
             <p className="pt-2 text-center text-xs text-neutral-500">
-              New to Boma?{' '}
+              Need an organizer account?{' '}
               <Link href="/auth/signup" className="font-bold text-emerald-700 hover:text-emerald-700">
                 Create an Account
               </Link>
             </p>
           </div>
 
+          <p className="mt-5 text-center text-xs text-neutral-500">
+            Just making a contribution? <Link href="/bomas" className="font-semibold text-emerald-700">Explore group goals</Link> — no account needed.
+          </p>
+
           <div className="mt-6 flex items-center justify-center gap-1.5 text-center text-[11px] text-neutral-400">
             <ShieldCheckIcon className="h-3.5 w-3.5 text-emerald-700" />
-            <span>Protected by Supabase Auth & Double-Entry Ledger</span>
+            <span>Secure sign-in to your group workspace</span>
           </div>
         </div>
       </div>

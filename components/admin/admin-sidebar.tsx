@@ -48,7 +48,7 @@ export default function AdminSidebar() {
       title: 'WORKSPACE',
       items: [
         {
-          href: '/',
+          href: '/dashboard',
           label: 'Home Overview',
           icon: HomeIcon,
           exact: true,

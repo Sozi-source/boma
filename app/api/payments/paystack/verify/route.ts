@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const db = createAdminClient();
     const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (!await allowPaymentAttempt(db, 'verify-ip', ip, 30, 60)
-      || !await allowPaymentAttempt(db, 'verify-ref', reference, 5, 60)) {
+      || !await allowPaymentAttempt(db, 'verify-ref', reference, 10, 60)) {
       return NextResponse.json({ error: 'Too many verification attempts. Please try again later.' }, { status: 429 });
     }
     const { data: intent, error } = await db.from('payment_intents')
@@ -35,8 +35,11 @@ export async function POST(request: Request) {
 
     const payment = await paystackService.verify(reference);
     const data = payment.data;
-    if (!payment.status || data.status !== 'success') {
-      return NextResponse.json({ error: 'Payment has not succeeded' }, { status: 402 });
+    if (!payment.status || data.status === 'pending') {
+      return NextResponse.json({ status: 'pending', reference }, { status: 202 });
+    }
+    if (data.status !== 'success') {
+      return NextResponse.json({ error: 'M-Pesa payment was not completed.' }, { status: 402 });
     }
     if (data.reference !== intent.reference || data.amount !== Number(intent.amount_minor) || data.currency !== intent.currency) {
       console.error('Payment verification mismatch', reference);

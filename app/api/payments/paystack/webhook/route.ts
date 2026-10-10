@@ -65,13 +65,24 @@ export async function POST(request: Request) {
         || !Number.isSafeInteger(amount) || amount <= 0 || typeof currency !== 'string') {
         return NextResponse.json({ error: 'Invalid refund event' }, { status: 400 });
       }
-      const { error } = await db.rpc('reverse_paystack_payment', {
-        p_reference: reference,
-        p_provider_refund_id: String(refundId),
-        p_amount_minor: amount,
-        p_currency: currency,
-      });
+      // The organizer's share has already settled directly to its Till/Paybill.
+      // Clarix bears refund liability; an automatic gross reversal would corrupt
+      // the group's net ledger, so persist this for operator review.
+      const eventHash = createHash('sha256').update(rawBody).digest('hex');
+      const { error } = await db.from('payment_incidents').upsert({
+        event_hash: eventHash,
+        event_type: payload.event,
+        reference,
+        details: {
+          refund_id: String(refundId),
+          amount,
+          currency,
+          status: 'manual_review_required',
+        },
+        status: 'open',
+      }, { onConflict: 'event_hash', ignoreDuplicates: true });
       if (error) throw error;
+      return NextResponse.json({ received: true, requires_review: true });
     } else if (['charge.dispute.create', 'charge.dispute.resolve'].includes(payload.event)) {
       // Persist disputes for operator review: they need a hold/resolution process,
       // and acknowledging them after durable insertion prevents webhook retry storms.
