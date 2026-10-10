@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { ShieldCheckIcon } from '@/components/ui/icons';
+import AuthImageCarousel, { LOGIN_AUTH_IMAGES } from '@/components/auth-image-carousel';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,7 +31,9 @@ export default function LoginPage() {
         throw authError;
       }
 
-      router.push('/dashboard');
+      const next = new URLSearchParams(window.location.search).get('next');
+      const destination = next?.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+      router.push(destination);
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid login credentials.');
@@ -44,29 +47,7 @@ export default function LoginPage() {
       <div className={`mx-auto grid w-full items-center md:min-h-[calc(100svh-2rem)] ${showAuthImage ? 'md:grid-cols-2' : 'max-w-sm py-7 sm:py-12'}`}>
         {showAuthImage && (
           <div className="relative h-40 min-h-[160px] max-h-[240px] w-full overflow-hidden bg-[#f9f4ea] sm:h-56 sm:max-h-[300px] md:h-[calc(100svh-4rem)] md:min-h-0 md:max-h-none">
-            <picture className="absolute inset-0">
-              <source
-                media="(min-width: 1280px)"
-                srcSet="/assets/images/dashboard/login_hero_1080w_web.webp 1080w, /assets/images/dashboard/login_hero_1440w_web-xl.webp 1440w"
-                sizes="50vw"
-              />
-              <source
-                media="(min-width: 640px)"
-                srcSet="/assets/images/dashboard/login_hero_720w_tablet.webp 720w, /assets/images/dashboard/login_hero_1080w_web.webp 1080w"
-                sizes="50vw"
-              />
-              <img
-                src="/assets/images/dashboard/login_hero_360w_mobile.webp"
-                srcSet="/assets/images/dashboard/login_hero_360w_mobile.webp 360w, /assets/images/dashboard/login_hero_720w_tablet.webp 720w"
-                sizes="100vw"
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-cover object-top"
-                loading="eager"
-                fetchPriority="high"
-                onError={() => setShowAuthImage(false)}
-              />
-            </picture>
+            <AuthImageCarousel images={LOGIN_AUTH_IMAGES} onError={() => setShowAuthImage(false)} />
           </div>
         )}
 

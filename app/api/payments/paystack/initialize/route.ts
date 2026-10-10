@@ -104,7 +104,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Payment initialization failed', error instanceof Error ? error.message : 'unknown');
     return NextResponse.json({ error: error instanceof Error && error.message === 'Platform commission is not configured'
-      ? 'BomaPay payment settings are not configured yet.'
+      ? 'Openhand payment settings are not configured yet.'
       : 'Unable to initialize payment' }, { status: 503 });
   }
 }

@@ -30,10 +30,7 @@ export default function DashboardPage() {
     const currentUser = await bomaService.getCurrentUser();
     if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
 
-    const allBomas = await bomaService.getBomas();
-    const ownedBomas = currentUser?.id && currentUser.id !== 'user-guest'
-      ? allBomas.filter((boma) => boma.creator_id === currentUser.id)
-      : [];
+    const ownedBomas = await bomaService.getMyBomas();
     setBomas(ownedBomas);
 
     const allTxns: Transaction[] = [];
@@ -115,7 +112,7 @@ export default function DashboardPage() {
               <p className="mt-1 text-[32px] sm:text-[40px] font-bold font-mono tracking-tight tabular-nums drop-shadow-xs">
                 {balance}
               </p>
-              <p className="mt-1 text-[10px] text-teal-100/80">After BomaPay’s 2.5% platform share</p>
+              <p className="mt-1 text-[10px] text-teal-100/80">After Openhand’s 2.5% platform share</p>
             </div>
 
             <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
@@ -160,11 +157,11 @@ export default function DashboardPage() {
               type="button"
               onClick={() => {
                 if (typeof navigator !== 'undefined' && navigator.share) {
-                  const featured = bomas[0];
+                  const featured = bomas.find((boma) => boma.is_public);
                   const url = featured ? `${window.location.origin}/bomas/${featured.id}` : `${window.location.origin}/bomas`;
                   void navigator.share({
-                    title: featured?.title || 'BomaPay group goals',
-                    text: featured ? `See the goal and follow our progress: ${featured.title}` : 'Explore group goals on BomaPay.',
+                    title: featured?.title || 'Openhand group goals',
+                    text: featured ? `See the goal and follow our progress: ${featured.title}` : 'Explore group goals on Openhand.',
                     url,
                   });
                 }
@@ -189,7 +186,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <p className="mt-3 text-[23px] font-bold tracking-tight text-slate-950">{balance}</p>
-              <p className="mt-1 text-[10px] text-slate-400">After BomaPay’s 2.5% share</p>
+              <p className="mt-1 text-[10px] text-slate-400">After Openhand’s 2.5% share</p>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -263,7 +260,7 @@ export default function DashboardPage() {
 
                     {/* Action buttons directly on card */}
                     <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100">
-                      <button
+                      {b.is_public ? <button
                         type="button"
                         onClick={() => {
                           setSelectedBomaForModal(b);
@@ -273,7 +270,7 @@ export default function DashboardPage() {
                       >
                         <PlusIcon className="h-3.5 w-3.5" />
                         <span>Contribute</span>
-                      </button>
+                      </button> : <span className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-semibold text-slate-600">Private · only you can view</span>}
                       <Link
                         href={`/bomas/${b.id}`}
                         className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors"

@@ -127,20 +127,36 @@ class BomaService {
     let filtered = [...bomas];
 
     if (options?.category && options.category !== 'all') {
-      filtered = filtered.filter((b) => b.category === options.category);
+      filtered = filtered.filter((b) => b.is_public && b.category === options.category);
     }
 
     if (options?.query && options.query.trim().length > 0) {
       const q = options.query.toLowerCase().trim();
       filtered = filtered.filter(
         (b) =>
-          b.title.toLowerCase().includes(q) ||
+          b.is_public && (b.title.toLowerCase().includes(q) ||
           b.description.toLowerCase().includes(q) ||
-          b.creator_name.toLowerCase().includes(q)
+          b.creator_name.toLowerCase().includes(q))
       );
     }
 
-    return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return filtered.filter((b) => b.is_public).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+
+  async getMyBomas(): Promise<Boma[]> {
+    const currentUser = await this.getCurrentUser();
+    if (!currentUser || currentUser.id === 'user-guest') return [];
+    if (this.isBrowser() && isSupabaseConfigured) {
+      const supabase = createClient();
+      const { data, error } = await supabase.from('bomas')
+        .select('id,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at')
+        .eq('creator_id', currentUser.id).order('created_at', { ascending: false });
+      if (error) throw new Error('Unable to load your group funds');
+      return (data || []) as Boma[];
+    }
+    return this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS)
+      .filter((boma) => boma.creator_id === currentUser.id)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   async getBomaById(id: string): Promise<{ boma: Boma; account: Account } | null> {
@@ -156,7 +172,8 @@ class BomaService {
       return { boma: boma as Boma, account: account as Account };
     }
     const bomas = this.getStore<Boma>(STORAGE_KEYS.BOMAS, INITIAL_BOMAS);
-    const boma = bomas.find((b) => b.id === id);
+    const currentUser = await this.getCurrentUser();
+    const boma = bomas.find((b) => b.id === id && (b.is_public || b.creator_id === currentUser.id));
     if (!boma) return null;
 
     const accounts = this.getStore<Account>(STORAGE_KEYS.ACCOUNTS, INITIAL_ACCOUNTS);
@@ -194,6 +211,7 @@ class BomaService {
     creator_name: string;
     creator_phone?: string;
     image_url?: string;
+    is_public: boolean;
   }): Promise<Boma> {
     const activeUser = await this.getCurrentUser();
     if (activeUser.id === 'user-guest' || !isSupabaseConfigured) {
@@ -221,7 +239,7 @@ class BomaService {
       status: 'active',
       deadline,
       image_url: data.image_url && data.image_url.trim() ? data.image_url.trim() : undefined,
-      is_public: true,
+      is_public: data.is_public,
       contributors_count: 0,
       verified: false,
       created_at: new Date().toISOString(),
@@ -229,10 +247,21 @@ class BomaService {
     };
 
     const { data: stored, error } = await supabase.from('bomas').insert({
-      ...newBoma, current_amount: 0, is_public: true, contributors_count: 0, verified: false,
+      ...newBoma, current_amount: 0, is_public: data.is_public, contributors_count: 0, verified: false,
     }).select('id,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at').single();
     if (error || !stored) throw new Error('Unable to create fund. Please check your sign-in and try again.');
     return stored as Boma;
+  }
+
+  async updateBomaVisibility(bomaId: string, isPublic: boolean): Promise<{ success: boolean; error?: string }> {
+    const currentUser = await this.getCurrentUser();
+    if (!currentUser || currentUser.id === 'user-guest') return { success: false, error: 'Sign in to change group visibility.' };
+    if (!this.isBrowser() || !isSupabaseConfigured) return { success: false, error: 'Group visibility is unavailable while offline.' };
+    const supabase = createClient();
+    const { data, error } = await supabase.from('bomas').update({ is_public: isPublic })
+      .eq('id', bomaId).eq('creator_id', currentUser.id).select('id').maybeSingle();
+    if (error || !data) return { success: false, error: 'Unable to update group visibility.' };
+    return { success: true };
   }
 
   async deleteBoma(bomaId: string): Promise<boolean> {

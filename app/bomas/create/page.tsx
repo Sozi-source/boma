@@ -23,6 +23,7 @@ export default function CreateBomaPage() {
   const [checkingPaystackAccount, setCheckingPaystackAccount] = useState(true);
   const [imageUrl, setImageUrl] = useState('');
   const [agreedToTransparency, setAgreedToTransparency] = useState(true);
+  const [isPublic, setIsPublic] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -99,6 +100,7 @@ export default function CreateBomaPage() {
         creator_name: creatorName.trim(),
         creator_phone: creatorPhone.trim() || undefined,
         image_url: imageUrl,
+        is_public: isPublic,
       });
 
       router.push(`/bomas/${newBoma.id}`);
@@ -207,6 +209,26 @@ export default function CreateBomaPage() {
             />
           </div>
 
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <input
+                id="publish-fund"
+                type="checkbox"
+                checked={isPublic}
+                onChange={(event) => setIsPublic(event.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+              />
+              <div>
+                <label htmlFor="publish-fund" className="text-sm font-semibold text-slate-900">Make this group visible to everyone</label>
+                <p className="mt-1 text-xs leading-5 text-slate-600">
+                  {isPublic
+                    ? 'Anyone can find this fund, read its details and contribute without an account.'
+                    : 'Private by default. Only you, the organizer, can view it. Contributions are paused until you publish it.'}
+                </p>
+              </div>
+            </div>
+          </section>
+
           {/* Financial Target & Currency */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
@@ -275,7 +297,7 @@ export default function CreateBomaPage() {
               <div>
                   <h2 className="text-xs font-bold text-slate-900">Organizer’s M-Pesa destination</h2>
                 <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
-                  Contributors approve a payment prompt on their phone. Paystack sends 2.5% to BomaPay and settles the remainder to your registered Till or Paybill. Clarix verifies the destination in Paystack before its first payout.
+                  Contributors approve a payment prompt on their phone. Paystack sends 2.5% to Openhand and settles the remainder to your registered Till or Paybill. The destination must be verified in Paystack before its first payout.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

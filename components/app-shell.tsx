@@ -45,13 +45,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isAuthPage = pathname.startsWith('/auth/');
   const isAdminRoute = pathname.startsWith('/admin');
-  const isPublicPage = pathname === '/' || pathname === '/bomas'
-    || (pathname.startsWith('/bomas/') && pathname !== '/bomas/create');
+  const isPublicPage = pathname === '/' || pathname === '/bomas';
   const requiresSignIn = !isAuthPage && !isPublicPage;
 
   useEffect(() => {
     if (authReady && requiresSignIn && !hasUser) {
-      router.replace('/auth/login');
+      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
     }
   }, [authReady, hasUser, requiresSignIn, router]);
 
@@ -88,7 +87,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {showPublicChrome && pathname !== '/' && (
           <footer className="border-t border-slate-200 bg-white px-5 py-5 text-center text-xs text-slate-500 lg:text-left">
             <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span>BomaPay — Clear contributions, together.</span>
+              <span>Openhand — Group contributions, made clear.</span>
               <span>Payments are approved on your phone through M-Pesa.</span>
             </div>
           </footer>
@@ -96,7 +95,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {showAppChrome && (
           <footer className="hidden items-center justify-between border-t border-slate-200 bg-white px-5 py-2.5 text-[11px] text-slate-500 select-none lg:flex sm:px-8 lg:px-10 xl:px-12">
-            <span>Boma — Contributions, open and transparent to every member</span>
+            <span>Openhand — Clear group records, shared when published</span>
             <div className="flex items-center gap-4 font-mono text-[10px]">
               <span className="flex items-center gap-1.5 font-bold text-emerald-700">
                 Paystack M-Pesa payments

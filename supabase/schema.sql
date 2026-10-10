@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.bomas (
     status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'funded', 'closed', 'paused')),
     deadline TIMESTAMPTZ NOT NULL,
     image_url TEXT,
-    is_public BOOLEAN NOT NULL DEFAULT true,
+    is_public BOOLEAN NOT NULL DEFAULT false,
     contributors_count INTEGER NOT NULL DEFAULT 0,
     verified BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
@@ -194,7 +194,7 @@ CREATE POLICY "Allow creators to update their bomas" ON public.bomas
 -- Ledger: 100% Public Transparency
 DROP POLICY IF EXISTS "Allow public read on ledger entries" ON public.ledger_entries;
 CREATE POLICY "Allow public read on ledger entries" ON public.ledger_entries
-    FOR SELECT USING (EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.is_public));
+    FOR SELECT USING (EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND (b.is_public OR b.creator_id = auth.uid()::text)));
 
 -- Transactions: Public read for completed transactions
 DROP POLICY IF EXISTS "Owners can read transactions" ON public.transactions;
@@ -202,6 +202,11 @@ CREATE POLICY "Owners can read transactions" ON public.transactions
     FOR SELECT TO authenticated USING (
       EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.creator_id = auth.uid()::text)
     );
+DROP POLICY IF EXISTS "Public can read transactions for public bomas" ON public.transactions;
+CREATE POLICY "Public can read transactions for public bomas" ON public.transactions
+    FOR SELECT USING (status = 'completed' AND EXISTS (
+      SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.is_public
+    ));
 
 -- Accounts access
 DROP POLICY IF EXISTS "Allow public read on accounts" ON public.accounts;
@@ -232,19 +237,21 @@ CREATE POLICY "Allow manage committee" ON public.committees
 DROP POLICY IF EXISTS "Allow read payout requests" ON public.payout_requests;
 CREATE POLICY "Allow read payout requests" ON public.payout_requests
     FOR SELECT TO authenticated USING (
-      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND (b.creator_id = auth.uid()::text OR b.is_public))
+      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.creator_id = auth.uid()::text)
     );
 
 DROP POLICY IF EXISTS "Allow insert payout requests" ON public.payout_requests;
 CREATE POLICY "Allow insert payout requests" ON public.payout_requests
     FOR INSERT TO authenticated WITH CHECK (
-      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id)
+      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.creator_id = auth.uid()::text)
     );
 
 DROP POLICY IF EXISTS "Allow update payout requests" ON public.payout_requests;
 CREATE POLICY "Allow update payout requests" ON public.payout_requests
     FOR UPDATE TO authenticated USING (
-      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id)
+      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.creator_id = auth.uid()::text)
+    ) WITH CHECK (
+      EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.creator_id = auth.uid()::text)
     );
 
 -- Grants
@@ -254,7 +261,8 @@ GRANT SELECT (id,title,slug,description,category,target_amount,current_amount,cu
 GRANT INSERT ON public.bomas TO authenticated;
 GRANT UPDATE (title,description,category,target_amount,status,deadline,image_url,is_public,creator_name,creator_phone) ON public.bomas TO authenticated;
 GRANT SELECT ON public.accounts, public.ledger_entries, public.committees TO anon, authenticated;
-GRANT SELECT ON public.transactions, public.disbursements, public.payout_requests TO authenticated;
+GRANT SELECT ON public.disbursements, public.payout_requests TO authenticated;
+GRANT SELECT (id,boma_id,reference,contributor_name,is_anonymous,amount,net_amount,currency,payment_method,status,note,created_at) ON public.transactions TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.committees, public.payout_requests TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 

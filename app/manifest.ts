@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Boma — Contributions & Chamas',
-    short_name: 'Boma',
-    description: 'Collect and track contributions for family, events and needs. Every member sees every shilling.',
+    name: 'Openhand — Group contributions, made clear',
+    short_name: 'Openhand',
+    description: 'Bring people together around shared goals and keep clear group records.',
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',

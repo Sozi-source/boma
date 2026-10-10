@@ -18,12 +18,12 @@ export default function DesktopHeader() {
   const pathname = usePathname();
   const title = sectionNames.find(([path]) => path === '/admin'
     ? pathname === path
-    : pathname === path || pathname.startsWith(`${path}/`))?.[1] ?? 'BomaPay operations';
+    : pathname === path || pathname.startsWith(`${path}/`))?.[1] ?? 'Openhand operations';
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 xl:px-10">
       <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-[.15em] text-slate-400">BomaPay workspace</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[.15em] text-slate-400">Openhand workspace</p>
         <h1 className="mt-0.5 truncate text-sm font-semibold text-slate-900">{title}</h1>
       </div>
       <div className="flex items-center gap-4">

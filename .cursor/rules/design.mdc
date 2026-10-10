@@ -1,0 +1,16 @@
+---
+description: Boma UI design rules. Read DESIGN.md before any UI work.
+alwaysApply: true
+---
+
+# UI work: read DESIGN.md first
+
+Before you create or change ANY UI (pages, components, styles, copy), read `DESIGN.md` at the project root in full and follow it. It is the single source of truth for design rules, the audit of known issues, the workflow and the delivery format.
+
+Non-negotiables (details in DESIGN.md):
+- Change layout, styling, copy and component structure only. Never change data fetching, Supabase queries, `app/api/**`, payment, MFA, ledger or auth logic, and never edit `lib/`, `supabase/` or `package.json`.
+- Phone numbers, emails, amounts, dates, IDs and status labels never wrap and are never truncated. No text below 11px.
+- Light UI. Green is an accent, not a fill. Plain English; the action label is "Contribute".
+- Use only `components/ui/icons.tsx` for icons. Tailwind v4 only. No new dependencies without approval.
+- Deliver one zip with only changed files at project-root paths (no `src/` prefix) plus `CHANGES.md`. Run the type check and `npm run build` first.
+- If DESIGN.md and a request conflict, say so and ask before breaking the rule.

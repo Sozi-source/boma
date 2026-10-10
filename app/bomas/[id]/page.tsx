@@ -34,6 +34,18 @@ export default function BomaDetailPage({ params }: PageProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
   const [paymentNotice, setPaymentNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
+  const [visibilityError, setVisibilityError] = useState('');
+
+  const changeVisibility = async () => {
+    if (!boma || currentUserId !== boma.creator_id || visibilitySaving) return;
+    setVisibilitySaving(true);
+    setVisibilityError('');
+    const result = await bomaService.updateBomaVisibility(boma.id, !boma.is_public);
+    if (result.success) setBoma({ ...boma, is_public: !boma.is_public });
+    else setVisibilityError(result.error || 'Could not update group visibility.');
+    setVisibilitySaving(false);
+  };
 
   // Reloads data in place (no spinner) so open tabs keep their state.
   const loadBomaData = async () => {
@@ -133,14 +145,14 @@ export default function BomaDetailPage({ params }: PageProps) {
           <span className="capitalize font-mono text-slate-600 truncate max-w-[140px] sm:max-w-none">{boma.category}</span>
         </div>
 
-        <button
+        {boma.is_public && <button
           type="button"
           onClick={() => setIsShareModalOpen(true)}
           className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
         >
           <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
           <span>Share</span>
-        </button>
+        </button>}
       </div>
 
       {/* Payment Confirmation / Alert Banner */}
@@ -199,6 +211,25 @@ export default function BomaDetailPage({ params }: PageProps) {
               Organized by <strong className="text-slate-700 font-semibold">{boma.creator_name}</strong>
             </p>
           </div>
+
+          {isFundOrganizer && (
+            <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5" aria-labelledby="visibility-title">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 id="visibility-title" className="text-sm font-semibold text-slate-900">Group visibility: {boma.is_public ? 'Public' : 'Private'}</h2>
+                  <p className="mt-1 max-w-xl text-xs leading-5 text-slate-600">
+                    {boma.is_public
+                      ? 'Anyone can find this group, view its progress and contribution record, and contribute.'
+                      : 'Only you can view this group. It will not appear in Explore and contributions are paused until you publish it.'}
+                  </p>
+                  {visibilityError && <p role="alert" className="mt-2 text-xs text-rose-700">{visibilityError}</p>}
+                </div>
+                <button type="button" onClick={changeVisibility} disabled={visibilitySaving} className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-emerald-700 px-4 text-xs font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">
+                  {visibilitySaving ? 'Saving…' : boma.is_public ? 'Make group private' : 'Publish group'}
+                </button>
+              </div>
+            </section>
+          )}
 
           {/* Mobile-Only Progress Strip (shown on mobile above tabs) */}
           <div className="block lg:hidden rounded-xl border border-slate-200 bg-white p-4 space-y-2 shadow-2xs">
@@ -281,14 +312,14 @@ export default function BomaDetailPage({ params }: PageProps) {
           )}
 
           {/* Discreet link to Admin for administrators and organizers */}
-          <div className="pt-2 text-center">
+          {isFundOrganizer && <div className="pt-2 text-center">
             <Link
               href="/admin"
               className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors"
             >
               Organizer &amp; Admin Dashboard →
             </Link>
-          </div>
+          </div>}
         </div>
 
         {/* Right Column (Financial Progress & Contribute Card - Desktop Sticky) */}
@@ -319,7 +350,7 @@ export default function BomaDetailPage({ params }: PageProps) {
 
             {/* Quick Contributors count */}
             <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs">
-              <button
+              {boma.is_public && <button
                 type="button"
                 onClick={() => setActiveTab('contributors')}
                 className="flex items-center gap-1.5 text-left hover:text-emerald-700 transition-colors"
@@ -329,30 +360,30 @@ export default function BomaDetailPage({ params }: PageProps) {
                   {transactions.length}
                 </span>
                 <span className="text-slate-500">contributions →</span>
-              </button>
+              </button>}
 
-              <button
+              {boma.is_public && <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
                 className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
               >
                 <ShareIcon className="w-3.5 h-3.5" />
                 <span>Share</span>
-              </button>
+              </button>}
             </div>
 
             {/* Simple Pay Action */}
             <div className="pt-1">
-              <button
+              {boma.is_public && <button
                 type="button"
                 onClick={() => setIsContributeModalOpen(true)}
                 className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-2xs transition-all active:scale-98"
               >
                 Contribute to this Fund
-              </button>
+              </button>}
               {isFundOrganizer && (
                 <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-relaxed text-emerald-900">
-                  The group&apos;s share settles directly to its verified Paystack M-Pesa destination.
+                  {boma.is_public ? "The group's share settles directly to its verified Paystack M-Pesa destination." : 'Publish this group when you are ready to accept contributions.'}
                 </p>
               )}
             </div>
@@ -362,19 +393,23 @@ export default function BomaDetailPage({ params }: PageProps) {
 
       {/* Floating Sticky Mobile Action Bar (Above Mobile Nav) */}
       <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:hidden bg-white/95 border-t border-slate-200 p-2.5 px-4 flex items-center gap-2.5 backdrop-blur-md shadow-lg">
-        <button
+        {isFundOrganizer && !boma.is_public ? (
+          <button type="button" onClick={changeVisibility} disabled={visibilitySaving} className="flex-1 rounded-lg bg-emerald-700 py-3 text-xs font-bold text-white disabled:opacity-60">
+            {visibilitySaving ? 'Saving…' : 'Publish group to accept contributions'}
+          </button>
+        ) : boma.is_public ? <button
           type="button"
           onClick={() => setIsContributeModalOpen(true)}
           className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-2xs transition-colors"
         >
           Contribute Now
-        </button>
+        </button> : null}
 
-        {isFundOrganizer ? (
+        {isFundOrganizer && boma.is_public ? (
           <span className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-[10px] font-medium text-emerald-900">
             Paystack settles to your verified M-Pesa destination
           </span>
-        ) : (
+        ) : boma.is_public ? (
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
@@ -383,7 +418,7 @@ export default function BomaDetailPage({ params }: PageProps) {
           >
             <ShareIcon className="w-4 h-4 text-slate-500" />
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* Modals */}

@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, Poppins } from 'next/font/google';
 import AppShell from '@/components/app-shell';
 import PwaRegister from '@/components/pwa-register';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const poppins = Poppins({
+  variable: '--font-poppins',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 });
 
 const geistMono = Geist_Mono({
@@ -15,13 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Boma — Contributions, transparent to every member',
-  description: 'Collect and track contributions for family, events and needs. Every member sees every shilling.',
-  applicationName: 'Boma',
+  title: 'Openhand — Group contributions, made clear',
+  description: 'Bring people together around a shared goal. Collect contributions and keep a clear group record.',
+  applicationName: 'Openhand',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Boma',
+    title: 'Openhand',
   },
   icons: {
     icon: [
@@ -46,7 +47,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}>
       <body suppressHydrationWarning className="min-h-full flex flex-col lg:flex-row bg-[#f8fafc] text-slate-900 selection:bg-emerald-500 selection:text-white font-sans">
         <AppShell>{children}</AppShell>
         <PwaRegister />

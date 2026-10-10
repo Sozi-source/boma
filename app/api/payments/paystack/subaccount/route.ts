@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       .select('subaccount_code,destination_type,destination_last4,status,created_at')
       .eq('creator_id', user.id).maybeSingle();
     if (existingError) throw existingError;
-    if (existing) return NextResponse.json({ error: 'A payout account is already registered. Contact BomaPay support to change it.' }, { status: 409 });
+    if (existing) return NextResponse.json({ error: 'A payout account is already registered. Contact Openhand support to change it.' }, { status: 409 });
 
     const feePercent = platformFeePercent();
     const created = await paystackService.createSubaccount({
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Paystack subaccount creation failed', error instanceof Error ? error.message : 'unknown');
     return NextResponse.json({ error: error instanceof Error && error.message === 'Platform commission is not configured'
-      ? 'BomaPay payment settings are not configured yet.'
-      : 'Unable to set up the M-Pesa payout account. Please check the details or contact BomaPay support.' }, { status: 503 });
+      ? 'Openhand payment settings are not configured yet.'
+      : 'Unable to set up the M-Pesa payout account. Please check the details or contact Openhand support.' }, { status: 503 });
   }
 }

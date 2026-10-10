@@ -44,7 +44,7 @@ export default function ShareModal({ boma, isOpen, onClose }: ShareModalProps) {
 
   const whatsappMessage = 
 `*Support: ${boma.title}*
-${boma.verified ? '✅ Verified on Boma\n' : ''}
+${boma.verified ? '✅ Verified on Openhand\n' : ''}
 🎯 *Target:* ${formatCurrency(boma.target_amount, boma.currency)}
 💰 *Raised:* ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%)
 👥 *Members:* ${boma.contributors_count} contributors${defaultNote}
@@ -79,7 +79,7 @@ Every contribution counts! Give transparently with an M-Pesa payment prompt:
       try {
         await navigator.share({
           title: boma.title,
-          text: `Support ${boma.title} on Boma. Raised: ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%).`,
+          text: `Support ${boma.title} on Openhand. Raised: ${formatCurrency(boma.current_amount, boma.currency)} (${percentage}%).`,
           url: shareUrl,
         });
       } catch {

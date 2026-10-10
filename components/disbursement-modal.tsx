@@ -67,7 +67,7 @@ export default function DisbursementModal({
     }
     const { data: enrollment, error: enrollmentError } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
-      friendlyName: 'BomaPay payouts',
+      friendlyName: 'Openhand payouts',
     });
     if (enrollmentError) throw enrollmentError;
     setMfaFactorId(enrollment.id);

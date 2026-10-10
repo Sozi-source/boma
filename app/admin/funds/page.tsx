@@ -55,7 +55,7 @@ export default function AdminFundsPage() {
           className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all active:scale-95 shrink-0"
         >
           <PlusIcon className="w-4 h-4 stroke-[2.5]" />
-          <span>Launch New Boma</span>
+          <span>Start a group fund</span>
         </Link>
       </div>
 

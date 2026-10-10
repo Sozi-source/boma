@@ -769,7 +769,7 @@ export default function ActivityPage() {
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
                   <ShieldCheckIcon className="w-6 h-6 text-emerald-600" />
                 </div>
-                <h3 className="mt-3 text-base font-bold text-slate-950">Official BomaPay Receipt</h3>
+                <h3 className="mt-3 text-base font-bold text-slate-950">Official Openhand Receipt</h3>
                 <p className="text-[11px] text-slate-400 font-mono mt-0.5">
                   Verified Payment Settlement
                 </p>

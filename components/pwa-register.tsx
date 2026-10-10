@@ -54,10 +54,10 @@ export default function PwaRegister() {
         navigator.serviceWorker
           .register('/sw.js', { scope: '/' })
           .then((reg) => {
-            console.log('Boma SW registered with scope:', reg.scope);
+            console.log('Openhand service worker registered with scope:', reg.scope);
           })
           .catch((err) => {
-            console.warn('Boma SW registration failed:', err);
+            console.warn('Openhand service worker registration failed:', err);
           });
       });
     }
@@ -104,13 +104,13 @@ export default function PwaRegister() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/icons/icon-96x96.png"
-            alt="Boma Logo"
+            alt="Openhand logo"
             width={40}
             height={40}
             className="w-10 h-10 shrink-0 rounded-xl object-cover shadow-xs border border-emerald-800/10"
           />
           <div className="min-w-0">
-            <h4 className="text-xs font-bold text-neutral-900 truncate">Install Boma App</h4>
+            <h4 className="text-xs font-bold text-neutral-900 truncate">Install Openhand</h4>
             <p className="text-[11px] text-neutral-500 truncate">Fast access & instant tracking</p>
           </div>
         </div>

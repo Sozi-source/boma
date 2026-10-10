@@ -1,5 +1,5 @@
-// Service Worker for Boma PWA
-const CACHE_NAME = 'boma-pwa-v2';
+// Service Worker for Openhand PWA
+const CACHE_NAME = 'openhand-pwa-v3';
 
 // If running on localhost / dev, completely bypass and clean up
 const isLocalhost = Boolean(
@@ -122,7 +122,7 @@ self.addEventListener('push', (event) => {
     try {
       const data = event.data.json();
       const options = {
-        body: data.body || 'New update from Boma',
+        body: data.body || 'New update from Openhand',
         icon: data.icon || '/assets/icons/icon-192x192.png',
         badge: '/assets/icons/icon-72x72.png',
         vibrate: [100, 50, 100],
@@ -131,10 +131,10 @@ self.addEventListener('push', (event) => {
           dateOfArrival: Date.now(),
         },
       };
-      event.waitUntil(self.registration.showNotification(data.title || 'Boma', options));
+      event.waitUntil(self.registration.showNotification(data.title || 'Openhand', options));
     } catch {
       event.waitUntil(
-        self.registration.showNotification('Boma', {
+        self.registration.showNotification('Openhand', {
           body: event.data.text(),
           icon: '/assets/icons/icon-192x192.png',
         })

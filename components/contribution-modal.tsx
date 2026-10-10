@@ -285,7 +285,7 @@ export default function ContributionModal({
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
                 />
               </div>
-              <p className="mt-2 text-[10px] leading-4 text-slate-500">BomaPay keeps 2.5% of each contribution. The remaining share settles to the organizer’s registered M-Pesa destination.</p>
+              <p className="mt-2 text-[10px] leading-4 text-slate-500">Openhand keeps 2.5% of each contribution. The remaining share settles to the organizer’s registered M-Pesa destination.</p>
             </div>
 
             {/* Inputs */}
@@ -440,7 +440,7 @@ export default function ContributionModal({
                 type="button"
                 onClick={() => {
                   const url = typeof window !== 'undefined' ? window.location.href : '';
-                  const msg = `I just contributed ${formatCurrency(receiptData.transaction.amount, receiptData.transaction.currency)} to *${boma.title}* on Boma! Join me in supporting:\n👉 ${url}`;
+                  const msg = `I just contributed ${formatCurrency(receiptData.transaction.amount, receiptData.transaction.currency)} to *${boma.title}* on Openhand! Join me in supporting:\n👉 ${url}`;
                   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
                 }}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 py-2.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
