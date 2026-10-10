@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Boma, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
@@ -71,17 +72,14 @@ export default function DashboardPage() {
         {/* Main account / fund hero */}
         <section className="relative overflow-hidden rounded-[24px] bg-[#0A4F43] p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.18)] sm:p-7">
           {/* Full-bleed seamless background illustration (no nested card frame) */}
-          <picture className="pointer-events-none absolute inset-0">
-            <source
-              srcSet="/assets/images/dashboard/hero_card_bg_944w_web.webp 944w, /assets/images/dashboard/hero_card_bg_1416w_web-xl.webp 1416w, /assets/images/dashboard/hero_card_bg_1888w_web-2x.webp 1888w"
-              sizes="(min-width: 1024px) 1024px, 100vw"
-            />
-            <img
-              src="/assets/images/dashboard/hero_card_bg_944w_web.webp"
-              alt=""
-              className="h-full w-full object-cover object-right"
-            />
-          </picture>
+          <Image
+            src="/assets/images/funds/savings/pexels-towfiqu-barbhuiya-3440682-9755390.webp"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1024px) 1024px, 100vw"
+            className="pointer-events-none object-cover object-right"
+          />
 
           {/* Gentle soft scrim behind the text on the left; leaves the 3D art on the right 100% bright & vibrant */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-full sm:w-3/5 bg-gradient-to-r from-[#0A4F43] via-[#0A4F43]/50 to-transparent" />
