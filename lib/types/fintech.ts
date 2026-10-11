@@ -87,6 +87,10 @@ export interface Account {
   total_received: number;
   total_disbursed: number;
   last_reconciled_at: string;
+  pending_balance?: number;
+  escrow_balance?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface LedgerEntry {
@@ -210,11 +214,13 @@ export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
+  phone?: string;
   /** Multiple phone numbers associated with this user (e.g. primary & secondary M-Pesa lines) */
   phones: string[];
   role: UserRole;
   status: UserStatus;
   created_at: string;
+  updated_at?: string;
   approved_at?: string;
   approved_by?: string;
   avatar_url?: string;
