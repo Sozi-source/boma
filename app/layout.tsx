@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist_Mono, Poppins } from 'next/font/google';
+import { Geist_Mono, Jost } from 'next/font/google';
 import AppShell from '@/components/app-shell';
 import PwaRegister from '@/components/pwa-register';
 import './globals.css';
 
-const poppins = Poppins({
-  variable: '--font-poppins',
+const jost = Jost({
+  variable: '--font-jost',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
@@ -47,8 +48,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}>
-      <body suppressHydrationWarning className="min-h-full flex flex-col lg:flex-row bg-[#f8fafc] text-slate-900 selection:bg-emerald-500 selection:text-white font-sans">
+    <html lang="en" suppressHydrationWarning className={`${jost.variable} ${geistMono.variable} h-full antialiased`}>
+      <body suppressHydrationWarning className="min-h-full flex flex-col lg:flex-row bg-[#f4f5f7] text-[#18181b] selection:bg-[#99d452] selection:text-[#14532d] font-sans">
         <AppShell>{children}</AppShell>
         <PwaRegister />
       </body>

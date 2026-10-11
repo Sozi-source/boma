@@ -1,5 +1,9 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 const goalExamples = [
   {
@@ -53,6 +57,23 @@ const goalExamples = [
 ] as const;
 
 export default function ExploreBomasPage() {
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const supabase = createClient();
+      void supabase.auth.getUser().then(({ data: { user } }) => {
+        setAuthenticated(Boolean(user));
+      });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setAuthenticated(Boolean(session?.user));
+      });
+      return () => subscription.unsubscribe();
+    } catch {
+      // fallback
+    }
+  }, []);
+
   return (
     <div className="min-h-full bg-[#f7f8f5] text-[#18352a]">
       <section className="border-b border-[#e6ebe5] bg-white">
@@ -63,8 +84,11 @@ export default function ExploreBomasPage() {
               <h1 className="text-3xl font-semibold tracking-[-.045em] sm:text-4xl">What could your group do together?</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[#65736a] sm:text-base">Choose a goal, bring your people together, and follow the progress in one place.</p>
             </div>
-            <Link href="/auth/signup?role=organizer" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-[#99d452] px-5 text-sm font-semibold text-[#19352c] transition hover:bg-[#8ac841] sm:self-auto">
-              Start a group <span aria-hidden="true">→</span>
+            <Link
+              href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-[#99d452] px-5 text-sm font-semibold text-[#19352c] transition hover:bg-[#8ac841] sm:self-auto"
+            >
+              {authenticated ? 'Add fund' : 'Start a group'} <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
@@ -81,10 +105,10 @@ export default function ExploreBomasPage() {
                 <h2 className="text-base font-semibold tracking-tight text-[#20392d]">{goal.name}</h2>
                 <p className="mt-1.5 flex-1 text-sm leading-5 text-[#718076]">{goal.description}</p>
                 <Link
-                  href="/auth/signup?role=organizer"
+                  href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
                   className="mt-4 inline-flex min-h-9 self-start items-center justify-center gap-1.5 rounded-full bg-[#99d452] px-3.5 text-xs font-semibold text-[#19352c] transition hover:bg-[#8ac841] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6da72e]"
                 >
-                  Start this goal <span aria-hidden="true">→</span>
+                  {authenticated ? 'Add fund for this goal' : 'Start this goal'} <span aria-hidden="true">→</span>
                 </Link>
               </div>
             </article>

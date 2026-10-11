@@ -5,8 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { bomaService } from '@/lib/services/boma-service';
-import { CheckCircleIcon } from '@/components/ui/icons';
-import AuthImageCarousel, { SIGNUP_AUTH_IMAGES } from '@/components/auth-image-carousel';
+import { CheckCircleIcon, ShieldCheckIcon } from '@/components/ui/icons';
 
 export default function SignUpPage() {
   const [fullName, setFullName] = useState('');
@@ -17,7 +16,6 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showAuthImage, setShowAuthImage] = useState(true);
   const [requestSubmitted, setRequestSubmitted] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -68,83 +66,220 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f9f4ea] lg:min-h-[calc(100svh-4rem)]">
-      <div className={`mx-auto grid w-full items-center md:min-h-[calc(100svh-2rem)] ${showAuthImage ? 'md:grid-cols-2' : 'max-w-sm py-7 sm:py-12'}`}>
-        {showAuthImage && (
-          <div className="relative h-32 min-h-[128px] max-h-[128px] w-full overflow-hidden bg-[#f9f4ea] sm:h-56 sm:min-h-[224px] sm:max-h-[300px] md:h-[calc(100svh-4rem)] md:min-h-0 md:max-h-none">
-            <AuthImageCarousel images={SIGNUP_AUTH_IMAGES} onError={() => setShowAuthImage(false)} />
-          </div>
-        )}
+    <div className="h-screen max-h-screen w-full bg-[#f9f4ea] text-[#18181b] font-sans md:overflow-hidden">
+      <div className="grid h-full w-full md:grid-cols-[1fr_1.1fr] lg:grid-cols-[1fr_1.15fr]">
+        {/* Minimalistic Left Brand Panel (Desktop only, retaining exact #f9f4ea bg color) */}
+        <aside className="relative hidden md:flex flex-col justify-between p-6 lg:p-8 xl:p-10 bg-[#f9f4ea] border-r border-[#ebdcc5] h-full overflow-hidden">
+          {/* Centered Minimal Message + Rectangular Image */}
+          <div className="relative z-10 max-w-md my-auto">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#99d452]/40 bg-[#99d452]/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.1em] text-[#14532d] shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#99d452]" /> Made for shared goals
+            </span>
 
-        <div className="mx-auto w-full max-w-sm px-4 py-4 sm:py-12 md:flex md:min-h-[calc(100svh-2rem)] md:max-w-none md:flex-col md:justify-center md:px-12">
-          <div className="mb-4 space-y-1 text-center sm:mb-6">
-            <Link href="/" aria-label="Openhand home" className="mb-2 hidden sm:inline-flex items-center justify-center">
+            <h2 className="mt-3 text-2xl lg:text-3xl xl:text-[34px] font-medium leading-[1.22] tracking-tight text-[#18181b]">
+              A little from each of us. A lot for all of us.
+            </h2>
+
+            <p className="mt-2 text-xs sm:text-[14px] leading-relaxed text-[#52525b] font-normal">
+              When people unite around a shared goal, progress becomes simple. Bring your chama, family, or community together with honest records.
+            </p>
+
+            {/* Rectangular Image Space */}
+            <div className="mt-4 lg:mt-5 relative w-full aspect-[16/11] max-h-64 lg:max-h-72 xl:max-h-80 overflow-hidden rounded-2xl sm:rounded-3xl border border-[#ebdcc5] shadow-xs bg-[#e8eee7]">
               <Image
-                src="/assets/icons/openhand.webp"
-                alt="Openhand"
-                width={44}
-                height={44}
-                className="h-11 w-11 rounded-xl object-contain shadow-xs"
+                src="/assets/images/funds/family/family_1440w_web-xl.webp"
+                alt="Family and community members gathered around a phone tracking their goal"
+                fill
+                sizes="(max-width: 1024px) 50vw, 40vw"
+                className="object-cover object-center"
                 priority
               />
-            </Link>
-            <h1 className="text-xl font-black text-neutral-900 sm:text-2xl">Get started</h1>
-            <p className="text-xs text-neutral-500">Create an organizer account</p>
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white">
+                <span className="text-xs font-medium tracking-tight">One group record</span>
+                <span className="text-[11px] text-white/80 font-normal">Together for every milestone</span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:space-y-4 sm:p-6">
-            {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs text-red-700">{error}</div>}
+          {/* Bottom Trust Note */}
+          <div className="relative z-10 flex items-center gap-2 text-xs text-[#71717a] pt-2">
+            <ShieldCheckIcon className="h-4 w-4 text-[#14532d]" />
+            <span>Zero setup fees · Bank-grade security</span>
+          </div>
+        </aside>
 
-            {requestSubmitted ? (
-              <div className="space-y-4 text-center">
-                <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-700"><CheckCircleIcon className="h-6 w-6" /></span>
-                <div><h2 className="text-base font-bold text-neutral-900">Request submitted</h2><p className="mt-1 text-xs leading-5 text-neutral-600">You can sign in after your organizer account is approved.</p></div>
-                <Link href="/auth/login" className="inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-500 sm:text-sm">Go to sign in</Link>
+        {/* Right Form Area */}
+        <main className="flex flex-col justify-center px-4 py-4 sm:px-8 lg:px-12 h-full overflow-y-auto">
+          <div className="mx-auto w-full max-w-lg my-auto">
+            {/* Form Card */}
+            <div className="rounded-3xl border border-[#ebdcc5] bg-white p-5 sm:p-7 shadow-[0_4px_24px_rgba(24,24,27,0.03)]">
+              <div className="mb-4 sm:mb-5">
+                <h1 className="text-xl sm:text-2xl font-medium tracking-tight text-[#18181b]">
+                  Get started
+                </h1>
+                <p className="mt-0.5 text-xs sm:text-[13px] text-[#52525b] font-normal">
+                  Create an organizer account for your group
+                </p>
               </div>
-            ) : (
-              <form onSubmit={handleSignUp} className="grid grid-cols-1 items-start gap-x-5 gap-y-3 lg:grid-cols-2 lg:gap-y-4">
-                <div>
-                  <label htmlFor="full-name" className="mb-1 block text-[11px] font-semibold text-neutral-700">Full name</label>
-                  <input id="full-name" type="text" autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 sm:py-2 sm:text-sm" />
+
+              {error && (
+                <div role="alert" className="mb-3.5 rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-700">
+                  {error}
                 </div>
+              )}
 
-                <div>
-                  <label htmlFor="signup-email" className="mb-1 block text-[11px] font-semibold text-neutral-700">Email address</label>
-                  <input id="signup-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 sm:py-2 sm:text-sm" />
+              {requestSubmitted ? (
+                <div className="space-y-3.5 py-2 text-center">
+                  <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#99d452]/20 text-[#14532d]">
+                    <CheckCircleIcon className="h-6 w-6 text-[#14532d]" />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-medium text-[#18181b]">Request submitted</h2>
+                    <p className="mt-1 text-xs text-[#52525b] leading-relaxed max-w-sm mx-auto">
+                      Your request has been received. You can sign in as soon as your organizer account is reviewed.
+                    </p>
+                  </div>
+                  <Link
+                    href="/auth/login"
+                    className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-[#99d452] px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-[0_4px_14px_rgba(153,212,82,0.3)] transition hover:bg-[#8ac841]"
+                  >
+                    Go to sign in
+                  </Link>
                 </div>
+              ) : (
+                <form onSubmit={handleSignUp} className="space-y-3 sm:space-y-3.5">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="full-name" className="mb-1 block text-xs font-medium text-[#18181b]">
+                        Full name
+                      </label>
+                      <input
+                        id="full-name"
+                        type="text"
+                        autoComplete="name"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="e.g. Mary Wanjiku"
+                        className="w-full rounded-xl border border-[#dce0d3] bg-[#fafbfa] px-3.5 py-2 text-xs sm:text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:border-[#99d452] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#99d452]/20 transition-all"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="phone" className="mb-1 block text-[11px] font-semibold text-neutral-700">M-Pesa phone number</label>
-                  <input id="phone" type="tel" autoComplete="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 sm:py-2 sm:text-sm" />
+                    <div>
+                      <label htmlFor="signup-email" className="mb-1 block text-xs font-medium text-[#18181b]">
+                        Email address
+                      </label>
+                      <input
+                        id="signup-email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        className="w-full rounded-xl border border-[#dce0d3] bg-[#fafbfa] px-3.5 py-2 text-xs sm:text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:border-[#99d452] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#99d452]/20 transition-all"
+                      />
+                    </div>
+                  </div>
 
-                  {!showSecondary ? (
-                    <button type="button" onClick={() => setShowSecondary(true)} className="mt-2 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800">+ Add another phone</button>
-                  ) : (
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label htmlFor="secondary-phone" className="block text-[11px] font-semibold text-neutral-700">Other phone number <span className="font-normal text-neutral-400">(optional)</span></label>
-                        <button type="button" onClick={() => { setShowSecondary(false); setSecondaryPhone(''); }} className="text-[10px] text-neutral-400 hover:text-neutral-600">Remove</button>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <div className="mb-1 flex items-center justify-between">
+                        <label htmlFor="phone" className="block text-xs font-medium text-[#18181b]">
+                          M-Pesa phone
+                        </label>
+                        {!showSecondary && (
+                          <button
+                            type="button"
+                            onClick={() => setShowSecondary(true)}
+                            className="text-[11px] font-medium text-[#14532d] hover:text-[#166534]"
+                          >
+                            + Extra
+                          </button>
+                        )}
                       </div>
-                      <input id="secondary-phone" type="tel" autoComplete="tel" value={secondaryPhone} onChange={(e) => setSecondaryPhone(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 sm:py-2 sm:text-sm" />
+                      <input
+                        id="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="07XX XXX XXX"
+                        className="w-full rounded-xl border border-[#dce0d3] bg-[#fafbfa] px-3.5 py-2 text-xs sm:text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:border-[#99d452] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#99d452]/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="signup-password" className="mb-1 block text-xs font-medium text-[#18181b]">
+                        Password <span className="font-normal text-[#71717a]">(12+ chars)</span>
+                      </label>
+                      <input
+                        id="signup-password"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        minLength={12}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="At least 12 characters"
+                        className="w-full rounded-xl border border-[#dce0d3] bg-[#fafbfa] px-3.5 py-2 text-xs sm:text-sm text-[#18181b] placeholder:text-[#a1a1aa] focus:border-[#99d452] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#99d452]/20 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {showSecondary && (
+                    <div className="space-y-1 rounded-xl bg-[#f4f5f7] p-2.5 border border-[#dce0d3]">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="secondary-phone" className="block text-xs font-medium text-[#18181b]">
+                          Other phone number <span className="font-normal text-[#71717a]">(optional)</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowSecondary(false);
+                            setSecondaryPhone('');
+                          }}
+                          className="text-[11px] text-[#71717a] hover:text-[#18181b]"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <input
+                        id="secondary-phone"
+                        type="tel"
+                        autoComplete="tel"
+                        value={secondaryPhone}
+                        onChange={(e) => setSecondaryPhone(e.target.value)}
+                        placeholder="Secondary contact phone"
+                        className="w-full rounded-xl border border-[#dce0d3] bg-white px-3 py-1.5 text-xs text-[#18181b] focus:border-[#99d452] focus:outline-none"
+                      />
                     </div>
                   )}
 
-                </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="mt-1 flex min-h-10 w-full items-center justify-center rounded-full bg-[#99d452] py-2.5 text-xs sm:text-sm font-semibold text-white shadow-[0_4px_14px_rgba(153,212,82,0.32)] transition hover:bg-[#8ac841] active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {loading ? 'Submitting…' : 'Request organizer access'}
+                  </button>
+                </form>
+              )}
 
-                <div>
-                  <label htmlFor="signup-password" className="mb-1 block text-[11px] font-semibold text-neutral-700">Password <span className="font-normal text-neutral-400">(12+ characters)</span></label>
-                  <input id="signup-password" type="password" autoComplete="new-password" required minLength={12} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-emerald-500 sm:py-2 sm:text-sm" />
-                </div>
-
-                <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-emerald-600 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-500 active:scale-98 disabled:opacity-50 sm:py-2.5 sm:text-sm lg:col-span-2">
-                  {loading ? 'Submitting…' : 'Request organizer access'}
-                </button>
-              </form>
-            )}
-
-            <p className="pt-2 text-center text-xs text-neutral-500">Already have an account? <Link href="/auth/login" className="font-bold text-emerald-700 hover:text-emerald-800">Sign in</Link></p>
+              <div className="mt-4 pt-3.5 border-t border-[#f0f0f0] text-center text-xs text-[#52525b]">
+                Already have an account?{' '}
+                <Link
+                  href="/auth/login"
+                  className="font-medium text-[#14532d] hover:text-[#166534] underline underline-offset-2"
+                >
+                  Sign in
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

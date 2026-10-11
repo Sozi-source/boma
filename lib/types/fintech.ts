@@ -28,8 +28,36 @@ export type LedgerEntryType = 'credit' | 'debit';
 
 export type DisbursementStatus = 'pending' | 'approved' | 'disbursed' | 'rejected';
 
+export type GroupType =
+  | 'chama'
+  | 'family'
+  | 'community'
+  | 'welfare'
+  | 'alumni'
+  | 'project'
+  | 'church'
+  | 'other';
+
+export interface Group {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  group_type: GroupType;
+  organizer_id: string;
+  organizer_name: string;
+  organizer_phone?: string;
+  payout_destination_type?: 'mpesa_till' | 'mpesa_paybill';
+  payout_destination_number?: string;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Boma {
   id: string;
+  group_id?: string;
+  group_name?: string;
   title: string;
   slug: string;
   description: string;

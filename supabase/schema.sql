@@ -18,9 +18,28 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 2. BOMAS (Contributions / Group Pools)
+-- 2. GROUPS (Chamas, Families, Projects, Communities)
+CREATE TABLE IF NOT EXISTS public.groups (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    group_type VARCHAR(50) NOT NULL DEFAULT 'chama' CHECK (group_type IN ('chama', 'family', 'community', 'welfare', 'alumni', 'project', 'church', 'other')),
+    organizer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    organizer_name VARCHAR(255) NOT NULL,
+    organizer_phone VARCHAR(50),
+    payout_destination_type VARCHAR(20) DEFAULT 'mpesa_till' CHECK (payout_destination_type IN ('mpesa_till', 'mpesa_paybill')),
+    payout_destination_number VARCHAR(50),
+    is_verified BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3. BOMAS (Group Funds / Pools)
 CREATE TABLE IF NOT EXISTS public.bomas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID REFERENCES public.groups(id) ON DELETE SET NULL,
+    group_name VARCHAR(255),
     title VARCHAR(255) NOT NULL,
     slug VARCHAR(255) NOT NULL UNIQUE,
     description TEXT NOT NULL,
@@ -254,12 +273,25 @@ CREATE POLICY "Allow update payout requests" ON public.payout_requests
       EXISTS (SELECT 1 FROM public.bomas b WHERE b.id = boma_id AND b.creator_id = auth.uid()::text)
     );
 
+-- Groups RLS
+ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Organizers can manage own group" ON public.groups;
+CREATE POLICY "Organizers can manage own group" ON public.groups
+    FOR ALL TO authenticated USING (organizer_id = auth.uid()) WITH CHECK (organizer_id = auth.uid());
+
+DROP POLICY IF EXISTS "Public can view verified groups" ON public.groups;
+CREATE POLICY "Public can view verified groups" ON public.groups
+    FOR SELECT USING (true);
+
 -- Grants
-REVOKE ALL ON public.profiles, public.accounts, public.transactions, public.ledger_entries, public.disbursements, public.committees, public.payout_requests FROM anon, authenticated;
+REVOKE ALL ON public.profiles, public.groups, public.accounts, public.transactions, public.ledger_entries, public.disbursements, public.committees, public.payout_requests FROM anon, authenticated;
 REVOKE ALL ON public.bomas FROM anon, authenticated;
-GRANT SELECT (id,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at) ON public.bomas TO anon, authenticated;
+GRANT SELECT (id,group_id,group_name,title,slug,description,category,target_amount,current_amount,currency,creator_id,creator_name,status,deadline,image_url,is_public,contributors_count,verified,created_at,updated_at) ON public.bomas TO anon, authenticated;
 GRANT INSERT ON public.bomas TO authenticated;
-GRANT UPDATE (title,description,category,target_amount,status,deadline,image_url,is_public,creator_name,creator_phone) ON public.bomas TO authenticated;
+GRANT UPDATE (group_id,group_name,title,description,category,target_amount,status,deadline,image_url,is_public,creator_name,creator_phone) ON public.bomas TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.groups TO authenticated;
+GRANT SELECT (id,name,slug,description,group_type,organizer_id,organizer_name,is_verified,created_at) ON public.groups TO anon;
 GRANT SELECT ON public.accounts, public.ledger_entries, public.committees TO anon, authenticated;
 GRANT SELECT ON public.disbursements, public.payout_requests TO authenticated;
 GRANT SELECT (id,boma_id,reference,contributor_name,is_anonymous,amount,net_amount,currency,payment_method,status,note,created_at) ON public.transactions TO anon, authenticated;
@@ -279,20 +311,47 @@ CREATE TRIGGER profiles_role_is_immutable BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.prevent_profile_role_escalation();
 
 -- ==========================================================
--- AUTOMATIC PROFILE TRIGGER ON SIGNUP
+-- AUTOMATIC PROFILE & INITIAL GROUP TRIGGER ON SIGNUP
 -- ==========================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  v_full_name TEXT;
+  v_phone TEXT;
+  v_group_name TEXT;
+  v_group_slug TEXT;
 BEGIN
-  INSERT INTO public.profiles (id, full_name, email, phone, avatar_url)
+  v_full_name := COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1));
+  v_phone := new.raw_user_meta_data->>'phone';
+  v_group_name := COALESCE(new.raw_user_meta_data->>'group_name', v_full_name || '''s Group');
+  v_group_slug := lower(regexp_replace(v_group_name, '[^a-zA-Z0-9]+', '-', 'g')) || '-' || substring(new.id::text from 1 for 6);
+
+  -- 1. Create Profile
+  INSERT INTO public.profiles (id, full_name, email, phone, avatar_url, role)
   VALUES (
     new.id,
-    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    v_full_name,
     new.email,
-    new.raw_user_meta_data->>'phone',
-    new.raw_user_meta_data->>'avatar_url'
+    v_phone,
+    new.raw_user_meta_data->>'avatar_url',
+    COALESCE(new.raw_user_meta_data->>'role', 'organizer')
   )
   ON CONFLICT (id) DO NOTHING;
+
+  -- 2. Create Initial Group if user is an organizer
+  IF COALESCE(new.raw_user_meta_data->>'role', 'organizer') = 'organizer' THEN
+    INSERT INTO public.groups (name, slug, group_type, organizer_id, organizer_name, organizer_phone)
+    VALUES (
+      v_group_name,
+      v_group_slug,
+      COALESCE(new.raw_user_meta_data->>'group_type', 'chama'),
+      new.id,
+      v_full_name,
+      v_phone
+    )
+    ON CONFLICT (slug) DO NOTHING;
+  END IF;
+
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;

@@ -103,7 +103,7 @@ export default function AdminSidebar() {
         },
         {
           href: '/bomas/create',
-          label: 'Start New Fund',
+          label: 'Add Fund',
           icon: PlusIcon,
           exact: false,
         },

@@ -128,10 +128,13 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   const percentage = Math.min(100, Math.round((boma.current_amount / boma.target_amount) * 100));
   const isFundOrganizer = currentUserId === boma.creator_id;
-  const daysLeft = Math.max(
-    0,
-    Math.ceil((new Date(boma.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-  );
+  const isOngoing = !boma.deadline || new Date(boma.deadline).getFullYear() >= 2050;
+  const daysLeft = isOngoing
+    ? null
+    : Math.max(
+        0,
+        Math.ceil((new Date(boma.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      );
 
   return (
     <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
@@ -257,7 +260,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               >
                 {boma.contributors_count || transactions.length} contributors →
               </button>
-              <span>{daysLeft} days remaining</span>
+              <span>{isOngoing ? 'Monthly contribution' : `${daysLeft} days remaining`}</span>
             </div>
           </div>
 
@@ -344,7 +347,7 @@ export default function BomaDetailPage({ params }: PageProps) {
 
               <div className="mt-2 flex justify-between text-xs text-slate-500 font-mono">
                 <span>{percentage}% reached</span>
-                <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
+                <span>{isOngoing ? 'Monthly contribution' : (daysLeft ?? 0) > 0 ? `${daysLeft} days left` : 'Ended'}</span>
               </div>
             </div>
 

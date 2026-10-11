@@ -27,7 +27,7 @@ export default function DesktopHeader() {
         <h1 className="mt-0.5 truncate text-sm font-semibold text-slate-900">{title}</h1>
       </div>
       <div className="flex items-center gap-4">
-        <Link href="/bomas/create" className="inline-flex min-h-10 items-center rounded-lg bg-emerald-700 px-4 text-xs font-semibold text-white transition hover:bg-emerald-800">Start a group fund</Link>
+        <Link href="/bomas/create" className="inline-flex min-h-10 items-center rounded-lg bg-emerald-700 px-4 text-xs font-semibold text-white transition hover:bg-emerald-800">+ Add fund</Link>
         <div className="border-l border-slate-200 pl-3"><UserMenu /></div>
       </div>
     </header>

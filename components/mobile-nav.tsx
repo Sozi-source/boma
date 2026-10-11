@@ -51,7 +51,7 @@ export default function MobileNav({ authenticated }: { authenticated: boolean })
           <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${isCreate ? 'bg-emerald-50' : ''}`}>
             <PlusIcon className="h-[19px] w-[19px]" />
           </span>
-          <span>Create</span>
+          <span>Add fund</span>
         </Link>
       </div>
     </nav>
