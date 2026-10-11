@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { bomaService } from '@/lib/services/boma-service';
@@ -77,7 +78,16 @@ export default function SignUpPage() {
 
         <div className="mx-auto w-full max-w-sm px-4 py-4 sm:py-12 md:flex md:min-h-[calc(100svh-2rem)] md:max-w-none md:flex-col md:justify-center md:px-12">
           <div className="mb-4 space-y-1 text-center sm:mb-6">
-            <Link href="/" aria-label="Openhand home" className="mb-2 hidden h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-xl font-black text-white shadow-xs sm:inline-flex">O</Link>
+            <Link href="/" aria-label="Openhand home" className="mb-2 hidden sm:inline-flex items-center justify-center">
+              <Image
+                src="/assets/icons/openhand.webp"
+                alt="Openhand"
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-xl object-contain shadow-xs"
+                priority
+              />
+            </Link>
             <h1 className="text-xl font-black text-neutral-900 sm:text-2xl">Get started</h1>
             <p className="text-xs text-neutral-500">Create an organizer account</p>
           </div>

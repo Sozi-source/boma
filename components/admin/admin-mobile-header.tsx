@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import UserMenu from '@/components/user-menu';
@@ -98,8 +99,14 @@ export default function AdminMobileHeader() {
             </button>
 
             <Link href="/admin" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0A4F43] text-amber-300 font-mono text-sm font-bold shadow-2xs">
-                B
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden shadow-2xs">
+                <Image
+                  src="/assets/icons/openhand.webp"
+                  alt="Openhand"
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div className="leading-tight">
                 <span className="text-xs font-bold text-slate-900 block">Openhand Admin</span>

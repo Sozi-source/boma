@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { bomaService } from '@/lib/services/boma-service';
@@ -115,20 +116,19 @@ export default function AdminSidebar() {
       {/* Laptop & Desktop Vibrant Teal Green Fintech Sidebar */}
       <aside 
         className="hidden lg:flex w-64 xl:w-72 flex-col shrink-0 bg-[#0A4F43] text-teal-50 border-r border-teal-800/40 h-screen sticky top-0 z-40 select-none shadow-sm"
-        style={{
-          backgroundColor: '#0A4F43',
-          backgroundImage: 'image-set(url("/assets/images/dashboard/sidebar_bg_288w_1x.webp") 1x, url("/assets/images/dashboard/sidebar_bg_576w_2x.webp") 2x, url("/assets/images/dashboard/sidebar_bg_864w_3x.webp") 3x)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-        }}
       >
         
         {/* Merchant / Organization Account Header */}
         <div className="p-4 border-b border-teal-600/40 bg-teal-900/25">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-amber-400 text-slate-950 font-mono font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
-              B
+            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-xs shrink-0 bg-white/10 flex items-center justify-center p-0.5">
+              <Image
+                src="/assets/icons/openhand.webp"
+                alt="Openhand"
+                width={36}
+                height={36}
+                className="h-full w-full object-contain"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-xs font-semibold text-white block truncate tracking-tight">

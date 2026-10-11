@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -53,9 +54,16 @@ export default function LoginPage() {
 
         <div className="mx-auto w-full max-w-sm px-4 py-7 sm:py-12 md:flex md:min-h-[calc(100svh-2rem)] md:max-w-none md:flex-col md:justify-center md:px-12">
           <div className="mb-6 space-y-1 text-center">
-            <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 font-mono text-xl font-black text-white shadow-xs">
-              B
-            </div>
+            <Link href="/" aria-label="Openhand Home" className="mb-2 inline-flex items-center justify-center">
+              <Image
+                src="/assets/icons/openhand.webp"
+                alt="Openhand"
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-xl object-contain shadow-xs"
+                priority
+              />
+            </Link>
             <h1 className="text-xl font-black text-neutral-900 sm:text-2xl">
               Welcome back
             </h1>

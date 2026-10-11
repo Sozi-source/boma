@@ -2,20 +2,17 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Boma, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import BomaCover from '@/components/boma-cover';
 import ContributionModal from '@/components/contribution-modal';
 import {
-  ArrowDownLeftIcon,
   ArrowUpRightIcon,
   CreditCardIcon,
   EyeIcon,
   EyeSlashIcon,
   PlusIcon,
-  ShareIcon,
   WalletIcon,
 } from '@/components/ui/icons';
 
@@ -69,135 +66,76 @@ export default function DashboardPage() {
           <Link href="/bomas/create" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-700 px-3.5 text-xs font-semibold text-white transition hover:bg-emerald-800 sm:px-4 sm:text-sm">Start a group fund</Link>
         </div>
 
-        {/* Main account / fund hero */}
-        <section className="relative overflow-hidden rounded-[24px] bg-[#0A4F43] p-5 text-white shadow-[0_18px_45px_rgba(6,78,73,0.18)] sm:p-7">
-          {/* Full-bleed seamless background illustration (no nested card frame) */}
-          <Image
-            src="/assets/images/funds/savings/pexels-towfiqu-barbhuiya-3440682-9755390.webp"
-            alt=""
-            fill
-            priority
-            sizes="(min-width: 1024px) 1024px, 100vw"
-            className="pointer-events-none object-cover object-right"
-          />
-
-          {/* Gentle soft scrim behind the text on the left; leaves the 3D art on the right 100% bright & vibrant */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-full sm:w-3/5 bg-gradient-to-r from-[#0A4F43] via-[#0A4F43]/50 to-transparent" />
-
-          {/* Foreground content with guaranteed readability */}
-          <div className="relative z-10 max-w-md sm:max-w-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-teal-100">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-xs">
-                  <WalletIcon className="h-4 w-4 text-emerald-200" />
-                </span>
-                Your group funds
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowBalance((v) => !v)}
-                className="rounded-full bg-white/10 p-2 text-white/80 transition hover:bg-white/20 active:scale-95 backdrop-blur-xs"
-                aria-label={showBalance ? 'Hide balance' : 'Show balance'}
-              >
-                {showBalance ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <div className="mt-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-200/90">
-                Recorded in group ledgers
-              </p>
-              <p className="mt-1 text-[32px] sm:text-[40px] font-bold font-mono tracking-tight tabular-nums drop-shadow-xs">
-                {balance}
-              </p>
-              <p className="mt-1 text-[10px] text-teal-100/80">After Openhand’s 2.5% platform share</p>
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-[11px] text-teal-200/80">Your active goals</p>
-                <p className="mt-0.5 text-sm font-bold font-mono text-white">
-                  {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
-                </p>
-              </div>
-              <Link
-                href="/bomas"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#064c41] shadow-sm transition hover:bg-teal-50 active:scale-98"
-              >
-                <ArrowUpRightIcon className="h-4 w-4" />
-                <span>Explore funds</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Quick actions */}
-        <section className="mt-5">
-          <div className="mb-2.5 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-900">Quick actions</h2>
-            <Link href="/bomas" className="text-[11px] font-semibold text-emerald-700">Explore funds</Link>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-            <Link href="/bomas" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <ArrowUpRightIcon className="h-5 w-5" />
+        {/* Main account / fund hero banner */}
+        <section className="rounded-2xl sm:rounded-3xl border border-[#9dda50] bg-[#aee366] p-4 sm:p-5.5 shadow-xs ring-1 ring-black/5">
+          {/* Top header row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b1e16] px-2.5 py-1 text-[11px] font-bold text-[#aee366] shadow-2xs shrink-0">
+                <WalletIcon className="h-3 w-3 text-[#aee366]" />
+                <span className="tracking-wide">Group Treasury</span>
               </span>
-              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Contribute</span>
-            </Link>
-            <Link href="/activity" className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200">
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
-                <CreditCardIcon className="h-5 w-5" />
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-black/10 bg-black/5 px-2 py-0.5 text-[10px] font-semibold text-[#16382b]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#16382b]" />
+                <span>Audited</span>
               </span>
-              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Activity</span>
-            </Link>
+            </div>
+
             <button
               type="button"
-              onClick={() => {
-                if (typeof navigator !== 'undefined' && navigator.share) {
-                  const featured = bomas.find((boma) => boma.is_public);
-                  const url = featured ? `${window.location.origin}/bomas/${featured.id}` : `${window.location.origin}/bomas`;
-                  void navigator.share({
-                    title: featured?.title || 'Openhand group goals',
-                    text: featured ? `See the goal and follow our progress: ${featured.title}` : 'Explore group goals on Openhand.',
-                    url,
-                  });
-                }
-              }}
-              className="group rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"
+              onClick={() => setShowBalance((v) => !v)}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white/80 text-[#0b1e16] shadow-2xs transition hover:bg-white active:scale-95 shrink-0"
+              aria-label={showBalance ? 'Hide balance' : 'Show balance'}
             >
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                <ShareIcon className="h-5 w-5" />
-              </span>
-              <span className="mt-2 block text-[10px] font-semibold text-slate-700">Share</span>
+              {showBalance ? <EyeSlashIcon className="h-3.5 w-3.5" /> : <EyeIcon className="h-3.5 w-3.5" />}
             </button>
           </div>
-        </section>
 
-        {/* Overview cards */}
-        <section className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-slate-500">Collected</span>
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
-                <ArrowDownLeftIcon className="h-4 w-4" />
-              </span>
+          {/* Core balance display */}
+          <div className="mt-3 sm:mt-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#1c4232]">
+              Recorded in group ledgers
+            </p>
+            <div className="mt-1 text-[#0b1e16]">
+              {showBalance ? (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-base sm:text-xl font-extrabold text-[#16382b]">KES</span>
+                  <span className="font-mono text-[28px] sm:text-[38px] font-black tracking-[-0.03em] leading-none text-[#0b1e16]">
+                    {Number(totalRaised).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              ) : (
+                <div className="font-mono text-[26px] sm:text-[34px] font-black tracking-widest leading-none text-[#0b1e16]">
+                  ••••••••
+                </div>
+              )}
             </div>
-            <p className="mt-3 text-[23px] font-bold tracking-tight text-slate-950">{balance}</p>
-              <p className="mt-1 text-[10px] text-slate-400">After Openhand’s 2.5% share</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-slate-500">Contributions</span>
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 text-sky-700">
-                <CreditCardIcon className="h-4 w-4" />
-              </span>
+          {/* Bottom stats & action rail */}
+          <div className="mt-3.5 sm:mt-4 flex items-center justify-between border-t border-black/10 pt-2.5 sm:pt-3">
+            <div className="flex items-center gap-2.5 sm:gap-4 text-[11px]">
+              <div>
+                <span className="font-medium text-[#204a37]">Active: </span>
+                <span className="font-mono font-bold text-[#0b1e16]">
+                  {bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}
+                </span>
+              </div>
+              <span className="h-3 w-px bg-black/15" />
+              <span className="font-medium text-[#204a37] text-[10px] sm:text-[11px]">Direct M-Pesa</span>
             </div>
-            <p className="mt-3 text-[23px] font-bold tracking-tight text-slate-950">{transactions.length}</p>
-            <p className="mt-1 text-[10px] text-slate-400">Across your funds</p>
+
+            <Link
+              href="/bomas"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0b1e16] px-3 py-1.5 text-[11px] sm:text-xs font-bold text-white shadow-2xs transition hover:bg-[#15382a] active:scale-95"
+            >
+              <span>Explore</span>
+              <ArrowUpRightIcon className="h-3 w-3 text-[#aee366]" />
+            </Link>
           </div>
         </section>
+
+
 
         {/* Funds */}
         <section className="mt-5 rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">

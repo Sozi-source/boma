@@ -9,7 +9,7 @@ export interface AuthCarouselImage {
 }
 
 export const LOGIN_AUTH_IMAGES: AuthCarouselImage[] = [
-  { src: '/assets/images/dashboard/login_hero_1440w_web-xl.webp', alt: 'A family building a home together in Kenya' },
+  { src: '/assets/images/login/login_hero_1440w_web-xl.webp', alt: 'A family building a home together in Kenya' },
   { src: '/assets/images/funds/family/family_1440w_web-xl.webp', alt: 'Family members sharing a moment together' },
   { src: '/assets/images/funds/education/pexels-valerie-sutton-34163824-14935332.webp', alt: 'School children learning together' },
   { src: '/assets/images/funds/community/community_1080w_web.webp', alt: 'Community members working together in a garden' },

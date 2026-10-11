@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import UserMenu from './user-menu';
@@ -24,7 +25,15 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
         
         {/* Logo & App Status */}
         <div className="flex items-center gap-3 sm:gap-6">
-          <Link href="/" className="group flex items-center gap-2.5">
+          <Link href="/" className="group flex items-center gap-2">
+            <Image
+              src="/assets/icons/openhand.webp"
+              alt="Openhand"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg object-contain"
+              priority
+            />
             <span className="text-[1.35rem] font-semibold leading-none tracking-[-.06em] text-[#15342b]">Open<span className="text-[#83c83e]">hand</span></span>
           </Link>
 
