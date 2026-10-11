@@ -57,6 +57,28 @@ export async function POST(request: Request) {
     if (boma.currency !== 'KES') {
       return NextResponse.json({ error: 'M-Pesa payouts are only available for KES funds.' }, { status: 400 });
     }
+
+    // ── Multi-sig quorum gate ─────────────────────────────────────────────────
+    const payoutRequestId = typeof body.payout_request_id === 'string' ? body.payout_request_id.trim() : '';
+    if (!/^[0-9a-f-]{36}$/i.test(payoutRequestId)) {
+      return NextResponse.json({ error: 'A valid payout_request_id is required' }, { status: 400 });
+    }
+    const { data: pr, error: prError } = await db.from('payout_requests')
+      .select('id, boma_id, status').eq('id', payoutRequestId).eq('boma_id', bomaId).maybeSingle();
+    if (prError || !pr) {
+      return NextResponse.json({ error: 'Payout request not found for this fund' }, { status: 404 });
+    }
+    if (pr.status !== 'pending') {
+      return NextResponse.json({ error: 'This payout request is no longer pending' }, { status: 409 });
+    }
+    const { data: quorumMet, error: quorumError } = await db.rpc('check_payout_quorum', {
+      p_payout_request_id: payoutRequestId,
+    });
+    if (quorumError) throw quorumError;
+    if (!quorumMet) {
+      return NextResponse.json({ error: 'Payout requires committee approval. Quorum has not been reached yet.' }, { status: 403 });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
     const reference = `WD-${Date.now().toString(36).toUpperCase()}-${randomBytes(12).toString('hex').toUpperCase()}`;
     const { error: reserveError } = await db.rpc('reserve_paystack_payout', {
       p_reference: reference,
