@@ -40,8 +40,8 @@ export interface PaystackMpesaChargeParams {
   currency: 'KES';
   reference: string;
   phone: string;
-  subaccount: string;
-  platformFeePercent: number;
+  subaccount?: string;
+  platformFeePercent?: number;
 }
 
 export interface PaystackSubaccountParams {
@@ -166,20 +166,29 @@ class PaystackService {
     data: { reference: string; status: string; display_text?: string };
   }> {
     requirePaystack();
-    const feeMinor = Math.round(this.toSubUnits(params.amount) * params.platformFeePercent / 100);
+    const payload: Record<string, unknown> = {
+      email: params.email,
+      amount: this.toSubUnits(params.amount),
+      currency: params.currency,
+      reference: params.reference,
+      mobile_money: { phone: params.phone.startsWith('+') ? params.phone : `+${params.phone}`, provider: 'mpesa' },
+    };
+
+    if (params.subaccount) {
+      payload.subaccount = params.subaccount;
+      if (params.platformFeePercent) {
+        const feeMinor = Math.round(this.toSubUnits(params.amount) * params.platformFeePercent / 100);
+        if (feeMinor > 0) {
+          payload.transaction_charge = feeMinor;
+          payload.bearer = 'account';
+        }
+      }
+    }
+
     const res = await fetch('https://api.paystack.co/charge', {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({
-        email: params.email,
-        amount: this.toSubUnits(params.amount),
-        currency: params.currency,
-        reference: params.reference,
-        mobile_money: { phone: params.phone.startsWith('+') ? params.phone : `+${params.phone}`, provider: 'mpesa' },
-        subaccount: params.subaccount,
-        transaction_charge: feeMinor,
-        bearer: 'account',
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(15_000),
     });
     const data = await res.json();

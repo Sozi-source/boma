@@ -39,6 +39,7 @@ const INITIAL_GROUPS: Group[] = [
     organizer_name: 'Wilfred Osozi',
     organizer_phone: '0711390861',
     payout_destination_type: 'mpesa_till',
+    payout_destination_number: '4968133',
     is_verified: true,
     created_at: '2026-10-03T20:00:00.000Z',
     updated_at: '2026-10-11T12:00:00.000Z',
