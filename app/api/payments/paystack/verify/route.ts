@@ -109,11 +109,8 @@ export async function GET(request: Request) {
     const redirectUrl = new URL(`/bomas/${intent.boma_id}?paystack=true`, request.url);
     return NextResponse.redirect(redirectUrl);
   } catch (err) {
-    console.error('Direct verification failed:', err);
-    return NextResponse.json({
-      error: 'Verification failed',
-      details: err instanceof Error ? err.message : 'Unknown'
-    }, { status: 500 });
+    console.error('Direct verification failed:', err instanceof Error ? err.message : 'unknown');
+    return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
   }
 }
 

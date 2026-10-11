@@ -42,24 +42,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This fund is unavailable for contributions' }, { status: 404 });
     }
 
-    const { data: payoutAccount } = await db.from('paystack_subaccounts')
+    const { data: payoutAccount, error: subError } = await db.from('paystack_subaccounts')
       .select('subaccount_code,status').eq('creator_id', boma.creator_id).maybeSingle();
-
-    let subaccountCode: string | undefined = undefined;
-    if (payoutAccount?.subaccount_code && payoutAccount.subaccount_code !== 'primary') {
-      try {
-        const providerAccount = await paystackService.getSubaccount(payoutAccount.subaccount_code);
-        if (providerAccount.active && providerAccount.currency === 'KES') {
-          subaccountCode = payoutAccount.subaccount_code;
-        }
-      } catch (e) {
-        console.warn('Subaccount validation bypassed, routing to primary Paystack payout:', e);
-      }
+    if (subError) throw subError;
+    if (!payoutAccount) {
+      return NextResponse.json({ error: 'This fund does not have a payout account set up yet.' }, { status: 409 });
     }
 
-    const feePercent = Number(process.env.PAYSTACK_PLATFORM_FEE_PERCENT) || 2.5;
+    const providerAccount = await paystackService.getSubaccount(payoutAccount.subaccount_code);
+    if (!providerAccount.active || providerAccount.currency !== 'KES') {
+      return NextResponse.json({ error: 'The payout account for this fund is not active.' }, { status: 409 });
+    }
+
+    const feePercent = Number(process.env.PAYSTACK_PLATFORM_FEE_PERCENT);
+    if (!Number.isFinite(feePercent) || feePercent <= 0 || feePercent >= 100) {
+      throw new Error('Platform commission is not configured');
+    }
     const amountMinor = Math.round(amount * 100);
-    const platformFeeMinor = subaccountCode ? Math.round(amountMinor * feePercent / 100) : 0;
+    const platformFeeMinor = Math.round(amountMinor * feePercent / 100);
 
     const reference = `BP-${Date.now().toString(36).toUpperCase()}-${randomBytes(12).toString('hex').toUpperCase()}`;
     const metadata = {
@@ -69,9 +69,8 @@ export async function POST(request: Request) {
       is_anonymous: body.is_anonymous === true,
       note,
       provider: 'paystack',
-      subaccount_code: subaccountCode || null,
-      payout_destination: '4968133-till',
-      platform_fee_percent: subaccountCode ? feePercent : 0,
+      subaccount_code: payoutAccount.subaccount_code,
+      platform_fee_percent: feePercent,
       platform_fee_minor: platformFeeMinor,
     };
     const { error: insertError } = await db.from('payment_intents').insert({
@@ -91,8 +90,8 @@ export async function POST(request: Request) {
       currency: 'KES',
       reference,
       phone,
-      subaccount: subaccountCode,
-      platformFeePercent: subaccountCode ? feePercent : undefined,
+      subaccount: payoutAccount.subaccount_code,
+      platformFeePercent: feePercent,
     });
     if (!result.status || result.data.reference !== reference || result.data.status !== 'pay_offline') {
       throw new Error('Paystack did not start the M-Pesa authorization');
