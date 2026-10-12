@@ -47,21 +47,35 @@ function Icon({ name, className = 'h-6 w-6' }: { name: string; className?: strin
 
 export default function HomePage() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     try {
       const supabase = createClient();
       void supabase.auth.getUser().then(({ data: { user } }) => {
         setAuthenticated(Boolean(user));
-      });
+        setAuthChecked(true);
+      }).catch(() => setAuthChecked(true));
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setAuthenticated(Boolean(session?.user));
+        setAuthChecked(true);
       });
       return () => subscription.unsubscribe();
     } catch {
       // Offline fallback
+      setAuthChecked(true);
     }
   }, []);
+
+  // Until we know whether the user is signed in, send them to sign in (which links to signup)
+  // so an existing user is never dropped on the signup page by mistake.
+  const ctaHref = authenticated
+    ? '/bomas/create'
+    : authChecked
+      ? '/auth/signup?role=organizer'
+      : '/auth/login?next=%2Fbomas%2Fcreate';
+  const ctaLabel = authenticated ? 'Add fund' : authChecked ? 'Start a group' : 'Continue';
+  const ctaLabelSecondary = authenticated ? 'Add fund' : authChecked ? 'Get Started' : 'Continue';
   return (
     <div className="overflow-hidden bg-[#f4f5f7] text-[#18181b] font-sans">
       {/* Mobile Hero (Screen < sm): Native-styled compact hero */}
@@ -89,10 +103,10 @@ export default function HomePage() {
 
             <div className="mt-4 flex flex-col gap-2">
               <Link
-                href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
+                href={ctaHref}
                 className="flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-[#99d452] px-4 text-xs font-semibold text-white shadow-[0_4px_16px_rgba(153,212,82,0.32)] transition active:scale-[0.98]"
               >
-                {authenticated ? 'Add fund' : 'Start a group'} <span aria-hidden="true">&rarr;</span>
+                {ctaLabel} <span aria-hidden="true">&rarr;</span>
               </Link>
               <Link
                 href="/bomas"
@@ -127,10 +141,10 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-row items-center gap-3.5">
               <Link
-                href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
+                href={ctaHref}
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#99d452] px-7 py-3 text-[15px] font-semibold text-white shadow-[0_4px_14px_rgba(153,212,82,0.32)] transition hover:bg-[#8ac841] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#99d452]"
               >
-                {authenticated ? 'Add fund' : 'Start a group'} <span aria-hidden="true">&rarr;</span>
+                {ctaLabel} <span aria-hidden="true">&rarr;</span>
               </Link>
               <Link
                 href="/bomas"
@@ -245,10 +259,10 @@ export default function HomePage() {
 
                 <div className="mt-6 pt-2">
                   <Link
-                    href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
+                    href={ctaHref}
                     className="inline-flex items-center justify-center rounded-full border border-[#d4d4d8] bg-white px-6 py-2 text-[14px] font-medium text-[#18181b] hover:border-[#18181b] hover:bg-[#fafbfa] active:scale-[0.98] transition"
                   >
-                    {authenticated ? 'Add fund' : 'Get Started'}
+                    {ctaLabelSecondary}
                   </Link>
                 </div>
               </div>

@@ -64,7 +64,7 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
             <>
               <Link
                 href="/auth/login"
-                className="inline-flex min-h-10 items-center rounded-full px-3 text-[13px] sm:text-[14px] font-medium text-[#18181b] transition hover:text-[#14532d] -tracking-[0.2px]"
+                className="inline-flex min-h-10 items-center rounded-full border border-[#dce0d3] bg-white px-4 text-[13px] sm:text-[14px] font-semibold text-[#18181b] transition hover:border-[#b8c2ad] hover:text-[#14532d] -tracking-[0.2px]"
               >
                 Sign in
               </Link>
