@@ -352,10 +352,9 @@ export default function BomaDetailPage({ params }: PageProps) {
     return (
       <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8 animate-pulse">
         <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
-          <div className="flex items-center gap-2">
-            <div className="h-3.5 w-16 rounded bg-slate-200" />
-            <span className="text-slate-300">/</span>
-            <div className="h-3.5 w-24 rounded bg-slate-200" />
+          <div className="flex items-center justify-between">
+            <div className="h-7 w-36 rounded-full bg-slate-200" />
+            <div className="h-7 w-20 rounded-xl bg-slate-200" />
           </div>
           <div className="h-48 sm:h-64 lg:h-72 w-full rounded-2xl bg-slate-100" />
         </div>
@@ -430,14 +429,10 @@ export default function BomaDetailPage({ params }: PageProps) {
     return (
       <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8 animate-pulse">
         <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
-          {/* Top Breadcrumb Skeleton */}
+          {/* Top Bar Skeleton */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-3.5 w-16 rounded bg-slate-200" />
-              <span className="text-slate-300">/</span>
-              <div className="h-3.5 w-24 rounded bg-slate-200" />
-            </div>
-            <div className="h-7 w-20 rounded-lg bg-slate-200" />
+            <div className="h-7 w-36 rounded-full bg-slate-200" />
+            <div className="h-7 w-20 rounded-xl bg-slate-200" />
           </div>
 
           {/* Main Layout Grid */}
@@ -536,19 +531,14 @@ export default function BomaDetailPage({ params }: PageProps) {
     <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8">
       <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
       
-      {/* Top Breadcrumb & Share */}
-      <div className="flex items-center justify-between text-xs text-slate-400">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <Link href="/bomas" className="hover:text-emerald-700 font-medium transition-colors">← Funds</Link>
-          <span className="text-slate-300">/</span>
-          <span className="capitalize font-mono text-slate-600 truncate max-w-[140px] sm:max-w-none">{boma.category}</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {memberName && (
-            <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-800 shadow-2xs">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-              <span className="font-semibold">{memberName}</span>
+      {/* Top Bar: Member Status & Share */}
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <div>
+          {memberName ? (
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/90 bg-emerald-50/80 px-3 py-1 text-xs text-emerald-950 shadow-2xs whitespace-nowrap">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
+              <span className="font-semibold text-slate-900 whitespace-nowrap tracking-tight">{memberName}</span>
+              <span className="text-slate-300 select-none">·</span>
               <button
                 type="button"
                 onClick={() => {
@@ -562,21 +552,27 @@ export default function BomaDetailPage({ params }: PageProps) {
                     window.dispatchEvent(new Event('openhand_member_updated'));
                   }
                 }}
-                className="text-[11px] text-slate-400 hover:text-slate-700 ml-1 underline cursor-pointer"
+                className="text-[11px] font-medium text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer whitespace-nowrap"
               >
                 Switch
               </button>
             </div>
+          ) : (
+            <div />
           )}
+        </div>
 
-          {boma.is_public && <button
-            type="button"
-            onClick={() => setIsShareModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-          >
-            <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
-            <span>Share</span>
-          </button>}
+        <div>
+          {boma.is_public && (
+            <button
+              type="button"
+              onClick={() => setIsShareModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs whitespace-nowrap shrink-0"
+            >
+              <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
+              <span>Share</span>
+            </button>
+          )}
         </div>
       </div>
 
