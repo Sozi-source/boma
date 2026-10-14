@@ -158,7 +158,7 @@ Every contribution counts! Give transparently with an M-Pesa payment prompt:
           <div className="space-y-3">
             {/* WhatsApp Message Preview Bubble */}
             <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 text-xs space-y-2">
-              <div className="flex items-center justify-between text-[10px] text-emerald-800 font-semibold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-[11px] text-emerald-800 font-semibold uppercase tracking-wider">
                 <span>WhatsApp Preview</span>
                 {boma.verified && (
                   <span className="flex items-center gap-0.5">
@@ -187,21 +187,21 @@ Every contribution counts! Give transparently with an M-Pesa payment prompt:
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] text-slate-400 pt-0.5">
+                <div className="flex justify-between text-[11px] text-slate-400 pt-0.5">
                   <span>{boma.contributors_count} contributors</span>
                   <span>Pay with M-Pesa</span>
                 </div>
               </div>
 
               {/* Message text area preview */}
-              <div className="rounded-lg bg-white/90 p-2 font-mono text-[10px] text-slate-700 whitespace-pre-line leading-relaxed max-h-28 overflow-y-auto border border-emerald-100">
+              <div className="rounded-lg bg-white/90 p-2 font-mono text-[11px] text-slate-700 whitespace-pre-line leading-relaxed max-h-28 overflow-y-auto border border-emerald-100">
                 {whatsappMessage}
               </div>
             </div>
 
             {/* Optional Personal Note */}
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                 Add an update or appeal note (optional)
               </label>
               <input

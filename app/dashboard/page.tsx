@@ -7,6 +7,7 @@ import { bomaService } from '@/lib/services/boma-service';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import BomaCover from '@/components/boma-cover';
 import ContributionModal from '@/components/contribution-modal';
+import ShareModal from '@/components/share-modal';
 import {
   ArrowUpRightIcon,
   CreditCardIcon,
@@ -17,6 +18,7 @@ import {
   ShieldCheckIcon,
   UsersIcon,
   WalletIcon,
+  WhatsAppIcon,
 } from '@/components/ui/icons';
 
 export default function DashboardPage() {
@@ -27,6 +29,8 @@ export default function DashboardPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [selectedBomaForModal, setSelectedBomaForModal] = useState<Boma | null>(null);
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
+  const [selectedBomaForShare, setSelectedBomaForShare] = useState<Boma | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -366,6 +370,20 @@ export default function DashboardPage() {
                               <UsersIcon className="h-4 w-4 text-emerald-700" />
                               <span>Members</span>
                             </Link>
+                            {b.is_public && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedBomaForShare(b);
+                                  setIsShareModalOpen(true);
+                                }}
+                                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-emerald-600/40 bg-emerald-50 hover:bg-emerald-100/80 px-3.5 text-xs font-bold text-emerald-800 shadow-2xs transition-colors"
+                                title="Share to WhatsApp"
+                              >
+                                <WhatsAppIcon className="h-4 w-4 text-emerald-700" />
+                                <span>Share</span>
+                              </button>
+                            )}
                             <Link
                               href={`/bomas/${b.id}`}
                               className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
@@ -497,6 +515,15 @@ export default function DashboardPage() {
             onSuccess={() => {
               void loadDashboard();
             }}
+          />
+        )}
+
+        {/* WhatsApp Broadcast & QR Share Modal */}
+        {selectedBomaForShare && (
+          <ShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            boma={selectedBomaForShare}
           />
         )}
       </div>

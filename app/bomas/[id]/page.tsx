@@ -13,7 +13,8 @@ import BomaCover from '@/components/boma-cover';
 import { 
   ShieldCheckIcon, 
   UsersIcon, 
-  ShareIcon, 
+  ShareIcon,
+  WhatsAppIcon,
 } from '@/components/ui/icons';
 
 interface PageProps {
@@ -443,15 +444,28 @@ export default function BomaDetailPage({ params }: PageProps) {
               </button>}
             </div>
 
-            {/* Contribute Action */}
-            <div className="pt-1">
-              {boma.is_public && <button
-                type="button"
-                onClick={() => setIsContributeModalOpen(true)}
-                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-2xs transition-all active:scale-98"
-              >
-                Contribute
-              </button>}
+            {/* Contribute & Share Actions */}
+            <div className="pt-1 space-y-2">
+              {boma.is_public && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIsContributeModalOpen(true)}
+                    className="w-full rounded-lg bg-emerald-700 hover:bg-emerald-800 py-3 text-xs font-bold text-white shadow-2xs transition-all active:scale-98"
+                  >
+                    Contribute
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-600/40 bg-emerald-50 hover:bg-emerald-100/80 py-2.5 text-xs font-bold text-emerald-800 transition-colors"
+                  >
+                    <WhatsAppIcon className="w-4 h-4 text-emerald-700" />
+                    <span>Share on WhatsApp</span>
+                  </button>
+                </>
+              )}
               {isFundOrganizer && (
                 <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-relaxed text-emerald-900">
                   {boma.is_public ? "The group's share settles directly to its verified Paystack M-Pesa destination." : 'Publish this group when you are ready to accept contributions.'}
@@ -526,20 +540,17 @@ export default function BomaDetailPage({ params }: PageProps) {
           Contribute
         </button> : null}
 
-        {isFundOrganizer && boma.is_public ? (
-          <span className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-[11px] font-medium text-emerald-900">
-            Paystack settles to your verified M-Pesa destination
-          </span>
-        ) : boma.is_public ? (
+        {boma.is_public && (
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-slate-700 hover:bg-slate-100 transition-colors"
-            aria-label="Share"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-50 px-3.5 py-3 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition-colors shrink-0 shadow-2xs"
+            aria-label="Share on WhatsApp"
           >
-            <ShareIcon className="w-4 h-4 text-slate-500" />
+            <WhatsAppIcon className="w-4 h-4 text-emerald-700" />
+            <span>Share</span>
           </button>
-        ) : null}
+        )}
       </div>
 
       {/* Modals */}
