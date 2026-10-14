@@ -18,6 +18,8 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
     { href: '/bomas', label: 'Explore goals' },
   ];
 
+  const isFundDetailPage = pathname.startsWith('/bomas/') && pathname !== '/bomas' && pathname !== '/bomas/create';
+
   return (
     <header className="sticky top-0 z-30 w-full pt-[env(safe-area-inset-top)] border-b border-slate-200 bg-white/95 backdrop-blur-xl transition-colors">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-12">
@@ -64,7 +66,7 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
 
         {/* Right Fintech Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {!authenticated ? (
+          {isFundDetailPage && !authenticated ? null : !authenticated ? (
             <>
               <Link
                 href="/auth/login"

@@ -43,6 +43,9 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   // Phone-first member session for WhatsApp visitors
   const [memberPhone, setMemberPhone] = useState('');
+  const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
+  const [phoneAuthInput, setPhoneAuthInput] = useState('');
+  const [phoneAuthError, setPhoneAuthError] = useState('');
 
   const changeVisibility = async () => {
     if (!boma || currentUserId !== boma.creator_id || visibilitySaving) return;
@@ -74,6 +77,21 @@ export default function BomaDetailPage({ params }: PageProps) {
     } catch {
       // storage unavailable
     }
+  };
+
+  const handlePhoneAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = phoneAuthInput.trim();
+    if (!clean || clean.length < 9) {
+      setPhoneAuthError('Please enter a valid phone number');
+      return;
+    }
+    localStorage.setItem('openhand_member_phone', clean);
+    setMemberPhone(clean);
+    lookupMember(clean, transactions);
+    setIsPhoneAuthModalOpen(false);
+    setPhoneAuthInput('');
+    setPhoneAuthError('');
   };
 
   // Progressive data loading: fetch fund hero/header first for immediate paint, then hydrate ledger & transactions in background.
@@ -111,10 +129,12 @@ export default function BomaDetailPage({ params }: PageProps) {
   useEffect(() => {
     const init = async () => {
       // Check genuine Supabase session
+      let isAuthed = false;
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          isAuthed = true;
           setIsAuthenticated(true);
           setCurrentUserId(user.id);
         } else {
@@ -127,12 +147,19 @@ export default function BomaDetailPage({ params }: PageProps) {
       }
 
       // Check saved phone session from WhatsApp
+      let hasStoredPhone = false;
       if (typeof window !== 'undefined') {
         const storedPhone = localStorage.getItem('openhand_member_phone');
         if (storedPhone) {
+          hasStoredPhone = true;
           setMemberPhone(storedPhone);
           lookupMember(storedPhone);
         }
+      }
+
+      // If visitor is unauthenticated and hasn't identified by phone yet, open minimalistic auth modal
+      if (!isAuthed && !hasStoredPhone) {
+        setIsPhoneAuthModalOpen(true);
       }
 
       // Returning from Paystack checkout: verify, then book the ledger once.
@@ -701,6 +728,58 @@ export default function BomaDetailPage({ params }: PageProps) {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
+
+      {/* Minimalistic Phone Auth Modal for Invited Visitors */}
+      {isPhoneAuthModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="text-center space-y-1">
+              <h3 className="text-base font-bold text-slate-900">
+                Enter your phone number
+              </h3>
+              <p className="text-xs text-slate-500">
+                Access your member account for this group
+              </p>
+            </div>
+
+            <form onSubmit={handlePhoneAuthSubmit} className="space-y-3">
+              <div>
+                <input
+                  type="tel"
+                  autoFocus
+                  value={phoneAuthInput}
+                  onChange={(e) => {
+                    setPhoneAuthInput(e.target.value);
+                    if (phoneAuthError) setPhoneAuthError('');
+                  }}
+                  aria-label="Phone number"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50/50 px-3.5 py-2.5 text-sm font-mono font-medium text-slate-900 text-center tracking-wider focus:border-emerald-600 focus:bg-white focus:ring-1 focus:ring-emerald-600 shadow-2xs outline-none"
+                />
+                {phoneAuthError && (
+                  <p className="mt-1.5 text-xs text-rose-600 text-center font-medium">
+                    {phoneAuthError}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 py-2.5 text-xs font-bold text-white transition active:scale-98 shadow-xs"
+              >
+                Continue
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPhoneAuthModalOpen(false)}
+                className="w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors pt-1"
+              >
+                Continue as guest
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>
