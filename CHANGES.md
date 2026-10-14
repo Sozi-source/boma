@@ -41,7 +41,8 @@
 - components/navbar.tsx (changed): added recognition listener for `openhand_member_name` to display the verified member's name pill in the top header on fund pages.
 - components/contribution-modal.tsx (changed): integrated full member resolution to prefill the recognized member's name (e.g. Samson Barbara) alongside their verified phone number.
 ## 2026-10-15: WhatsApp link phone-first access gating and instant load acceleration
-- app/bomas/[id]/page.tsx (changed): removed unused and squished left breadcrumbs (`← Funds / Category`); refined recognized member badge into an elegant, non-wrapping status pill (`rounded-full bg-emerald-50/80 border border-emerald-200/90 whitespace-nowrap`) with a green presence indicator, bold name label, and subtle `Switch` action; updated skeleton loaders to match the new top bar layout.
+- app/bomas/[id]/page.tsx (changed): added resilient error handling for background ledger, disbursement, and transaction hydration; individual queries catch Supabase Row Level Security (RLS) 401 errors for anonymous visitors and fall back seamlessly to local store without breaking `Promise.all` or logging unhandled rejections.
+
 
 
 

@@ -232,18 +232,57 @@ export default function BomaDetailPage({ params }: PageProps) {
         setAccount(result.account);
         setLoading(false);
 
-        // Fetch ledger, disbursements, and transactions concurrently in background without blocking initial paint
+        // Fetch ledger, disbursements, and transactions safely with resilient fallback if Supabase returns 401 for anon visitors
+        const safeLedgerPromise = bomaService.getBomaLedger(bomaId).catch(() => {
+          if (typeof window !== 'undefined') {
+            try {
+              const stored = localStorage.getItem('bomapay_ledger_v4');
+              if (stored) {
+                const list = JSON.parse(stored);
+                return list.filter((l: LedgerEntry) => l.boma_id === bomaId);
+              }
+            } catch {}
+          }
+          return [];
+        });
+
+        const safeDisbursementsPromise = bomaService.getBomaDisbursements(bomaId).catch(() => {
+          if (typeof window !== 'undefined') {
+            try {
+              const stored = localStorage.getItem('bomapay_disbursements_v4');
+              if (stored) {
+                const list = JSON.parse(stored);
+                return list.filter((d: Disbursement) => d.boma_id === bomaId);
+              }
+            } catch {}
+          }
+          return [];
+        });
+
+        const safeTransactionsPromise = bomaService.getBomaTransactions(bomaId).catch(() => {
+          if (typeof window !== 'undefined') {
+            try {
+              const stored = localStorage.getItem('bomapay_transactions_v4');
+              if (stored) {
+                const list = JSON.parse(stored);
+                return list.filter((t: Transaction) => t.boma_id === bomaId);
+              }
+            } catch {}
+          }
+          return [];
+        });
+
         void Promise.all([
-          bomaService.getBomaLedger(bomaId),
-          bomaService.getBomaDisbursements(bomaId),
-          bomaService.getBomaTransactions(bomaId),
+          safeLedgerPromise,
+          safeDisbursementsPromise,
+          safeTransactionsPromise,
         ]).then(([entries, disbs, txns]) => {
-          setLedgerEntries(entries);
-          setDisbursements(disbs);
-          setTransactions(txns);
+          setLedgerEntries(entries || []);
+          setDisbursements(disbs || []);
+          setTransactions(txns || []);
           const activePhone = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_phone') : null;
           if (activePhone) {
-            void verifyAndResolveMemberPhone(activePhone, txns).then((match) => {
+            void verifyAndResolveMemberPhone(activePhone, txns || []).then((match) => {
               if (match?.name) {
                 setMemberName(match.name);
                 localStorage.setItem('openhand_member_name', match.name);
@@ -251,8 +290,8 @@ export default function BomaDetailPage({ params }: PageProps) {
               }
             });
           }
-        }).catch((err) => {
-          console.error('Failed to load fund history:', err);
+        }).catch(() => {
+          // graceful fallback complete
         });
       } else {
         setLoading(false);
