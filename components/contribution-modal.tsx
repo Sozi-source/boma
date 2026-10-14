@@ -65,12 +65,33 @@ export default function ContributionModal({
           name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Member';
           initialPhone = user.user_metadata?.phone || '';
         } else {
-          // Check local guest or default
-          const current = await bomaService.getCurrentUser();
-          if (current.id !== 'user-guest') {
-            email = current.email || '';
-            name = current.name || '';
-            initialPhone = current.phone || '';
+          // Check phone-first member session from WhatsApp
+          const storedPhone = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_phone') : null;
+          if (storedPhone) {
+            initialPhone = storedPhone;
+            name = 'Member';
+            if (boma?.id) {
+              try {
+                const rosterRaw = localStorage.getItem(`boma_roster_${boma.id}`);
+                if (rosterRaw) {
+                  const roster = JSON.parse(rosterRaw);
+                  const cleanDigits = storedPhone.replace(/\D/g, '');
+                  const match = roster.find((m: { name?: string; phones?: string[] }) =>
+                    Array.isArray(m.phones) ? m.phones.some((p: string) => p.replace(/\D/g, '').endsWith(cleanDigits.slice(-9))) : false
+                  );
+                  if (match?.name) name = match.name;
+                }
+              } catch {
+                // ignore
+              }
+            }
+          } else {
+            const current = await bomaService.getCurrentUser();
+            if (current.id !== 'user-guest') {
+              email = current.email || '';
+              name = current.name || '';
+              initialPhone = current.phone || '';
+            }
           }
         }
 
