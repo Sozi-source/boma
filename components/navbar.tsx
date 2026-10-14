@@ -8,6 +8,19 @@ import UserMenu from './user-menu';
 
 export default function Navbar({ authenticated }: { authenticated: boolean }) {
   const pathname = usePathname();
+  const [memberName, setMemberName] = React.useState('');
+
+  React.useEffect(() => {
+    const updateMember = () => {
+      if (typeof window !== 'undefined') {
+        const storedName = localStorage.getItem('openhand_member_name');
+        setMemberName(storedName || '');
+      }
+    };
+    updateMember();
+    window.addEventListener('openhand_member_updated', updateMember);
+    return () => window.removeEventListener('openhand_member_updated', updateMember);
+  }, []);
 
   const navLinks = authenticated ? [
     { href: '/dashboard', label: 'Overview' },
@@ -66,7 +79,14 @@ export default function Navbar({ authenticated }: { authenticated: boolean }) {
 
         {/* Right Fintech Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {isFundDetailPage && !authenticated ? null : !authenticated ? (
+          {isFundDetailPage && !authenticated ? (
+            memberName ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                <span>{memberName}</span>
+              </span>
+            ) : null
+          ) : !authenticated ? (
             <>
               <Link
                 href="/auth/login"

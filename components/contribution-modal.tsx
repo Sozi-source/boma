@@ -5,7 +5,7 @@ import { Boma, Transaction, LedgerEntry, UserProfile } from '../lib/types/fintec
 import { formatCurrency } from '../lib/ledger/ledger-service';
 import { createClient } from '../lib/supabase/client';
 import { bomaService } from '../lib/services/boma-service';
-import { formatPhoneDisplay, normalizePhoneNumber } from '../lib/utils/phone';
+import { formatPhoneDisplay, normalizePhoneNumber, phoneListIncludes } from '../lib/utils/phone';
 import { 
   XMarkIcon, 
   ShieldCheckIcon, 
@@ -69,20 +69,28 @@ export default function ContributionModal({
           const storedPhone = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_phone') : null;
           if (storedPhone) {
             initialPhone = storedPhone;
-            name = 'Member';
-            if (boma?.id) {
-              try {
-                const rosterRaw = localStorage.getItem(`boma_roster_${boma.id}`);
-                if (rosterRaw) {
-                  const roster = JSON.parse(rosterRaw);
-                  const cleanDigits = storedPhone.replace(/\D/g, '');
-                  const match = roster.find((m: { name?: string; phones?: string[] }) =>
-                    Array.isArray(m.phones) ? m.phones.some((p: string) => p.replace(/\D/g, '').endsWith(cleanDigits.slice(-9))) : false
-                  );
-                  if (match?.name) name = match.name;
+            const storedName = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_name') : '';
+            if (storedName) {
+              name = storedName;
+            } else {
+              name = 'Member';
+              const users = await bomaService.getUsers();
+              const foundUser = users.find((u) => phoneListIncludes(u.phones || [u.phone || ''], storedPhone));
+              if (foundUser) {
+                name = foundUser.full_name;
+              } else if (boma?.id) {
+                try {
+                  const rosterRaw = localStorage.getItem(`boma_roster_${boma.id}`);
+                  if (rosterRaw) {
+                    const roster = JSON.parse(rosterRaw);
+                    const match = roster.find((m: { name?: string; phones?: string[] }) =>
+                      Array.isArray(m.phones) ? phoneListIncludes(m.phones, storedPhone) : false
+                    );
+                    if (match?.name) name = match.name;
+                  }
+                } catch {
+                  // ignore
                 }
-              } catch {
-                // ignore
               }
             }
           } else {

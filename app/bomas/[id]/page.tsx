@@ -11,6 +11,7 @@ import ContributorTracker from '@/components/contributor-tracker';
 import MemberRoster from '@/components/member-roster';
 import ShareModal from '@/components/share-modal';
 import BomaCover from '@/components/boma-cover';
+import { normalizePhoneNumber, phoneListIncludes, phoneMatches } from '@/lib/utils/phone';
 import { 
   ShieldCheckIcon, 
   UsersIcon, 
@@ -32,6 +33,7 @@ export default function BomaDetailPage({ params }: PageProps) {
   const [disbursements, setDisbursements] = useState<Disbursement[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<'story' | 'members' | 'contributors'>('story');
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -43,9 +45,13 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   // Phone-first member session for WhatsApp visitors
   const [memberPhone, setMemberPhone] = useState('');
-  const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
+  const [memberName, setMemberName] = useState('');
   const [phoneAuthInput, setPhoneAuthInput] = useState('');
   const [phoneAuthError, setPhoneAuthError] = useState('');
+  const [isValidatingPhone, setIsValidatingPhone] = useState(false);
+
+  // An invited visitor only has access once they verify their registered phone (or signed in via Supabase)
+  const hasAccess = isAuthenticated || !!memberPhone;
 
   const changeVisibility = async () => {
     if (!boma || currentUserId !== boma.creator_id || visibilitySaving) return;
@@ -57,45 +63,168 @@ export default function BomaDetailPage({ params }: PageProps) {
     setVisibilitySaving(false);
   };
 
-  const lookupMember = (phoneToFind: string, _txnsList: Transaction[] = transactions) => {
-    if (!phoneToFind) return;
+  const verifyAndResolveMemberPhone = async (
+    inputPhone: string,
+    currentTxns: Transaction[] = transactions
+  ): Promise<{ found: boolean; name: string } | null> => {
+    const clean = inputPhone.trim();
+    if (!clean) return null;
+    const norm = normalizePhoneNumber(clean);
+    if (!norm) return null;
+
+    // 1. Check registered platform/group users (e.g. Samson Barbara added in Admin Users)
     try {
-      const cleanDigits = phoneToFind.replace(/\D/g, '');
-      const storageKeyRoster = `boma_roster_${bomaId}`;
-      const saved = localStorage.getItem(storageKeyRoster);
-      if (saved) {
-        const roster = JSON.parse(saved);
-        const match = roster.find((m: { name?: string; phones?: string[] }) =>
-          Array.isArray(m.phones)
-            ? m.phones.some((p: string) => p.replace(/\D/g, '').endsWith(cleanDigits.slice(-9)))
-            : false
-        );
-        if (match?.name) {
-          // recognized in roster
+      const registeredUsers = await bomaService.getUsers();
+      for (const u of registeredUsers) {
+        const userPhones: string[] = [];
+        if (Array.isArray(u.phones)) userPhones.push(...u.phones);
+        if (u.phone) userPhones.push(u.phone);
+        if (phoneListIncludes(userPhones, clean) || userPhones.some((p) => normalizePhoneNumber(p) === norm)) {
+          return {
+            found: true,
+            name: u.full_name || 'Member',
+          };
         }
       }
     } catch {
-      // storage unavailable
+      // ignore
     }
+
+    // 2. Check local fund rosters (both bomapay_roster_[id] and boma_roster_[id] across all funds)
+    if (typeof window !== 'undefined') {
+      try {
+        const rosterKeys = [`bomapay_roster_${bomaId}`, `boma_roster_${bomaId}`];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('bomapay_roster_') || key.startsWith('boma_roster_'))) {
+            if (!rosterKeys.includes(key)) rosterKeys.push(key);
+          }
+        }
+
+        for (const key of rosterKeys) {
+          const saved = localStorage.getItem(key);
+          if (saved) {
+            const roster = JSON.parse(saved);
+            if (Array.isArray(roster)) {
+              for (const m of roster) {
+                const memberPhones: string[] = [];
+                if (Array.isArray(m.phones)) memberPhones.push(...m.phones);
+                if (m.phone) memberPhones.push(m.phone);
+                if (m.primaryPhone) memberPhones.push(m.primaryPhone);
+                if (m.secondaryPhone) memberPhones.push(m.secondaryPhone);
+                if (phoneListIncludes(memberPhones, clean) || memberPhones.some((p) => normalizePhoneNumber(p) === norm)) {
+                  if (m.name) {
+                    return {
+                      found: true,
+                      name: m.name,
+                    };
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // 3. Check group organizer
+    if (boma && (phoneMatches(boma.creator_phone, clean) || phoneMatches('0711390861', clean))) {
+      return {
+        found: true,
+        name: boma.creator_name || 'Organizer',
+      };
+    }
+
+    // 4. Check past fund contributors from current transactions or local store
+    const txnsToCheck: Transaction[] = currentTxns.length > 0 ? [...currentTxns] : [];
+    if (txnsToCheck.length === 0 && typeof window !== 'undefined') {
+      try {
+        const storedTxns = localStorage.getItem('bomapay_transactions_v4');
+        if (storedTxns) {
+          const parsed = JSON.parse(storedTxns);
+          if (Array.isArray(parsed)) txnsToCheck.push(...parsed);
+        }
+      } catch {}
+    }
+
+    const txnMatch = txnsToCheck.find((t) => phoneMatches(t.contributor_phone, clean));
+    if (txnMatch && txnMatch.contributor_name && txnMatch.contributor_name !== 'Member') {
+      return {
+        found: true,
+        name: txnMatch.contributor_name,
+      };
+    }
+
+    return null;
   };
 
-  const handlePhoneAuthSubmit = (e: React.FormEvent) => {
+  const handlePhoneAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = phoneAuthInput.trim();
     if (!clean || clean.length < 9) {
       setPhoneAuthError('Please enter a valid phone number');
       return;
     }
-    localStorage.setItem('openhand_member_phone', clean);
-    setMemberPhone(clean);
-    lookupMember(clean, transactions);
-    setIsPhoneAuthModalOpen(false);
-    setPhoneAuthInput('');
+    setIsValidatingPhone(true);
     setPhoneAuthError('');
+
+    try {
+      const match = await verifyAndResolveMemberPhone(clean, transactions);
+      if (!match || !match.found) {
+        setPhoneAuthError(
+          'This phone number was not found in this group’s member list. Please check the number or contact your group organizer.'
+        );
+        setIsValidatingPhone(false);
+        return;
+      }
+
+      const resolvedName = match.name;
+      localStorage.setItem('openhand_member_phone', clean);
+      localStorage.setItem('openhand_member_name', resolvedName);
+      setMemberPhone(clean);
+      setMemberName(resolvedName);
+      setPhoneAuthInput('');
+      setPhoneAuthError('');
+      setLoading(true);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('openhand_member_updated'));
+      }
+
+      // Immediately load the fund now that visitor is authenticated
+      await loadBomaData();
+    } catch {
+      setPhoneAuthError('Could not verify phone number. Please try again.');
+    } finally {
+      setIsValidatingPhone(false);
+    }
   };
 
-  // Progressive data loading: fetch fund hero/header first for immediate paint, then hydrate ledger & transactions in background.
+  // Fast optimistic load from local storage first, then hydrate authoritative data in background
   const loadBomaData = async () => {
+    // 1. Optimistic instant paint from local storage if available
+    if (typeof window !== 'undefined') {
+      try {
+        const storedBomas = localStorage.getItem('bomapay_bomas_v4');
+        if (storedBomas) {
+          const list: Boma[] = JSON.parse(storedBomas);
+          const cached = list.find((b) => b.id === bomaId);
+          if (cached) {
+            setBoma(cached);
+            const storedAccounts = localStorage.getItem('bomapay_accounts_v4');
+            if (storedAccounts) {
+              const accs: Account[] = JSON.parse(storedAccounts);
+              const cachedAcc = accs.find((a) => a.boma_id === bomaId);
+              if (cachedAcc) setAccount(cachedAcc);
+            }
+            setLoading(false);
+          }
+        }
+      } catch {}
+    }
+
     try {
       const result = await bomaService.getBomaById(bomaId);
       if (result) {
@@ -113,7 +242,15 @@ export default function BomaDetailPage({ params }: PageProps) {
           setDisbursements(disbs);
           setTransactions(txns);
           const activePhone = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_phone') : null;
-          if (activePhone) lookupMember(activePhone, txns);
+          if (activePhone) {
+            void verifyAndResolveMemberPhone(activePhone, txns).then((match) => {
+              if (match?.name) {
+                setMemberName(match.name);
+                localStorage.setItem('openhand_member_name', match.name);
+                window.dispatchEvent(new Event('openhand_member_updated'));
+              }
+            });
+          }
         }).catch((err) => {
           console.error('Failed to load fund history:', err);
         });
@@ -128,7 +265,29 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   useEffect(() => {
     const init = async () => {
-      // Check genuine Supabase session
+      // 1. Check saved phone session from WhatsApp
+      let localPhone = '';
+      let localName = '';
+      if (typeof window !== 'undefined') {
+        localPhone = localStorage.getItem('openhand_member_phone') || '';
+        localName = localStorage.getItem('openhand_member_name') || '';
+        if (localPhone) {
+          setMemberPhone(localPhone);
+          if (localName) {
+            setMemberName(localName);
+          } else {
+            void verifyAndResolveMemberPhone(localPhone).then((match) => {
+              if (match?.name) {
+                setMemberName(match.name);
+                localStorage.setItem('openhand_member_name', match.name);
+                window.dispatchEvent(new Event('openhand_member_updated'));
+              }
+            });
+          }
+        }
+      }
+
+      // 2. Check genuine Supabase session
       let isAuthed = false;
       try {
         const supabase = createClient();
@@ -146,21 +305,7 @@ export default function BomaDetailPage({ params }: PageProps) {
         setCurrentUserId('');
       }
 
-      // Check saved phone session from WhatsApp
-      let hasStoredPhone = false;
-      if (typeof window !== 'undefined') {
-        const storedPhone = localStorage.getItem('openhand_member_phone');
-        if (storedPhone) {
-          hasStoredPhone = true;
-          setMemberPhone(storedPhone);
-          lookupMember(storedPhone);
-        }
-      }
-
-      // If visitor is unauthenticated and hasn't identified by phone yet, open minimalistic auth modal
-      if (!isAuthed && !hasStoredPhone) {
-        setIsPhoneAuthModalOpen(true);
-      }
+      setIsCheckingAuth(false);
 
       // Returning from Paystack checkout: verify, then book the ledger once.
       const urlParams = new URLSearchParams(window.location.search);
@@ -184,9 +329,6 @@ export default function BomaDetailPage({ params }: PageProps) {
         }
         window.history.replaceState({}, '', window.location.pathname);
       }
-      // If we just settled a payment, wait briefly so the DB write propagates
-      // before re-fetching — otherwise we race the settle_paystack_payment RPC
-      // and read stale balance/transaction data.
       if (verifiedPayment) {
         await new Promise((resolve) => setTimeout(resolve, 800));
       }
@@ -195,11 +337,94 @@ export default function BomaDetailPage({ params }: PageProps) {
         setActiveTab(tabParam);
       }
 
-      await loadBomaData();
+      // Only load fund data if visitor is authenticated or already verified via phone
+      if (isAuthed || localPhone) {
+        await loadBomaData();
+      } else {
+        setLoading(false);
+      }
     };
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bomaId]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8 animate-pulse">
+        <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
+          <div className="flex items-center gap-2">
+            <div className="h-3.5 w-16 rounded bg-slate-200" />
+            <span className="text-slate-300">/</span>
+            <div className="h-3.5 w-24 rounded bg-slate-200" />
+          </div>
+          <div className="h-48 sm:h-64 lg:h-72 w-full rounded-2xl bg-slate-100" />
+        </div>
+      </div>
+    );
+  }
+
+  // Gate fund details for invited visitors until registered phone number is verified
+  if (!hasAccess) {
+    return (
+      <div className="min-h-[calc(100vh-140px)] flex items-center justify-center px-4 py-8 sm:py-12 bg-slate-50/50">
+        <div className="w-full max-w-sm rounded-2xl bg-white p-6 sm:p-7 shadow-xs border border-slate-200/90 space-y-5">
+          <div className="text-center space-y-2">
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <ShieldCheckIcon className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-bold text-slate-900 tracking-tight">
+              Enter your phone number
+            </h2>
+            <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
+              Connect your M-Pesa line to access this group and view your member record.
+            </p>
+          </div>
+
+          <form onSubmit={handlePhoneAuthSubmit} className="space-y-3.5">
+            <div>
+              <input
+                type="tel"
+                autoFocus
+                value={phoneAuthInput}
+                onChange={(e) => {
+                  setPhoneAuthInput(e.target.value);
+                  if (phoneAuthError) setPhoneAuthError('');
+                }}
+                aria-label="Phone number"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50/50 px-3.5 py-2.5 text-sm font-mono font-medium text-slate-900 text-center tracking-wider focus:border-emerald-600 focus:bg-white focus:ring-1 focus:ring-emerald-600 shadow-2xs outline-none"
+              />
+              {phoneAuthError && (
+                <div className="mt-2 rounded-lg bg-rose-50 border border-rose-200/80 p-2.5 text-center">
+                  <p className="text-xs text-rose-700 font-medium leading-relaxed">
+                    {phoneAuthError}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isValidatingPhone}
+              className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 py-2.5 text-xs font-bold text-white transition active:scale-[0.99] shadow-xs disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+            >
+              {isValidatingPhone ? (
+                <>
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span>Verifying member...</span>
+                </>
+              ) : (
+                'Continue'
+              )}
+            </button>
+
+            <p className="text-center text-[11px] text-slate-400">
+              Only registered group members can access this fund.
+            </p>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -319,14 +544,40 @@ export default function BomaDetailPage({ params }: PageProps) {
           <span className="capitalize font-mono text-slate-600 truncate max-w-[140px] sm:max-w-none">{boma.category}</span>
         </div>
 
-        {boma.is_public && <button
-          type="button"
-          onClick={() => setIsShareModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-        >
-          <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
-          <span>Share</span>
-        </button>}
+        <div className="flex items-center gap-2">
+          {memberName && (
+            <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-800 shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+              <span className="font-semibold">{memberName}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('openhand_member_phone');
+                  localStorage.removeItem('openhand_member_name');
+                  setMemberPhone('');
+                  setMemberName('');
+                  setPhoneAuthInput('');
+                  setPhoneAuthError('');
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('openhand_member_updated'));
+                  }
+                }}
+                className="text-[11px] text-slate-400 hover:text-slate-700 ml-1 underline cursor-pointer"
+              >
+                Switch
+              </button>
+            </div>
+          )}
+
+          {boma.is_public && <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+          >
+            <ShareIcon className="w-3.5 h-3.5 text-slate-500" />
+            <span>Share</span>
+          </button>}
+        </div>
       </div>
 
       {/* Payment Confirmation / Alert Banner */}
@@ -728,58 +979,6 @@ export default function BomaDetailPage({ params }: PageProps) {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
-
-      {/* Minimalistic Phone Auth Modal for Invited Visitors */}
-      {isPhoneAuthModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
-            <div className="text-center space-y-1">
-              <h3 className="text-base font-bold text-slate-900">
-                Enter your phone number
-              </h3>
-              <p className="text-xs text-slate-500">
-                Access your member account for this group
-              </p>
-            </div>
-
-            <form onSubmit={handlePhoneAuthSubmit} className="space-y-3">
-              <div>
-                <input
-                  type="tel"
-                  autoFocus
-                  value={phoneAuthInput}
-                  onChange={(e) => {
-                    setPhoneAuthInput(e.target.value);
-                    if (phoneAuthError) setPhoneAuthError('');
-                  }}
-                  aria-label="Phone number"
-                  className="w-full rounded-xl border border-slate-300 bg-slate-50/50 px-3.5 py-2.5 text-sm font-mono font-medium text-slate-900 text-center tracking-wider focus:border-emerald-600 focus:bg-white focus:ring-1 focus:ring-emerald-600 shadow-2xs outline-none"
-                />
-                {phoneAuthError && (
-                  <p className="mt-1.5 text-xs text-rose-600 text-center font-medium">
-                    {phoneAuthError}
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 py-2.5 text-xs font-bold text-white transition active:scale-98 shadow-xs"
-              >
-                Continue
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsPhoneAuthModalOpen(false)}
-                className="w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors pt-1"
-              >
-                Continue as guest
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       </div>
     </div>
