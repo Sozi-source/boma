@@ -50,7 +50,7 @@ export default function UserManagementPage() {
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !primaryPhone) return;
+    if (!fullName.trim() || !primaryPhone.trim()) return;
     setLoading(true);
 
     try {
@@ -294,8 +294,8 @@ export default function UserManagementPage() {
                           <span className="font-bold text-neutral-900 text-[11px] sm:text-xs block truncate">
                             {u.full_name}
                           </span>
-                          <span className="text-[9.5px] sm:text-[11px] text-neutral-400 block truncate font-mono">
-                            {u.email}
+                          <span className="text-[11px] text-slate-400 block truncate font-mono">
+                            {u.email || 'No email attached'}
                           </span>
                         </div>
                       </div>
@@ -409,7 +409,7 @@ export default function UserManagementPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-neutral-900">{u.full_name}</p>
-                  <p className="truncate text-[10px] text-neutral-500">{u.email}</p>
+                  <p className="truncate text-[11px] text-slate-500 font-mono">{u.email || 'No email attached'}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold capitalize ${u.status === 'active' ? 'bg-emerald-100 text-emerald-800' : u.status === 'pending_approval' ? 'bg-amber-100 text-amber-900' : 'bg-red-100 text-red-800'}`}>
                   {u.status.replace('_', ' ')}
@@ -479,15 +479,15 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] sm:text-[11px] font-semibold text-neutral-700 mb-1">
-                  Email Address *
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Email Address <span className="font-normal text-slate-400">(Optional)</span>
                 </label>
                 <input
                   type="email"
-                  required
                   value={email}
+                  placeholder="Optional · e.g. member@example.com"
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-900 focus:border-emerald-500"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-600 focus:outline-none"
                 />
               </div>
 

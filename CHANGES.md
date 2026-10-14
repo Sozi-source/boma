@@ -22,3 +22,5 @@
 - components/navbar.tsx (changed): replaced raw hex colors with design tokens (`border-slate-200`, `text-slate-900`, `text-emerald-700`, `bg-emerald-700`) and styled enterprise buttons.
 - components/boma-card.tsx (changed): removed background gradients, upgraded category and status typography to 11px, removed truncation from monetary amounts, and standardized action button states.
 - app/bomas/page.tsx (changed): updated button hierarchy and goal cards with semantic tokens and emerald action buttons.
+## 2026-10-14: Phone-first user onboarding (email made optional)
+- app/admin/users/page.tsx (changed): made the Email Address field optional in the "Add New User" modal (updated label to "Email Address (Optional)", removed HTML5 required constraint, and updated validation to allow adding phone-first members without an email); added fallback display ("No email attached") in table and mobile card views.
