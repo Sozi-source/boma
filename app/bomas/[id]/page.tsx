@@ -265,24 +265,24 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   useEffect(() => {
     const init = async () => {
-      // 1. Check saved phone session from WhatsApp
-      let localPhone = '';
-      let localName = '';
+      // 1. Check saved phone session from WhatsApp and strictly verify it against member records
+      let hasVerifiedPhone = false;
       if (typeof window !== 'undefined') {
-        localPhone = localStorage.getItem('openhand_member_phone') || '';
-        localName = localStorage.getItem('openhand_member_name') || '';
-        if (localPhone) {
-          setMemberPhone(localPhone);
-          if (localName) {
-            setMemberName(localName);
+        const storedPhone = localStorage.getItem('openhand_member_phone') || '';
+        if (storedPhone) {
+          const match = await verifyAndResolveMemberPhone(storedPhone);
+          if (match && match.found) {
+            hasVerifiedPhone = true;
+            setMemberPhone(storedPhone);
+            setMemberName(match.name);
+            localStorage.setItem('openhand_member_name', match.name);
           } else {
-            void verifyAndResolveMemberPhone(localPhone).then((match) => {
-              if (match?.name) {
-                setMemberName(match.name);
-                localStorage.setItem('openhand_member_name', match.name);
-                window.dispatchEvent(new Event('openhand_member_updated'));
-              }
-            });
+            // Unverified or stale phone: purge immediately so visitor is gated
+            localStorage.removeItem('openhand_member_phone');
+            localStorage.removeItem('openhand_member_name');
+            setMemberPhone('');
+            setMemberName('');
+            window.dispatchEvent(new Event('openhand_member_updated'));
           }
         }
       }
@@ -338,7 +338,7 @@ export default function BomaDetailPage({ params }: PageProps) {
       }
 
       // Only load fund data if visitor is authenticated or already verified via phone
-      if (isAuthed || localPhone) {
+      if (isAuthed || hasVerifiedPhone) {
         await loadBomaData();
       } else {
         setLoading(false);
