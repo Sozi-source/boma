@@ -75,18 +75,18 @@ export default function ExploreBomasPage() {
   }, []);
 
   return (
-    <div className="min-h-full bg-[#f7f8f5] text-[#18352a]">
-      <section className="border-b border-[#e6ebe5] bg-white">
+    <div className="min-h-full bg-slate-50 text-slate-900">
+      <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-5 py-9 sm:px-8 sm:py-12 lg:px-12 lg:py-14">
-          <p className="text-xs font-semibold uppercase tracking-[.15em] text-[#58804d]">Shared goals, made clear</p>
+          <p className="text-xs font-semibold uppercase tracking-[.15em] text-emerald-700">Shared goals, made clear</p>
           <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-semibold tracking-[-.045em] sm:text-4xl">What could your group do together?</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#65736a] sm:text-base">Choose a goal, bring your people together, and follow the progress in one place.</p>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">What could your group do together?</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Choose a goal, bring your people together, and follow the progress in one place.</p>
             </div>
             <Link
               href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-[#99d452] px-5 text-sm font-semibold text-[#19352c] transition hover:bg-[#8ac841] sm:self-auto"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-emerald-700 px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-emerald-800 sm:self-auto active:scale-[0.99]"
             >
               {authenticated ? 'Add fund' : 'Start a group'} <span aria-hidden="true">→</span>
             </Link>
@@ -97,18 +97,19 @@ export default function ExploreBomasPage() {
       <section aria-label="Group goal ideas" className="mx-auto max-w-7xl px-5 py-7 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {goalExamples.map((goal) => (
-            <article key={goal.name} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#e4e9e2] bg-white shadow-[0_5px_22px_rgba(28,56,38,.045)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(28,56,38,.09)]">
-              <div className="relative aspect-[1.55] overflow-hidden bg-[#e9eee7]">
+            <article key={goal.name} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300">
+              <div className="relative aspect-[1.55] overflow-hidden bg-slate-100">
                 <Image src={goal.image} alt={goal.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
               </div>
               <div className="flex flex-1 flex-col p-4 sm:p-5">
-                <h2 className="text-base font-semibold tracking-tight text-[#20392d]">{goal.name}</h2>
-                <p className="mt-1.5 flex-1 text-sm leading-5 text-[#718076]">{goal.description}</p>
+                <h2 className="text-base font-bold tracking-tight text-slate-900">{goal.name}</h2>
+                <p className="mt-1.5 flex-1 text-sm leading-5 text-slate-600">{goal.description}</p>
                 <Link
                   href={authenticated ? "/bomas/create" : "/auth/signup?role=organizer"}
-                  className="mt-4 inline-flex min-h-9 self-start items-center justify-center gap-1.5 rounded-full bg-[#99d452] px-3.5 text-xs font-semibold text-[#19352c] transition hover:bg-[#8ac841] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6da72e]"
+                  className="mt-4 inline-flex min-h-9 self-start items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-3.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
                 >
-                  {authenticated ? 'Add fund for this goal' : 'Start this goal'} <span aria-hidden="true">→</span>
+                  <span>{authenticated ? 'Add fund for this goal' : 'Start this goal'}</span>
+                  <span aria-hidden="true">→</span>
                 </Link>
               </div>
             </article>

@@ -390,33 +390,31 @@ export default function MemberRoster({
             </p>
           </div>
 
-          {/* Organizer-only actions */}
-          {isOrganizer && (
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Target / Pledge On/Off Switch */}
-              <button
-                type="button"
-                onClick={togglePledges}
-                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  pledgesEnabled
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <span className={`h-2 w-2 rounded-full ${pledgesEnabled ? 'bg-emerald-600' : 'bg-slate-400'}`} />
-                <span>Pledges: {pledgesEnabled ? 'ON' : 'OFF'}</span>
-              </button>
+          {/* Roster actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Target / Pledge On/Off Switch */}
+            <button
+              type="button"
+              onClick={togglePledges}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                pledgesEnabled
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full ${pledgesEnabled ? 'bg-emerald-600' : 'bg-slate-400'}`} />
+              <span>Pledges: {pledgesEnabled ? 'ON' : 'OFF'}</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={() => setIsAddMemberOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition-colors"
-              >
-                <PlusIcon className="h-3.5 w-3.5" />
-                <span>Add Member</span>
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setIsAddMemberOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition-colors"
+            >
+              <PlusIcon className="h-3.5 w-3.5" />
+              <span>Add Member</span>
+            </button>
+          </div>
         </div>
 
         {/* Search */}

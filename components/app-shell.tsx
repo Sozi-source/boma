@@ -45,14 +45,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isAuthPage = pathname.startsWith('/auth/');
   const isAdminRoute = pathname.startsWith('/admin');
-  const isPublicPage = pathname === '/' || pathname === '/bomas';
+  const isFundDetailPage = pathname.startsWith('/bomas/') && pathname !== '/bomas/create';
+  const isPublicPage = pathname === '/' || (!hasUser && pathname === '/bomas') || isFundDetailPage;
+  const isWorkspaceRoute = isAdminRoute || pathname === '/dashboard' || pathname === '/activity' || pathname === '/bomas/create' || (pathname === '/bomas' && hasUser);
   const requiresSignIn = !isAuthPage && !isPublicPage;
 
   useEffect(() => {
     if (authReady && requiresSignIn && !hasUser) {
       router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
     }
-  }, [authReady, hasUser, requiresSignIn, router]);
+  }, [authReady, hasUser, requiresSignIn, router, pathname]);
 
   const showPage = isAuthPage || isPublicPage || (authReady && hasUser);
   const showAppChrome = !isAuthPage && !isPublicPage && authReady && hasUser;
@@ -60,11 +62,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {showAppChrome && isAdminRoute && <AdminSidebar />}
+      {showAppChrome && isWorkspaceRoute && <AdminSidebar />}
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         {showAppChrome ? (
-          isAdminRoute ? (
+          isWorkspaceRoute ? (
             <>
               <div className="lg:hidden"><AdminMobileHeader /></div>
               <div className="sticky top-0 z-30 hidden lg:block"><DesktopHeader /></div>
@@ -72,7 +74,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           ) : (
             <Navbar authenticated />
           )
-        ) : showPublicChrome ? <Navbar authenticated={authReady && hasUser} /> : null}
+        ) : showPublicChrome ? (
+          <Navbar authenticated={authReady && hasUser} />
+        ) : null}
 
         <main className={`w-full min-w-0 flex-1 ${showAppChrome ? 'pb-[calc(4.75rem+env(safe-area-inset-bottom))] lg:pb-8' : ''}`}>
           {showPage ? children : (
@@ -82,7 +86,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </main>
 
-        {showAppChrome && !isAdminRoute && <MobileNav authenticated />}
+        {showAppChrome && <MobileNav authenticated />}
 
         {showPublicChrome && pathname !== '/' && (
           <footer className="border-t border-slate-200 bg-white px-5 py-5 text-center text-xs text-slate-500 lg:text-left">
@@ -96,7 +100,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {showAppChrome && (
           <footer className="hidden items-center justify-between border-t border-slate-200 bg-white px-5 py-2.5 text-[11px] text-slate-500 select-none lg:flex sm:px-8 lg:px-10 xl:px-12">
             <span>Openhand — Clear group records, shared when published</span>
-            <div className="flex items-center gap-4 font-mono text-[10px]">
+            <div className="flex items-center gap-4 font-mono text-[11px]">
               <span className="flex items-center gap-1.5 font-bold text-emerald-700">
                 Paystack M-Pesa payments
               </span>

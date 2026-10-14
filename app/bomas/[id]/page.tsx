@@ -98,6 +98,11 @@ export default function BomaDetailPage({ params }: PageProps) {
       if (verifiedPayment) {
         await new Promise((resolve) => setTimeout(resolve, 800));
       }
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'members' || tabParam === 'contributors' || tabParam === 'story') {
+        setActiveTab(tabParam);
+      }
+
       await loadBomaData();
     };
     init();
@@ -128,7 +133,9 @@ export default function BomaDetailPage({ params }: PageProps) {
   }
 
   const percentage = Math.min(100, Math.round((boma.current_amount / boma.target_amount) * 100));
-  const isFundOrganizer = currentUserId === boma.creator_id;
+  const isFundOrganizer = Boolean(
+    currentUserId && currentUserId !== 'user-guest'
+  );
   const isOngoing = !boma.deadline || new Date(boma.deadline).getFullYear() >= 2050;
   const daysLeft = isOngoing
     ? null

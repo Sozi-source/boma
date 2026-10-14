@@ -50,37 +50,37 @@ export default function AdminSidebar() {
       items: [
         {
           href: '/dashboard',
-          label: 'Home Overview',
+          label: 'Overview',
           icon: HomeIcon,
           exact: true,
         },
         {
-          href: '/admin',
-          label: 'Admin Dashboard',
-          icon: ShieldCheckIcon,
-          exact: true,
+          href: '/activity',
+          label: 'Activity & Feed',
+          icon: ClockIcon,
+          exact: false,
         },
         {
           href: '/bomas',
           label: 'Funds & Campaigns',
           icon: BuildingLibraryIcon,
-          exact: false,
+          exact: true,
         },
       ],
     },
     {
-      title: 'MEMBERS & ACCESS',
+      title: 'CHAMA & MEMBERS',
       items: [
         {
           href: '/admin/users',
-          label: 'User Directory',
+          label: 'Member Directory',
           icon: UsersIcon,
           exact: false,
         },
         {
           href: '/admin/approvals',
           label: 'Signup Approvals',
-          icon: ClockIcon,
+          icon: CheckCircleIcon,
           exact: false,
           badge: stats.pendingApprovals > 0 ? `${stats.pendingApprovals}` : null,
         },
@@ -97,116 +97,123 @@ export default function AdminSidebar() {
         },
         {
           href: '/admin/subaccounts',
-          label: 'Subaccounts & Banks',
+          label: 'Payout Accounts',
           icon: SmartphoneIcon,
           exact: false,
         },
         {
-          href: '/bomas/create',
-          label: 'Add Fund',
-          icon: PlusIcon,
-          exact: false,
+          href: '/admin',
+          label: 'System Operations',
+          icon: ShieldCheckIcon,
+          exact: true,
         },
       ],
     },
   ];
 
   return (
-    <>
-      {/* Laptop & Desktop Vibrant Teal Green Fintech Sidebar */}
-      <aside 
-        className="hidden lg:flex w-64 xl:w-72 flex-col shrink-0 bg-[#0A4F43] text-teal-50 border-r border-teal-800/40 h-screen sticky top-0 z-40 select-none shadow-sm"
-      >
-        
-        {/* Merchant / Organization Account Header */}
-        <div className="p-4 border-b border-teal-600/40 bg-teal-900/25">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-xs shrink-0 bg-white/10 flex items-center justify-center p-0.5">
-              <Image
-                src="/assets/icons/openhand.webp"
-                alt="Openhand"
-                width={36}
-                height={36}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="text-xs font-semibold text-white block truncate tracking-tight">
+    <aside 
+      className="hidden lg:flex w-64 xl:w-72 flex-col shrink-0 bg-white text-slate-700 border-r border-slate-200 h-screen sticky top-0 z-40 select-none shadow-xs"
+    >
+      {/* Merchant / Organization Account Header */}
+      <div className="p-4 border-b border-slate-200 bg-slate-50/60">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="h-10 w-10 rounded-xl overflow-hidden shadow-xs shrink-0 bg-white border border-slate-200/80 flex items-center justify-center p-1 transition-transform group-hover:scale-105">
+            <Image
+              src="/assets/icons/openhand.webp"
+              alt="Openhand"
+              width={36}
+              height={36}
+              className="h-full w-full object-contain"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-slate-900 block truncate tracking-tight">
                 Clarix Innovators
               </span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] font-mono text-teal-200/80 block truncate">
-                  ID: 1938784
-                </span>
-                <span className="text-teal-400">•</span>
-                <span className="text-[9px] font-semibold uppercase text-amber-300 bg-amber-400/15 border border-amber-400/40 px-1.5 py-0.2 rounded-sm">
-                  Verified
-                </span>
-              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Structured Navigation — Comfortable vertical rhythm taking >= 3/4 of height */}
-        <div className="p-3.5 flex-1 overflow-y-auto custom-sidebar-scrollbar space-y-4">
-          {navSections.map((section) => (
-            <div key={section.title} className="space-y-1">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-amber-300 px-3 block">
-                {section.title}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[11px] font-mono text-slate-500 tabular-nums whitespace-nowrap">
+                ID: 1938784
               </span>
-
-              <div className="space-y-1 pt-0.5">
-                {section.items.map((item) => {
-                  const isActive = item.exact 
-                    ? pathname === item.href 
-                    : pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
-                  const Icon = item.icon;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all ${
-                        isActive
-                          ? 'bg-amber-400 text-slate-950 font-semibold shadow-xs'
-                          : 'text-teal-100 hover:bg-white/10 hover:text-white font-medium'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Icon className={`w-4 h-4 shrink-0 transition-transform ${
-                          isActive ? 'text-slate-950 stroke-[2.2]' : 'text-teal-200/80'
-                        }`} />
-                        <span className="truncate">{item.label}</span>
-                      </div>
-
-                      {item.badge && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold shrink-0 ${
-                          isActive 
-                            ? 'bg-slate-900 text-amber-300' 
-                            : 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                        }`}>
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
+              <span className="text-slate-300">•</span>
+              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.2 rounded-sm whitespace-nowrap">
+                Verified
+              </span>
             </div>
-          ))}
-
-        </div>
-
-        {/* Minimal Quiet Status Footer */}
-        <div className="relative flex items-center justify-between overflow-hidden border-t border-teal-600/40 p-3.5 text-xs text-teal-200">
-          <span aria-hidden="true" className="absolute inset-0 bg-[#052b28]/70" />
-          <div className="relative flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-            <span className="font-semibold text-white text-xs">Live System</span>
           </div>
-          <span className="relative text-[10px] font-mono font-medium text-teal-300/80">v1.2</span>
+        </Link>
+      </div>
+
+      {/* Structured Navigation */}
+      <div className="p-3.5 flex-1 overflow-y-auto space-y-5">
+        {navSections.map((section) => (
+          <div key={section.title} className="space-y-1">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-400 px-3 block">
+              {section.title}
+            </span>
+
+            <div className="space-y-0.5 pt-0.5">
+              {section.items.map((item) => {
+                const isActive = item.exact 
+                  ? pathname === item.href 
+                  : pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
+                      isActive
+                        ? 'bg-emerald-50 text-emerald-900 font-semibold border-l-2 border-emerald-600 shadow-2xs'
+                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon className={`w-4 h-4 shrink-0 transition-colors ${
+                        isActive ? 'text-emerald-700 stroke-[2.2]' : 'text-slate-400'
+                      }`} />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+
+                    {item.badge && (
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-mono font-bold shrink-0 tabular-nums whitespace-nowrap ${
+                        isActive 
+                          ? 'bg-emerald-700 text-white' 
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Quick Action Button in Sidebar */}
+        <div className="pt-2">
+          <Link
+            href="/bomas/create"
+            className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-all active:scale-[0.98]"
+          >
+            <PlusIcon className="w-4 h-4" />
+            <span>Add New Fund</span>
+          </Link>
         </div>
-      </aside>
-    </>
+      </div>
+
+      {/* Minimal Quiet Status Footer */}
+      <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 p-3 text-xs text-slate-500">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-slate-800 text-xs">Live System</span>
+        </div>
+        <span className="text-[11px] font-mono text-slate-500 tabular-nums whitespace-nowrap">Paystack M-Pesa</span>
+      </div>
+    </aside>
   );
 }

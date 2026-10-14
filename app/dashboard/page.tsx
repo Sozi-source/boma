@@ -115,7 +115,7 @@ export default function DashboardPage() {
                 <WalletIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#52891f]" />
                 <span className="tracking-wide">Group Treasury</span>
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-50 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-semibold text-slate-700">
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-50 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-semibold text-slate-700">
                 <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[#9dda50] ring-2 ring-[#aee366]/30" />
                 <span>Audited</span>
               </span>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
                           </div>
 
                           {/* Action Buttons */}
-                          <div className="flex flex-wrap items-center gap-3 pt-2">
+                          <div className="flex flex-wrap items-center gap-2.5 pt-2">
                             {b.is_public ? (
                               <button
                                 type="button"
@@ -349,21 +349,28 @@ export default function DashboardPage() {
                                   setSelectedBomaForModal(b);
                                   setIsContributeModalOpen(true);
                                 }}
-                                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-5 text-sm font-bold text-white shadow-sm transition-all active:scale-98"
+                                className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 text-xs font-bold text-white shadow-sm transition-all active:scale-98"
                               >
                                 <PlusIcon className="h-4 w-4" />
                                 <span>Contribute</span>
                               </button>
                             ) : (
-                              <span className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-slate-100 px-4 text-xs font-semibold text-slate-600">
+                              <span className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-semibold text-slate-600">
                                 Private · only you can view
                               </span>
                             )}
                             <Link
-                              href={`/bomas/${b.id}`}
-                              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-4.5 text-sm font-semibold text-slate-700 shadow-2xs transition-colors"
+                              href={`/bomas/${b.id}?tab=members`}
+                              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
                             >
-                              <span>Details & Ledger</span>
+                              <UsersIcon className="h-4 w-4 text-emerald-700" />
+                              <span>Members</span>
+                            </Link>
+                            <Link
+                              href={`/bomas/${b.id}`}
+                              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors"
+                            >
+                              <span>Details &amp; Ledger</span>
                               <ArrowUpRightIcon className="h-4 w-4 text-slate-400" />
                             </Link>
                           </div>

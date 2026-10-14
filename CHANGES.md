@@ -11,3 +11,14 @@
 - app/bomas/[id]/page.tsx (changed): implemented Phase 1 live activity stream card with pulsing indicator, 25%/50%/75%/100% milestone progress notches, standardized action labels to "Contribute", and integrated the Members & Pledges roster tab.
 - components/member-roster.tsx (added): added member roster component with organizer member management, optional target/pledge on-off toggle, phone-based member gatekeeper check-in, and multi-SIM alias binding.
 - README.md (changed): added Pan-African Scale Architecture blueprint to future roadmap covering multi-currency FX engine, multi-rail gateway orchestration, E.164 phone identity, and WhatsApp bot integration.
+- app/dashboard/page.tsx (changed): added direct "Members" action button on every fund card linking to the fund's Members & Pledges roster tab.
+- components/member-roster.tsx (changed): ensured "Add Member" button and "Pledges: ON/OFF" toggle are always visible in the roster header; supported ?tab=members query param in fund page.
+## 2026-10-14: Enterprise navigation and button hierarchy refinement
+- components/admin/admin-sidebar.tsx (changed): converted sidebar from dark `#0A4F43` to a light-themed enterprise layout (`bg-white border-r border-slate-200`) adhering to DESIGN.md; unified workspace navigation (Overview, Activity, Funds, Members, Approvals, Central Ledger, Payout Accounts, and Add Fund); upgraded all sub-11px text to 11px; added `whitespace-nowrap tabular-nums` to IDs and badges.
+- components/admin/admin-mobile-header.tsx (changed): redesigned mobile slide-out drawer from dark theme to light enterprise styling with minimum 11px font sizes and verified account status.
+- components/desktop-header.tsx (changed): added breadcrumb context for all organizer workspace routes (`/dashboard`, `/activity`, `/bomas`, `/bomas/create`, `/admin/*`), raised type size from 10px to 11px, and enhanced the "+ Add fund" primary button.
+- components/mobile-nav.tsx (changed): raised label typography from 9px to 11px and ensured emerald accent active states.
+- components/app-shell.tsx (changed): enabled persistent enterprise sidebar and desktop header across all authenticated organizer workspace routes (`/dashboard`, `/activity`, `/bomas`, `/bomas/create`, `/admin/*`) while keeping public campaign pages (`/`, `/bomas/[id]`) full-width and focused; fixed footer sub-11px text.
+- components/navbar.tsx (changed): replaced raw hex colors with design tokens (`border-slate-200`, `text-slate-900`, `text-emerald-700`, `bg-emerald-700`) and styled enterprise buttons.
+- components/boma-card.tsx (changed): removed background gradients, upgraded category and status typography to 11px, removed truncation from monetary amounts, and standardized action button states.
+- app/bomas/page.tsx (changed): updated button hierarchy and goal cards with semantic tokens and emerald action buttons.
