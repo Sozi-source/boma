@@ -49,28 +49,43 @@ export default function BomaDetailPage({ params }: PageProps) {
     setVisibilitySaving(false);
   };
 
-  // Reloads data in place (no spinner) so open tabs keep their state.
+  // Progressive data loading: fetch fund hero/header first for immediate paint, then hydrate ledger & transactions in background.
   const loadBomaData = async () => {
-    const result = await bomaService.getBomaById(bomaId);
-    if (result) {
-      setBoma(result.boma);
-      setAccount(result.account);
-      const [entries, disbs, txns] = await Promise.all([
-        bomaService.getBomaLedger(bomaId),
-        bomaService.getBomaDisbursements(bomaId),
-        bomaService.getBomaTransactions(bomaId),
-      ]);
-      setLedgerEntries(entries);
-      setDisbursements(disbs);
-      setTransactions(txns);
+    try {
+      const result = await bomaService.getBomaById(bomaId);
+      if (result) {
+        setBoma(result.boma);
+        setAccount(result.account);
+        setLoading(false);
+
+        // Fetch ledger, disbursements, and transactions concurrently in background without blocking initial paint
+        void Promise.all([
+          bomaService.getBomaLedger(bomaId),
+          bomaService.getBomaDisbursements(bomaId),
+          bomaService.getBomaTransactions(bomaId),
+        ]).then(([entries, disbs, txns]) => {
+          setLedgerEntries(entries);
+          setDisbursements(disbs);
+          setTransactions(txns);
+        }).catch((err) => {
+          console.error('Failed to load fund history:', err);
+        });
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Failed to load fund:', err);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     const init = async () => {
-      const currentUser = await bomaService.getCurrentUser();
-      if (currentUser && currentUser.id !== 'user-guest') setCurrentUserId(currentUser.id);
+      // Fetch current user concurrently (non-blocking for fund view)
+      void bomaService.getCurrentUser().then((currentUser) => {
+        if (currentUser && currentUser.id !== 'user-guest') setCurrentUserId(currentUser.id);
+      });
+
       // Returning from Paystack checkout: verify, then book the ledger once.
       const urlParams = new URLSearchParams(window.location.search);
       const reference = urlParams.get('reference') || urlParams.get('trxref');
@@ -112,9 +127,78 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-16 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-        <p className="mt-3 text-xs text-neutral-400">Loading fund...</p>
+      <div className="w-full min-w-0 px-3.5 sm:px-8 lg:px-10 xl:px-12 py-3.5 sm:py-8 animate-pulse">
+        <div className="w-full max-w-7xl space-y-4 sm:space-y-6">
+          {/* Top Breadcrumb Skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-3.5 w-16 rounded bg-slate-200" />
+              <span className="text-slate-300">/</span>
+              <div className="h-3.5 w-24 rounded bg-slate-200" />
+            </div>
+            <div className="h-7 w-20 rounded-lg bg-slate-200" />
+          </div>
+
+          {/* Main Layout Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column (Hero, Info, Tabs) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Cover Placeholder */}
+              <div className="h-48 sm:h-64 lg:h-72 w-full rounded-2xl bg-slate-200 border border-slate-200" />
+
+              {/* Title & Organizer Info Skeleton */}
+              <div className="pb-3 border-b border-slate-200/80 space-y-2">
+                <div className="h-6 w-3/4 rounded-lg bg-slate-200" />
+                <div className="h-3.5 w-1/3 rounded bg-slate-200" />
+              </div>
+
+              {/* Mobile-Only Progress Card Skeleton */}
+              <div className="block lg:hidden rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+                <div className="flex justify-between">
+                  <div className="h-6 w-28 rounded bg-slate-200" />
+                  <div className="h-4 w-24 rounded bg-slate-200" />
+                </div>
+                <div className="h-2 w-full rounded-full bg-slate-200" />
+                <div className="h-3 w-32 rounded bg-slate-200" />
+              </div>
+
+              {/* Navigation Tabs Skeleton */}
+              <div className="border-b border-slate-200 flex gap-6 pb-2">
+                <div className="h-4 w-24 rounded bg-slate-200" />
+                <div className="h-4 w-32 rounded bg-slate-200" />
+                <div className="h-4 w-28 rounded bg-slate-200" />
+              </div>
+
+              {/* Content Box Skeleton */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+                <div className="h-4 w-full rounded bg-slate-200" />
+                <div className="h-4 w-5/6 rounded bg-slate-200" />
+                <div className="h-4 w-4/6 rounded bg-slate-200" />
+              </div>
+            </div>
+
+            {/* Right Column (Desktop Sticky Card Skeleton) */}
+            <div className="space-y-4 hidden lg:block">
+              <div className="sticky top-20 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+                <div className="h-3 w-28 rounded bg-slate-200" />
+                <div className="h-8 w-44 rounded bg-slate-200" />
+                <div className="h-2.5 w-full rounded-full bg-slate-200" />
+                <div className="flex justify-between">
+                  <div className="h-3 w-16 rounded bg-slate-200" />
+                  <div className="h-3 w-16 rounded bg-slate-200" />
+                </div>
+                <div className="pt-3 border-t border-slate-100 flex justify-between">
+                  <div className="h-4 w-28 rounded bg-slate-200" />
+                  <div className="h-4 w-16 rounded bg-slate-200" />
+                </div>
+                <div className="pt-2 space-y-2">
+                  <div className="h-10 w-full rounded-xl bg-emerald-100/60" />
+                  <div className="h-9 w-full rounded-xl bg-slate-100" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

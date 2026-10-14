@@ -30,3 +30,7 @@
 - app/dashboard/page.tsx (changed): added a direct "Share" action button with WhatsAppIcon on every group fund card, enabling one-click opening of the ShareModal directly from the organizer dashboard.
 - app/bomas/[id]/page.tsx (changed): added a prominent "Share on WhatsApp" button in the desktop campaign sidebar; fixed mobile floating action bar so the Share button is always available to both organizers and members.
 - components/share-modal.tsx (changed): raised all sub-11px text to 11px compliant with DESIGN.md.
+## 2026-10-14: Fund loading acceleration and skeleton screen optimization
+- app/bomas/[id]/page.tsx (changed): resolved slow fund page loads by decoupling the waterfall; primary fund details paint immediately upon receiving the fund record (~200ms) while ledger entries, disbursements, and transactions are hydrated asynchronously in the background; eliminated the blank-white screen spinner (`Loading fund...`) and replaced it with a high-fidelity skeleton screen matching the campaign layout in accordance with DESIGN.md Section 11 & 14.
+- app/dashboard/page.tsx (changed): eliminated the sequential transaction query waterfall (`for ... await`) and parallelized user, group, and fund queries with `Promise.all`, instantly displaying funds and balances without waiting on historical ledger logs.
+

@@ -36,23 +36,30 @@ export default function DashboardPage() {
 
   const loadDashboard = useCallback(async () => {
     try {
-      const currentUser = await bomaService.getCurrentUser();
+      // Parallel initial fetch: currentUser, group profile, and funds
+      const [currentUser, userGroup, ownedBomas] = await Promise.all([
+        bomaService.getCurrentUser(),
+        bomaService.getMyGroup(),
+        bomaService.getMyBomas(),
+      ]);
+
       if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
-
-      const userGroup = await bomaService.getMyGroup();
       if (userGroup) setGroup(userGroup);
-
-      const ownedBomas = await bomaService.getMyBomas();
       setBomas(ownedBomas);
 
-      const allTxns: Transaction[] = [];
-      for (const b of ownedBomas) {
-        const txns = await bomaService.getBomaTransactions(b.id);
-        allTxns.push(...txns);
+      // Unblock UI immediately so funds display without waiting for all historical transactions
+      setLoading(false);
+
+      // Concurrently fetch transactions across all funds in background
+      if (ownedBomas.length > 0) {
+        const txnArrays = await Promise.all(
+          ownedBomas.map((b) => bomaService.getBomaTransactions(b.id))
+        );
+        const allTxns = txnArrays.flat();
+        allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setTransactions(allTxns);
       }
-      allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      setTransactions(allTxns);
-    } finally {
+    } catch {
       setLoading(false);
     }
   }, []);
