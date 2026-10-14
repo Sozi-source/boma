@@ -41,10 +41,15 @@ export default function SignUpPage() {
 
       try {
         const supabase = createClient();
+        const emailRedirectTo = typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback`
+          : undefined;
+
         await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
+            emailRedirectTo,
             data: {
               full_name: fullName.trim(),
               phone: phone.trim(),

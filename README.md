@@ -156,3 +156,12 @@ As outlined in our architecture plan, the foundation is built to seamlessly laye
 2. **Multi-Sig Escrow Approvals** (requiring 2 of 3 committee members to sign off on large disbursements).
 3. **Automated WhatsApp / SMS Receipts** (instant notification to contributors with reference link).
 4. **Milestone-Based Fund Releases** (disbursing funds only upon milestone verification).
+
+### 🌍 Pan-African Scale Architecture (Future Phase)
+Following local Kenyan market traction:
+- **Multi-Currency Ledger & FX Engine:** Expand beyond KES to zero-decimal and multi-decimal African currencies (UGX, TZS, GHS, NGN, XOF, ZAR) with real-time FX snapshotting for diaspora/cross-border family contributions.
+- **Payment Orchestration Adapter:** Abstract payment gateway interfaces to support regional rails (MTN MoMo, Airtel Money, Wave Senegal/Ivory Coast, Nigeria NIP virtual accounts, South Africa Ozow/EFT).
+- **International E.164 Phone Identity:** Universal country code detection, multi-SIM consolidation, and multi-lingual UI (English, French, Swahili).
+- **Interactive WhatsApp Bot Channel:** Allow offline/data-constrained chama members to contribute and check ledger balances directly within WhatsApp.
+- **Tiered Compliance (KYC):** Dynamic transaction tiers balancing frictionless member contributions with regulatory AML requirements.
+
