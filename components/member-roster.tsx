@@ -279,8 +279,8 @@ export default function MemberRoster({
             type="tel"
             value={checkPhone}
             onChange={(e) => setCheckPhone(e.target.value)}
-            placeholder="e.g. 0711 390 861"
-            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none"
+            aria-label="M-Pesa phone number"
+            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-mono text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none"
           />
           <button
             type="submit"

@@ -43,13 +43,6 @@ export default function BomaDetailPage({ params }: PageProps) {
 
   // Phone-first member session for WhatsApp visitors
   const [memberPhone, setMemberPhone] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
-  const [phoneFeedback, setPhoneFeedback] = useState<{ ok: boolean; text: string } | null>(null);
-  const [memberRecord, setMemberRecord] = useState<{
-    name: string;
-    target: number;
-    totalContributed: number;
-  } | null>(null);
 
   const changeVisibility = async () => {
     if (!boma || currentUserId !== boma.creator_id || visibilitySaving) return;
@@ -61,59 +54,26 @@ export default function BomaDetailPage({ params }: PageProps) {
     setVisibilitySaving(false);
   };
 
-  const lookupMember = (phoneToFind: string, txnsList: Transaction[] = transactions) => {
+  const lookupMember = (phoneToFind: string, _txnsList: Transaction[] = transactions) => {
     if (!phoneToFind) return;
     try {
       const cleanDigits = phoneToFind.replace(/\D/g, '');
       const storageKeyRoster = `boma_roster_${bomaId}`;
       const saved = localStorage.getItem(storageKeyRoster);
-      let foundName = '';
-      let targetAmount = 0;
       if (saved) {
         const roster = JSON.parse(saved);
-        const match = roster.find((m: { name?: string; phones?: string[]; targetAmount?: number }) =>
+        const match = roster.find((m: { name?: string; phones?: string[] }) =>
           Array.isArray(m.phones)
             ? m.phones.some((p: string) => p.replace(/\D/g, '').endsWith(cleanDigits.slice(-9)))
             : false
         );
-        if (match) {
-          foundName = match.name || '';
-          targetAmount = match.targetAmount || 0;
+        if (match?.name) {
+          // recognized in roster
         }
       }
-
-      // Calculate total contributed by this phone
-      const myTxns = txnsList.filter(
-        (t) =>
-          t.status === 'completed' &&
-          t.contributor_phone &&
-          t.contributor_phone.replace(/\D/g, '').endsWith(cleanDigits.slice(-9))
-      );
-      const totalContributed = myTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-      setMemberRecord({
-        name: foundName,
-        target: targetAmount,
-        totalContributed,
-      });
     } catch {
       // storage unavailable
     }
-  };
-
-  const handlePhoneSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = phoneInput.trim();
-    if (!clean || clean.length < 9) {
-      setPhoneFeedback({ ok: false, text: 'Please enter a valid phone number (e.g. 0711 390 861).' });
-      return;
-    }
-    localStorage.setItem('openhand_member_phone', clean);
-    setMemberPhone(clean);
-    lookupMember(clean, transactions);
-    setPhoneFeedback({ ok: true, text: 'Phone verified! You are now viewing your member account.' });
-    setPhoneInput('');
-    setTimeout(() => setPhoneFeedback(null), 4000);
   };
 
   // Progressive data loading: fetch fund hero/header first for immediate paint, then hydrate ledger & transactions in background.
@@ -360,108 +320,6 @@ export default function BomaDetailPage({ params }: PageProps) {
             ×
           </button>
         </div>
-      )}
-
-      {/* Soft Phone Check-in Banner for WhatsApp / Guest Visitors */}
-      {!isAuthenticated && !memberPhone && (
-        <section aria-label="WhatsApp Member Identification" className="rounded-2xl border border-emerald-200 bg-white p-4 sm:p-5 shadow-xs">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3.5">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-200/60">
-                  <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>WhatsApp Member Access</span>
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">· Phone-first identity</span>
-              </div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Visiting from WhatsApp? Enter your phone number
-              </h2>
-              <p className="text-xs text-slate-600 max-w-xl leading-relaxed">
-                Connect your M-Pesa line to view your personal pledge, see your contribution history, and contribute in 1 tap without typing your details each time.
-              </p>
-            </div>
-
-            <form onSubmit={handlePhoneSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-              <input
-                type="tel"
-                value={phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
-                placeholder="0711 390 861"
-                className="w-full sm:w-44 rounded-xl border border-slate-300 bg-slate-50/50 px-3 py-2 text-xs font-mono font-medium text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:bg-white focus:ring-1 focus:ring-emerald-600 shadow-2xs outline-none"
-              />
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 shadow-xs whitespace-nowrap"
-              >
-                Access Account
-              </button>
-            </form>
-          </div>
-          {phoneFeedback && (
-            <p className={`mt-2.5 text-xs font-medium ${phoneFeedback.ok ? 'text-emerald-700' : 'text-rose-600'}`}>
-              {phoneFeedback.text}
-            </p>
-          )}
-        </section>
-      )}
-
-      {/* Active Member Status Bar */}
-      {!isAuthenticated && memberPhone && (
-        <section aria-label="Active Member Account" className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-xs font-bold font-mono text-emerald-800 shrink-0">
-              {memberRecord?.name ? memberRecord.name.slice(0, 2).toUpperCase() : 'ME'}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900">
-                  {memberRecord?.name ? memberRecord.name : 'Recognized Member'}
-                </span>
-                <span className="text-[11px] font-mono text-slate-500 font-medium whitespace-nowrap">
-                  ({memberPhone})
-                </span>
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
-                  Account Active
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-500 mt-0.5 font-mono flex items-center gap-2 flex-wrap">
-                {memberRecord && memberRecord.target > 0 && (
-                  <span>
-                    Pledge: <strong className="text-slate-800 font-semibold whitespace-nowrap tabular-nums">{formatCurrency(memberRecord.target, boma.currency)}</strong>
-                  </span>
-                )}
-                {memberRecord && (
-                  <span>
-                    · Contributed: <strong className="text-emerald-700 font-bold whitespace-nowrap tabular-nums">{formatCurrency(memberRecord.totalContributed, boma.currency)}</strong>
-                  </span>
-                )}
-                <span className="text-slate-400">· WhatsApp session active</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                localStorage.removeItem('openhand_member_phone');
-                setMemberPhone('');
-                setMemberRecord(null);
-              }}
-              className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 transition-colors px-2 py-1.5"
-            >
-              Switch number
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsContributeModalOpen(true)}
-              className="inline-flex items-center justify-center rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 text-xs font-bold text-white transition active:scale-95 shadow-2xs whitespace-nowrap"
-            >
-              Contribute
-            </button>
-          </div>
-        </section>
       )}
 
       {/* Main Layout Grid */}

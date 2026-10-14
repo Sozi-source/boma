@@ -347,7 +347,6 @@ export default function ContributionModal({
                     aria-label="Mobile Phone Number"
                     value={contributorPhone}
                     onChange={(e) => setContributorPhone(e.target.value)}
-                    placeholder="0712 345 678"
                     autoComplete="tel"
                     inputMode="tel"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
