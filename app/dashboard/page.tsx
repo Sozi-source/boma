@@ -28,23 +28,29 @@ export default function DashboardPage() {
   const [selectedBomaForModal, setSelectedBomaForModal] = useState<Boma | null>(null);
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   const loadDashboard = useCallback(async () => {
-    const currentUser = await bomaService.getCurrentUser();
-    if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
+    try {
+      const currentUser = await bomaService.getCurrentUser();
+      if (currentUser && currentUser.id !== 'user-guest') setUser(currentUser);
 
-    const userGroup = await bomaService.getMyGroup();
-    if (userGroup) setGroup(userGroup);
+      const userGroup = await bomaService.getMyGroup();
+      if (userGroup) setGroup(userGroup);
 
-    const ownedBomas = await bomaService.getMyBomas();
-    setBomas(ownedBomas);
+      const ownedBomas = await bomaService.getMyBomas();
+      setBomas(ownedBomas);
 
-    const allTxns: Transaction[] = [];
-    for (const b of ownedBomas) {
-      const txns = await bomaService.getBomaTransactions(b.id);
-      allTxns.push(...txns);
+      const allTxns: Transaction[] = [];
+      for (const b of ownedBomas) {
+        const txns = await bomaService.getBomaTransactions(b.id);
+        allTxns.push(...txns);
+      }
+      allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setTransactions(allTxns);
+    } finally {
+      setLoading(false);
     }
-    allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    setTransactions(allTxns);
   }, []);
 
   useEffect(() => {
@@ -131,34 +137,47 @@ export default function DashboardPage() {
 
           {/* Core balance display + Desktop enterprise stat blocks */}
           <div className="relative mt-2.5 sm:mt-5 lg:mt-6 lg:flex lg:items-end lg:justify-between lg:gap-8">
-              <div className="text-slate-950">
-                {showBalance ? (
-                  <div className="flex items-baseline gap-1.5 sm:gap-2">
-                    <span className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-400">KES</span>
-                    <span className="font-mono text-2xl sm:text-4xl lg:text-6xl font-black tracking-[-0.03em] leading-none text-slate-950">
-                      {Number(totalRaised).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="font-mono text-2xl sm:text-4xl lg:text-5xl font-black tracking-widest leading-none text-slate-950">
-                    ••••••••
-                  </div>
-                )}
-              </div>
+            <div className="text-slate-950">
+              {loading ? (
+                <div className="flex items-baseline gap-1.5 sm:gap-2">
+                  <span className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-400">KES</span>
+                  <span className="inline-block h-8 sm:h-11 lg:h-14 w-40 sm:w-56 animate-pulse rounded-lg bg-slate-200 align-middle" />
+                </div>
+              ) : showBalance ? (
+                <div className="flex items-baseline gap-1.5 sm:gap-2">
+                  <span className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-400">KES</span>
+                  <span className="font-mono text-2xl sm:text-4xl lg:text-6xl font-black tracking-[-0.03em] leading-none text-slate-950 whitespace-nowrap tabular-nums">
+                    {Number(totalRaised).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              ) : (
+                <div className="font-mono text-2xl sm:text-4xl lg:text-5xl font-black tracking-widest leading-none text-slate-950">
+                  ••••••••
+                </div>
+              )}
+            </div>
 
             {/* Big-screen enterprise metric pills (Hidden on mobile to keep narrow banner) */}
             <div className="hidden lg:flex items-center gap-2.5 sm:gap-3 text-xs">
               <div className="rounded-xl border border-[#d2eda0] bg-[#f7fcee] px-3.5 py-2 font-medium text-[#1c451f] shadow-2xs">
-                <span className="block text-[10px] uppercase font-bold text-[#446b1d]">Active Goals</span>
-                <span className="font-bold text-slate-950 font-mono text-sm">{bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</span>
+                <span className="block text-[11px] uppercase font-bold text-[#446b1d]">Active Goals</span>
+                {loading ? (
+                  <span className="mt-0.5 inline-block h-4 w-14 animate-pulse rounded bg-slate-200" />
+                ) : (
+                  <span className="font-bold text-slate-950 font-mono text-sm whitespace-nowrap tabular-nums">{bomas.length} {bomas.length === 1 ? 'fund' : 'funds'}</span>
+                )}
               </div>
               <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 px-3.5 py-2 font-medium text-slate-700 shadow-2xs">
-                <span className="block text-[10px] uppercase font-bold text-slate-400">Audit Receipts</span>
-                <span className="font-bold text-slate-950 font-mono text-sm">{transactions.length} verified</span>
+                <span className="block text-[11px] uppercase font-bold text-slate-400">Audit Receipts</span>
+                {loading ? (
+                  <span className="mt-0.5 inline-block h-4 w-16 animate-pulse rounded bg-slate-200" />
+                ) : (
+                  <span className="font-bold text-slate-950 font-mono text-sm whitespace-nowrap tabular-nums">{transactions.length} verified</span>
+                )}
               </div>
               <div className="rounded-xl border border-slate-200/90 bg-slate-50/80 px-3.5 py-2 font-medium text-slate-700 shadow-2xs">
-                <span className="block text-[10px] uppercase font-bold text-slate-400">Settlement</span>
-                <span className="font-bold text-slate-950 text-sm flex items-center gap-1.5">
+                <span className="block text-[11px] uppercase font-bold text-slate-400">Settlement</span>
+                <span className="font-bold text-slate-950 text-sm flex items-center gap-1.5 whitespace-nowrap">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#9dda50]" />
                   M-Pesa Till
                 </span>
@@ -176,7 +195,7 @@ export default function DashboardPage() {
 
             <Link
               href="/bomas"
-              className="inline-flex shrink-0 items-center gap-1 rounded-lg sm:rounded-xl bg-[#0b1e16] hover:bg-[#15382a] px-2.5 py-1 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white shadow-2xs transition active:scale-95"
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg sm:rounded-xl bg-[#0b1e16] hover:bg-[#15382a] px-2.5 py-1 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-2xs transition active:scale-95"
             >
               <span>Explore</span>
               <ArrowUpRightIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#aee366]" />
@@ -195,7 +214,22 @@ export default function DashboardPage() {
                 <p className="mt-0.5 text-xs text-slate-500">Member-visible progress, verified receipts, and direct contributions</p>
               </div>
 
-              {bomas.length === 0 ? (
+              {loading ? (
+                <div className="mt-6 space-y-6">
+                  <div className="rounded-2xl border border-slate-200/80 bg-slate-50/40 p-5 sm:p-6 lg:p-7 shadow-xs animate-pulse">
+                    <div className="mb-4 sm:mb-6 h-44 sm:h-72 md:h-80 lg:h-88 w-full rounded-2xl bg-slate-200" />
+                    <div className="space-y-4">
+                      <div className="h-6 w-3/4 bg-slate-200 rounded" />
+                      <div className="h-4 w-1/2 bg-slate-200 rounded" />
+                      <div className="h-2 w-full bg-slate-200 rounded-full" />
+                      <div className="flex gap-3 pt-2">
+                        <div className="h-11 flex-1 bg-slate-200 rounded-xl" />
+                        <div className="h-11 w-36 bg-slate-200 rounded-xl" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : bomas.length === 0 ? (
                 <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-12 text-center">
                   <p className="text-sm font-semibold text-slate-800">Your group goals will appear here.</p>
                   <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
@@ -227,11 +261,11 @@ export default function DashboardPage() {
                           />
                           {/* Image floating badges */}
                           <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-10">
-                            <span className="rounded-lg bg-slate-950/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md shadow-xs">
+                            <span className="rounded-lg bg-slate-950/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md shadow-xs">
                               {b.category}
                             </span>
                             {b.verified && (
-                              <span className="rounded-lg bg-emerald-700/90 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md flex items-center gap-1 shadow-xs">
+                              <span className="rounded-lg bg-emerald-700/90 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md flex items-center gap-1 shadow-xs">
                                 <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-200" />
                                 <span>Verified</span>
                               </span>
@@ -354,16 +388,32 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-slate-950">Recent Receipts</h3>
-                    <p className="text-[10px] text-slate-400">Verified member contributions</p>
+                    <p className="text-[11px] text-slate-400">Verified member contributions</p>
                   </div>
                 </div>
-                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200/60">
-                  {transactions.length} total
-                </span>
+                {loading ? (
+                  <span className="inline-block h-4 w-12 animate-pulse rounded bg-slate-200" />
+                ) : (
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-200/60 whitespace-nowrap tabular-nums">
+                    {transactions.length} total
+                  </span>
+                )}
               </div>
 
               {/* Transaction list */}
-              {transactions.length === 0 ? (
+              {loading ? (
+                <div className="mt-3 divide-y divide-slate-100">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="py-3 flex items-center justify-between gap-3 animate-pulse">
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                        <div className="h-2.5 w-16 bg-slate-200 rounded" />
+                      </div>
+                      <div className="h-4 w-16 bg-slate-200 rounded" />
+                    </div>
+                  ))}
+                </div>
+              ) : transactions.length === 0 ? (
                 <div className="py-8 text-center text-xs text-slate-500">
                   No contributions recorded yet.
                 </div>
@@ -375,17 +425,17 @@ export default function DashboardPage() {
                         <p className="text-xs font-bold text-slate-900 truncate">
                           {t.contributor_name || 'Member'}
                         </p>
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
                           <span className="capitalize">{t.payment_method || 'M-Pesa'}</span>
                           <span>•</span>
-                          <span>{new Date(t.created_at).toLocaleDateString('en-KE', { month: 'short', day: 'numeric' })}</span>
+                          <span className="whitespace-nowrap">{new Date(t.created_at).toLocaleDateString('en-KE', { month: 'short', day: 'numeric' })}</span>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="font-mono text-xs font-bold text-emerald-700">
+                        <span className="font-mono text-xs font-bold text-emerald-700 whitespace-nowrap tabular-nums">
                           +{formatCurrency(t.amount, t.currency || 'KES')}
                         </span>
-                        <span className="block text-[9px] font-semibold text-emerald-600/80">
+                        <span className="block text-[11px] font-semibold text-emerald-600/80">
                           Completed
                         </span>
                       </div>
