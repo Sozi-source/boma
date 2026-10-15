@@ -65,8 +65,16 @@ export default function AdminLedgerPage() {
 
       const allEntries: LedgerEntry[] = [];
       for (const b of allBomas) {
-        const bomaEntries = await bomaService.getBomaLedger(b.id);
+        const bomaEntries = await bomaService.getBomaLedger(b.id).catch(() => []);
         allEntries.push(...bomaEntries);
+      }
+      if (allEntries.length === 0 && typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('bomapay_ledger_v4');
+          if (stored) {
+            allEntries.push(...JSON.parse(stored));
+          }
+        } catch {}
       }
       allEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setEntries(allEntries);

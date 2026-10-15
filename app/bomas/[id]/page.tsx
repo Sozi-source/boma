@@ -198,7 +198,7 @@ export default function BomaDetailPage({ params }: PageProps) {
       }
 
       // Immediately load the fund now that visitor is authenticated
-      await loadBomaData();
+      await loadBomaData(false);
     } catch {
       setPhoneAuthError('Could not verify phone number. Please try again.');
     } finally {
@@ -207,7 +207,7 @@ export default function BomaDetailPage({ params }: PageProps) {
   };
 
   // Fast optimistic load from local storage first, then hydrate authoritative data in background
-  const loadBomaData = async () => {
+  const loadBomaData = async (userIsAuthed?: boolean) => {
     // 1. Optimistic instant paint from local storage if available
     if (typeof window !== 'undefined') {
       try {
@@ -236,57 +236,104 @@ export default function BomaDetailPage({ params }: PageProps) {
         setAccount(result.account);
         setLoading(false);
 
-        // Fetch ledger, disbursements, and transactions safely with resilient fallback if Supabase returns 401 for anon visitors
-        const safeLedgerPromise = bomaService.getBomaLedger(bomaId).catch(() => {
+        const isAuthedUser = typeof userIsAuthed === 'boolean' ? userIsAuthed : isAuthenticated;
+
+        if (isAuthedUser) {
+          // Fetch ledger, disbursements, and transactions safely when authenticated with Supabase
+          const safeLedgerPromise = bomaService.getBomaLedger(bomaId).catch(() => {
+            if (typeof window !== 'undefined') {
+              try {
+                const stored = localStorage.getItem('bomapay_ledger_v4');
+                if (stored) {
+                  const list = JSON.parse(stored);
+                  return list.filter((l: LedgerEntry) => l.boma_id === bomaId);
+                }
+              } catch {}
+            }
+            return [];
+          });
+
+          const safeDisbursementsPromise = bomaService.getBomaDisbursements(bomaId).catch(() => {
+            if (typeof window !== 'undefined') {
+              try {
+                const stored = localStorage.getItem('bomapay_disbursements_v4');
+                if (stored) {
+                  const list = JSON.parse(stored);
+                  return list.filter((d: Disbursement) => d.boma_id === bomaId);
+                }
+              } catch {}
+            }
+            return [];
+          });
+
+          const safeTransactionsPromise = bomaService.getBomaTransactions(bomaId).catch(() => {
+            if (typeof window !== 'undefined') {
+              try {
+                const stored = localStorage.getItem('bomapay_transactions_v4');
+                if (stored) {
+                  const list = JSON.parse(stored);
+                  return list.filter((t: Transaction) => t.boma_id === bomaId);
+                }
+              } catch {}
+            }
+            return [];
+          });
+
+          void Promise.all([
+            safeLedgerPromise,
+            safeDisbursementsPromise,
+            safeTransactionsPromise,
+          ]).then(([entries, disbs, txns]) => {
+            setLedgerEntries(entries || []);
+            setDisbursements(disbs || []);
+            setTransactions(txns || []);
+            const activePhone = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_phone') : null;
+            if (activePhone) {
+              void verifyAndResolveMemberPhone(activePhone, txns || []).then((match) => {
+                if (match?.name) {
+                  setMemberName(match.name);
+                  localStorage.setItem('openhand_member_name', match.name);
+                  window.dispatchEvent(new Event('openhand_member_updated'));
+                }
+              });
+            }
+          }).catch(() => {
+            // graceful fallback complete
+          });
+        } else {
+          // For phone-verified or guest visitors without an active Supabase session,
+          // load directly from verified local records to avoid unauthenticated 401 network requests.
+          let entries: LedgerEntry[] = [];
+          let disbs: Disbursement[] = [];
+          let txns: Transaction[] = [];
+
           if (typeof window !== 'undefined') {
             try {
-              const stored = localStorage.getItem('bomapay_ledger_v4');
-              if (stored) {
-                const list = JSON.parse(stored);
-                return list.filter((l: LedgerEntry) => l.boma_id === bomaId);
+              const storedL = localStorage.getItem('bomapay_ledger_v4');
+              if (storedL) {
+                const list = JSON.parse(storedL);
+                entries = list.filter((l: LedgerEntry) => l.boma_id === bomaId);
+              }
+              const storedD = localStorage.getItem('bomapay_disbursements_v4');
+              if (storedD) {
+                const list = JSON.parse(storedD);
+                disbs = list.filter((d: Disbursement) => d.boma_id === bomaId);
+              }
+              const storedT = localStorage.getItem('bomapay_transactions_v4');
+              if (storedT) {
+                const list = JSON.parse(storedT);
+                txns = list.filter((t: Transaction) => t.boma_id === bomaId);
               }
             } catch {}
           }
-          return [];
-        });
 
-        const safeDisbursementsPromise = bomaService.getBomaDisbursements(bomaId).catch(() => {
-          if (typeof window !== 'undefined') {
-            try {
-              const stored = localStorage.getItem('bomapay_disbursements_v4');
-              if (stored) {
-                const list = JSON.parse(stored);
-                return list.filter((d: Disbursement) => d.boma_id === bomaId);
-              }
-            } catch {}
-          }
-          return [];
-        });
+          setLedgerEntries(entries);
+          setDisbursements(disbs);
+          setTransactions(txns);
 
-        const safeTransactionsPromise = bomaService.getBomaTransactions(bomaId).catch(() => {
-          if (typeof window !== 'undefined') {
-            try {
-              const stored = localStorage.getItem('bomapay_transactions_v4');
-              if (stored) {
-                const list = JSON.parse(stored);
-                return list.filter((t: Transaction) => t.boma_id === bomaId);
-              }
-            } catch {}
-          }
-          return [];
-        });
-
-        void Promise.all([
-          safeLedgerPromise,
-          safeDisbursementsPromise,
-          safeTransactionsPromise,
-        ]).then(([entries, disbs, txns]) => {
-          setLedgerEntries(entries || []);
-          setDisbursements(disbs || []);
-          setTransactions(txns || []);
           const activePhone = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_phone') : null;
           if (activePhone) {
-            void verifyAndResolveMemberPhone(activePhone, txns || []).then((match) => {
+            void verifyAndResolveMemberPhone(activePhone, txns).then((match) => {
               if (match?.name) {
                 setMemberName(match.name);
                 localStorage.setItem('openhand_member_name', match.name);
@@ -294,9 +341,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               }
             });
           }
-        }).catch(() => {
-          // graceful fallback complete
-        });
+        }
       } else {
         setLoading(false);
       }
@@ -386,7 +431,7 @@ export default function BomaDetailPage({ params }: PageProps) {
 
       // Only load fund data if visitor is authenticated or already verified via phone
       if (isAuthed || hasVerifiedPhone) {
-        await loadBomaData();
+        await loadBomaData(isAuthed);
       } else {
         setLoading(false);
       }

@@ -49,6 +49,11 @@
 ## 2026-10-15: Organizer dashboard content density and sidebar layout refinement
 - components/admin/admin-sidebar.tsx (changed): reduced sidebar width from `w-64 xl:w-72` to a standardized, sleek enterprise width of `w-60 xl:w-64` (240px to 256px), freeing up screen width for the main dashboard workspace.
 - app/dashboard/page.tsx (changed): removed cluttered statcards from inside the treasury banner, making it sleek, minimalist, and professional with prominent audited balance display; introduced a high-density 2-to-4 column metric summary strip outside the banner; eliminated the cramped 1/3-width right sidebar layout that was squeezing the group funds into an 8-column column; allowed group funds to take full natural width with a horizontal split-card layout on desktop for single funds and a responsive 2-column grid for multiple funds; placed Recent Receipts and Treasury Governance into a balanced 7:5 section below the funds for superior content density across all screen sizes.
+## 2026-10-15: Fix Supabase 401 Unauthorized errors for unauthenticated and WhatsApp visitors
+- app/bomas/[id]/page.tsx (changed): eliminated unauthenticated client-side Supabase PostgREST queries for `transactions`, `ledger_entries`, and `disbursements` when visitors lack an active Supabase session (such as WhatsApp phone-verified members); fund page directly loads verified data from local storage without firing rejected HTTP requests; authenticated sessions continue querying authoritative Supabase records safely.
+- app/dashboard/page.tsx (changed): guarded background transaction query across owned funds to verify Supabase session presence via `createClient().auth.getSession()` before initiating remote PostgREST queries; unauthenticated sessions directly aggregate from local store, preventing 401 Unauthorized console errors.
+- app/activity/page.tsx (changed): added session guard before querying transactions across all funds, loading from local store when no active Supabase session exists to prevent cascade of 401 network errors.
+- app/admin/ledger/page.tsx (changed): added `.catch(() => [])` and resilient local store fallback on `bomaService.getBomaLedger(b.id)` to prevent unhandled rejection when an unauthenticated administrator or reviewer views the ledger.
 
 
 

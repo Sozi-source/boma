@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Boma, Group, Transaction } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
+import { createClient } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import BomaCover from '@/components/boma-cover';
 import ContributionModal from '@/components/contribution-modal';
@@ -52,10 +53,29 @@ export default function DashboardPage() {
 
       // Concurrently fetch transactions across all funds in background
       if (ownedBomas.length > 0) {
-        const txnArrays = await Promise.all(
-          ownedBomas.map((b) => bomaService.getBomaTransactions(b.id))
-        );
-        const allTxns = txnArrays.flat();
+        let allTxns: Transaction[] = [];
+        let hasSession = false;
+        try {
+          const supabase = createClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          hasSession = Boolean(session?.user);
+        } catch {}
+
+        if (hasSession) {
+          const txnArrays = await Promise.all(
+            ownedBomas.map((b) => bomaService.getBomaTransactions(b.id).catch(() => []))
+          );
+          allTxns = txnArrays.flat();
+        } else if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('bomapay_transactions_v4');
+            if (stored) {
+              const list: Transaction[] = JSON.parse(stored);
+              const bomaIds = new Set(ownedBomas.map((b) => b.id));
+              allTxns = list.filter((t) => bomaIds.has(t.boma_id));
+            }
+          } catch {}
+        }
         allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setTransactions(allTxns);
       }

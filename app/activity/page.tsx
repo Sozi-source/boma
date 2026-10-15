@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Transaction, Boma, PaymentMethod, Currency } from '@/lib/types/fintech';
 import { bomaService } from '@/lib/services/boma-service';
+import { createClient } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/ledger/ledger-service';
 import { normalizePhoneNumber } from '@/lib/utils/phone';
 import { 
@@ -50,10 +51,27 @@ export default function ActivityPage() {
         const allBomas = await bomaService.getBomas();
         setBomas(allBomas);
 
-        const allTxns: Transaction[] = [];
-        for (const b of allBomas) {
-          const txs = await bomaService.getBomaTransactions(b.id);
-          allTxns.push(...txs);
+        let allTxns: Transaction[] = [];
+        let hasSession = false;
+        try {
+          const supabase = createClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          hasSession = Boolean(session?.user);
+        } catch {}
+
+        if (hasSession) {
+          for (const b of allBomas) {
+            const txs = await bomaService.getBomaTransactions(b.id).catch(() => []);
+            allTxns.push(...txs);
+          }
+        } else if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('bomapay_transactions_v4');
+            if (stored) {
+              const list: Transaction[] = JSON.parse(stored);
+              allTxns = list;
+            }
+          } catch {}
         }
         allTxns.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setTransactions(allTxns);
