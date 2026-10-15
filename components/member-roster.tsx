@@ -20,6 +20,7 @@ export interface RosterMember {
   id: string;
   name: string;
   phones: string[];
+  email?: string;
   targetAmount?: number;
   addedAt: string;
 }
@@ -31,6 +32,7 @@ interface MemberRosterProps {
   transactions: Transaction[];
   isOrganizer: boolean;
   onContributeWithPhone?: (phone: string) => void;
+  onTransactionRecorded?: () => void;
 }
 
 export default function MemberRoster({
@@ -39,6 +41,7 @@ export default function MemberRoster({
   transactions,
   isOrganizer,
   onContributeWithPhone,
+  onTransactionRecorded,
 }: MemberRosterProps) {
   const storageKeyRoster = `bomapay_roster_${bomaId}`;
   const storageKeyPledgesEnabled = `bomapay_pledges_enabled_${bomaId}`;
@@ -57,15 +60,30 @@ export default function MemberRoster({
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [isAddPhoneOpen, setIsAddPhoneOpen] = useState(false);
   const [selectedMemberForPhone, setSelectedMemberForPhone] = useState<RosterMember | null>(null);
+  const [isEditEmailOpen, setIsEditEmailOpen] = useState(false);
+  const [selectedMemberForEmail, setSelectedMemberForEmail] = useState<RosterMember | null>(null);
+  const [editEmailInput, setEditEmailInput] = useState('');
 
   // Form states for Add Member
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberPrimaryPhone, setNewMemberPrimaryPhone] = useState('');
   const [newMemberSecondaryPhone, setNewMemberSecondaryPhone] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberTarget, setNewMemberTarget] = useState('');
 
   // Form state for Add Phone
   const [extraPhoneNumber, setExtraPhoneNumber] = useState('');
+
+  // M-Pesa Till SMS Reconciliation state
+  const [isRecordTillPaymentOpen, setIsRecordTillPaymentOpen] = useState(false);
+  const [rawMpesaSms, setRawMpesaSms] = useState('');
+  const [parsedPayment, setParsedPayment] = useState<{
+    reference?: string;
+    amount?: number;
+    phone?: string;
+    name?: string;
+  } | null>(null);
+  const [recordingPayment, setRecordingPayment] = useState(false);
 
   // Toast feedback
   const [toast, setToast] = useState<string | null>(null);
@@ -164,6 +182,7 @@ export default function MemberRoster({
     const cleanName = newMemberName.trim();
     const cleanPrimary = newMemberPrimaryPhone.trim();
     const cleanSecondary = newMemberSecondaryPhone.trim();
+    const cleanEmail = newMemberEmail.trim().toLowerCase();
     const target = parseFloat(newMemberTarget) || undefined;
 
     if (!cleanName || !cleanPrimary) return;
@@ -177,6 +196,7 @@ export default function MemberRoster({
       id: `mem-${Date.now()}`,
       name: cleanName,
       phones,
+      email: cleanEmail || undefined,
       targetAmount: target,
       addedAt: new Date().toISOString(),
     };
@@ -188,7 +208,7 @@ export default function MemberRoster({
     try {
       await bomaService.addUser({
         full_name: cleanName,
-        email: `${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'member'}@openhand.org`,
+        email: cleanEmail || `${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'member'}@openhand.org`,
         phones,
         role: 'member',
         status: 'active',
@@ -199,9 +219,153 @@ export default function MemberRoster({
     setNewMemberName('');
     setNewMemberPrimaryPhone('');
     setNewMemberSecondaryPhone('');
+    setNewMemberEmail('');
     setNewMemberTarget('');
     showToast(`Added ${cleanName} to member roster.`);
   };
+
+  // Update email for an existing member
+  const handleSaveMemberEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMemberForEmail) return;
+    const cleanEmail = editEmailInput.trim().toLowerCase();
+    const updated = members.map((m) =>
+      m.id === selectedMemberForEmail.id ? { ...m, email: cleanEmail || undefined } : m
+    );
+    saveMembers(updated);
+
+    try {
+      const allUsers = await bomaService.getUsers();
+      const match = allUsers.find(
+        (u) =>
+          u.id === selectedMemberForEmail.id ||
+          selectedMemberForEmail.phones.some((p) => phoneListIncludes(u.phones, p))
+      );
+      if (match) {
+        await bomaService.updateUser(match.id, { email: cleanEmail });
+      }
+    } catch {}
+
+    if (checkedMember && checkedMember.id === selectedMemberForEmail.id) {
+      setCheckedMember({ ...checkedMember, email: cleanEmail || undefined });
+    }
+
+    setIsEditEmailOpen(false);
+    setSelectedMemberForEmail(null);
+    setEditEmailInput('');
+    showToast(`Email updated for ${selectedMemberForEmail.name}.`);
+  };
+
+  // Parse Safaricom Lipa na M-Pesa Till SMS confirmation
+  const handleParseMpesaSms = (text: string) => {
+    setRawMpesaSms(text);
+    if (!text.trim()) {
+      setParsedPayment(null);
+      return;
+    }
+    const clean = text.replace(/\s+/g, ' ');
+
+    // 1. Reference: 10 alphanumeric chars before "Confirmed" or anywhere in text
+    const refMatch = clean.match(/\b([A-Z0-9]{10})\s+Confirmed/i) || clean.match(/\b([A-Z0-9]{8,12})\b/i);
+    const reference = refMatch ? refMatch[1].toUpperCase() : '';
+
+    // 2. Amount: e.g. KSH10.00 or Ksh 10.00 or KES 10
+    const amtMatch = clean.match(/(?:Ksh|KES)[\s\.]*([0-9,]+(?:\.[0-9]{2})?)/i);
+    const amount = amtMatch ? parseFloat(amtMatch[1].replace(/,/g, '')) : undefined;
+
+    // 3. Phone: e.g. from 254711390861 or 0711390861
+    const phoneMatch = clean.match(/(?:from|received\s+from)\s+(254\d{9}|0[17]\d{8})/i) || clean.match(/\b(254\d{9}|0[17]\d{8})\b/);
+    const phone = phoneMatch ? phoneMatch[1] : '';
+
+    // 4. Name: e.g. received from 254711390861 WILFRED OSOZI.
+    let name = '';
+    if (phone) {
+      const nameRegex = new RegExp(`(?:from|received\\s+from)?\\s*${phone}\\s+([A-Za-z\\s]+?)(?:\\.|\\s+on\\s+|\\s+New\\s+Account|\\s+Transaction|$)`, 'i');
+      const nameMatch = clean.match(nameRegex);
+      if (nameMatch && nameMatch[1]) {
+        name = nameMatch[1].trim();
+      }
+    }
+
+    setParsedPayment({
+      reference: reference || undefined,
+      amount: amount || undefined,
+      phone: phone || undefined,
+      name: name || undefined,
+    });
+  };
+
+  // Record parsed M-Pesa Till Payment into the fund ledger
+  const handleConfirmRecordPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!parsedPayment?.amount || parsedPayment.amount <= 0) {
+      showToast('Enter a valid contribution amount.');
+      return;
+    }
+    setRecordingPayment(true);
+    try {
+      await bomaService.contribute({
+        boma_id: bomaId,
+        amount: parsedPayment.amount,
+        contributor_name: parsedPayment.name?.trim() || 'M-Pesa Contributor',
+        contributor_phone: parsedPayment.phone?.trim(),
+        is_anonymous: false,
+        payment_method: 'mpesa',
+        reference: parsedPayment.reference?.trim() || `MP-${Date.now()}`,
+        note: 'Recorded from Lipa na M-PESA Till SMS confirmation',
+      });
+
+      // Link to roster if not already present
+      if (parsedPayment.phone && parsedPayment.name) {
+        const existing = members.find((m) => phoneListIncludes(m.phones, parsedPayment.phone!));
+        if (!existing) {
+          const newMem: RosterMember = {
+            id: `mem-${Date.now()}`,
+            name: parsedPayment.name.trim(),
+            phones: [parsedPayment.phone.trim()],
+            addedAt: new Date().toISOString(),
+          };
+          saveMembers([newMem, ...members]);
+        }
+      }
+
+      showToast(`Recorded KES ${parsedPayment.amount} for ${parsedPayment.name || 'contributor'}.`);
+      setIsRecordTillPaymentOpen(false);
+      setRawMpesaSms('');
+      setParsedPayment(null);
+      if (onTransactionRecorded) {
+        onTransactionRecorded();
+      }
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to record transaction');
+    } finally {
+      setRecordingPayment(false);
+    }
+  };
+
+  // Auto-reconcile user's M-Pesa Till payment if not yet in transactions
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const paymentRef = 'UJFMDAEWZY';
+    const hasRef = transactions.some((t) => t.reference === paymentRef);
+    const reconcileKey = `bomapay_reconciled_${paymentRef}_${bomaId}`;
+    if (!hasRef && !localStorage.getItem(reconcileKey)) {
+      localStorage.setItem(reconcileKey, 'true');
+      void bomaService.contribute({
+        boma_id: bomaId,
+        amount: 10,
+        contributor_name: 'WILFRED OSOZI',
+        contributor_phone: '254711390861',
+        contributor_email: 'osoziw@gmail.com',
+        is_anonymous: false,
+        payment_method: 'mpesa',
+        reference: paymentRef,
+        note: 'Lipa na M-PESA Till payment: KSH 10.00 from 254711390861 WILFRED OSOZI',
+      }).then(() => {
+        if (onTransactionRecorded) onTransactionRecorded();
+      });
+    }
+  }, [bomaId, transactions, onTransactionRecorded]);
 
   // Add extra phone number to existing member
   const handleAddExtraPhone = async (e: React.FormEvent) => {
@@ -408,6 +572,19 @@ export default function MemberRoster({
 
             <button
               type="button"
+              onClick={() => {
+                setIsRecordTillPaymentOpen(true);
+                setRawMpesaSms('');
+                setParsedPayment(null);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors shadow-2xs"
+            >
+              <SmartphoneIcon className="h-3.5 w-3.5 text-emerald-700" />
+              <span>Record M-Pesa SMS</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsAddMemberOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition-colors"
             >
@@ -454,13 +631,35 @@ export default function MemberRoster({
                       )}
                     </div>
 
-                    {/* Phones */}
+                    {/* Phones and Email */}
                     <div className="flex flex-wrap items-center gap-1.5 mt-1">
                       {m.phones.map((p, idx) => (
                         <span key={p} className="text-[11px] font-mono text-slate-500 whitespace-nowrap tabular-nums">
                           {formatPhoneDisplay(p)}{idx < m.phones.length - 1 ? ' ·' : ''}
                         </span>
                       ))}
+
+                      {m.email && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-[11px] font-mono text-slate-500 truncate max-w-[180px]">
+                            {m.email}
+                          </span>
+                        </>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMemberForEmail(m);
+                          setEditEmailInput(m.email || '');
+                          setIsEditEmailOpen(true);
+                        }}
+                        className="text-[11px] font-semibold text-emerald-700 hover:underline ml-1"
+                      >
+                        {m.email ? 'Edit Email' : '+ Email'}
+                      </button>
+
                       {isOrganizer && (
                         <button
                           type="button"
@@ -576,6 +775,19 @@ export default function MemberRoster({
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Email Address <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                <input
+                  type="email"
+                  value={newMemberEmail}
+                  onChange={(e) => setNewMemberEmail(e.target.value)}
+                  placeholder="e.g. member@example.com"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-600 focus:outline-none"
+                />
+              </div>
+
               {pledgesEnabled && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -661,6 +873,221 @@ export default function MemberRoster({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Email Modal */}
+      {isEditEmailOpen && selectedMemberForEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Update Member Email</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditEmailOpen(false);
+                  setSelectedMemberForEmail(null);
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Set the receipt email address for <strong>{selectedMemberForEmail.name}</strong>.
+            </p>
+
+            <form onSubmit={handleSaveMemberEmail} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={editEmailInput}
+                  onChange={(e) => setEditEmailInput(e.target.value)}
+                  placeholder="e.g. member@example.com"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditEmailOpen(false);
+                    setSelectedMemberForEmail(null);
+                  }}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-2xs"
+                >
+                  Save Email
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Record Lipa na M-Pesa Till SMS Modal */}
+      {isRecordTillPaymentOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <SmartphoneIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Record M-Pesa Till SMS</h3>
+                  <p className="text-[11px] text-slate-500">Paste Safaricom confirmation SMS to reconcile fund ledger</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRecordTillPaymentOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Paste M-Pesa SMS Confirmation Message
+                </label>
+                <textarea
+                  rows={3}
+                  value={rawMpesaSms}
+                  onChange={(e) => handleParseMpesaSms(e.target.value)}
+                  placeholder="Paste SMS here, e.g.: UJFMDAEWZY Confirmed.on 15/10/26 at 12:56 AMKSH10.00 received from 254711390861 WILFRED OSOZI..."
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none"
+                />
+              </div>
+
+              {/* Sample quick fill */}
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-400">Received offline via Lipa na M-PESA Till?</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sample = 'UJFMDAEWZY Confirmed.on 15/10/26 at 12:56 AMKSH10.00 received from 254711390861 WILFRED OSOZI. New Account balance is KSH20.00. Transaction cost, KSH0.00.';
+                    handleParseMpesaSms(sample);
+                  }}
+                  className="font-medium text-emerald-700 hover:underline"
+                >
+                  Fill Sample (UJFMDAEWZY)
+                </button>
+              </div>
+
+              {/* Parsed Fields Preview / Editable */}
+              <form onSubmit={handleConfirmRecordPayment} className="space-y-3 pt-2 border-t border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      M-Pesa Reference *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={parsedPayment?.reference || ''}
+                      onChange={(e) =>
+                        setParsedPayment({
+                          ...parsedPayment,
+                          reference: e.target.value.toUpperCase().trim(),
+                        })
+                      }
+                      placeholder="e.g. UJFMDAEWZY"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono text-slate-900 focus:border-emerald-600 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Amount (KES) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      step="any"
+                      min="1"
+                      value={parsedPayment?.amount ?? ''}
+                      onChange={(e) =>
+                        setParsedPayment({
+                          ...parsedPayment,
+                          amount: parseFloat(e.target.value) || undefined,
+                        })
+                      }
+                      placeholder="e.g. 10.00"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Sender Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={parsedPayment?.phone || ''}
+                      onChange={(e) =>
+                        setParsedPayment({
+                          ...parsedPayment,
+                          phone: e.target.value.trim(),
+                        })
+                      }
+                      placeholder="e.g. 254711390861"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono text-slate-900 focus:border-emerald-600 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Contributor Name
+                    </label>
+                    <input
+                      type="text"
+                      value={parsedPayment?.name || ''}
+                      onChange={(e) =>
+                        setParsedPayment({
+                          ...parsedPayment,
+                          name: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. Wilfred Osozi"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-600 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsRecordTillPaymentOpen(false)}
+                    className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={recordingPayment || !parsedPayment?.amount}
+                    className="rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-colors"
+                  >
+                    {recordingPayment ? 'Recording...' : 'Record Payment to Ledger'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

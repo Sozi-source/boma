@@ -25,6 +25,7 @@ export default function UserManagementPage() {
   const [isAddPhoneModalOpen, setIsAddPhoneModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
+  const [userModalEmail, setUserModalEmail] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Form states for Add User
@@ -110,6 +111,20 @@ export default function UserManagementPage() {
       }
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Cannot remove phone');
+    }
+  };
+
+  const handleUpdateUserEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    try {
+      const cleanEmail = userModalEmail.trim().toLowerCase();
+      const updated = await bomaService.updateUser(selectedUser.id, { email: cleanEmail });
+      setSelectedUser(updated);
+      showToast(`Email updated for ${selectedUser.full_name}`);
+      await loadUsers();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to update email');
     }
   };
 
@@ -382,6 +397,7 @@ export default function UserManagementPage() {
                         type="button"
                         onClick={() => {
                           setSelectedUser(u);
+                          setUserModalEmail(u.email || '');
                           setIsDetailsModalOpen(true);
                         }}
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs"
@@ -406,6 +422,7 @@ export default function UserManagementPage() {
               key={u.id}
               onClick={() => {
                 setSelectedUser(u);
+                setUserModalEmail(u.email || '');
                 setIsDetailsModalOpen(true);
               }}
               className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md flex flex-col justify-between"
@@ -784,6 +801,34 @@ export default function UserManagementPage() {
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
                     <span>Link SIM</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Member Email Address */}
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Email Address</h4>
+                    <p className="text-[11px] text-slate-500">
+                      Receipts and statement notifications are delivered to this address.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUpdateUserEmail} className="flex gap-2 pt-1">
+                  <input
+                    type="email"
+                    value={userModalEmail}
+                    onChange={(e) => setUserModalEmail(e.target.value)}
+                    placeholder="Add member email (e.g. member@example.com)"
+                    className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 text-xs font-semibold shrink-0 transition-colors"
+                  >
+                    <span>Save Email</span>
                   </button>
                 </form>
               </div>

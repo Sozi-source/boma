@@ -17,6 +17,7 @@ import {
   UsersIcon, 
   ShareIcon,
   WhatsAppIcon,
+  XMarkIcon,
 } from '@/components/ui/icons';
 
 interface PageProps {
@@ -46,6 +47,9 @@ export default function BomaDetailPage({ params }: PageProps) {
   // Phone-first member session for WhatsApp visitors
   const [memberPhone, setMemberPhone] = useState('');
   const [memberName, setMemberName] = useState('');
+  const [memberEmail, setMemberEmail] = useState('');
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailModalInput, setEmailModalInput] = useState('');
   const [phoneAuthInput, setPhoneAuthInput] = useState('');
   const [phoneAuthError, setPhoneAuthError] = useState('');
   const [isValidatingPhone, setIsValidatingPhone] = useState(false);
@@ -315,12 +319,16 @@ export default function BomaDetailPage({ params }: PageProps) {
             setMemberPhone(storedPhone);
             setMemberName(match.name);
             localStorage.setItem('openhand_member_name', match.name);
+            const savedEmail = localStorage.getItem('openhand_member_email') || '';
+            if (savedEmail) setMemberEmail(savedEmail);
           } else {
             // Unverified or stale phone: purge immediately so visitor is gated
             localStorage.removeItem('openhand_member_phone');
             localStorage.removeItem('openhand_member_name');
+            localStorage.removeItem('openhand_member_email');
             setMemberPhone('');
             setMemberName('');
+            setMemberEmail('');
             window.dispatchEvent(new Event('openhand_member_updated'));
           }
         }
@@ -581,10 +589,24 @@ export default function BomaDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={() => {
+                  setEmailModalInput(memberEmail);
+                  setIsEmailModalOpen(true);
+                }}
+                className="text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer whitespace-nowrap max-w-[160px] truncate"
+                title="Update your receipt email address"
+              >
+                {memberEmail || '+ Add Email'}
+              </button>
+              <span className="text-slate-300 select-none">·</span>
+              <button
+                type="button"
+                onClick={() => {
                   localStorage.removeItem('openhand_member_phone');
                   localStorage.removeItem('openhand_member_name');
+                  localStorage.removeItem('openhand_member_email');
                   setMemberPhone('');
                   setMemberName('');
+                  setMemberEmail('');
                   setPhoneAuthInput('');
                   setPhoneAuthError('');
                   if (typeof window !== 'undefined') {
@@ -811,6 +833,7 @@ export default function BomaDetailPage({ params }: PageProps) {
               onContributeWithPhone={(_phone) => {
                 setIsContributeModalOpen(true);
               }}
+              onTransactionRecorded={loadBomaData}
             />
           )}
 
@@ -1014,6 +1037,83 @@ export default function BomaDetailPage({ params }: PageProps) {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
+
+      {/* Update Member Receipt Email Modal */}
+      {isEmailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Receipt Email Address</h3>
+              <button
+                type="button"
+                onClick={() => setIsEmailModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Your contribution receipts and payment confirmations will be sent to this email address.
+            </p>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const clean = emailModalInput.trim().toLowerCase();
+                setMemberEmail(clean);
+                if (typeof window !== 'undefined') {
+                  if (clean) {
+                    localStorage.setItem('openhand_member_email', clean);
+                  } else {
+                    localStorage.removeItem('openhand_member_email');
+                  }
+                  window.dispatchEvent(new Event('openhand_member_updated'));
+                }
+                if (memberPhone) {
+                  try {
+                    const u = await bomaService.getUserByPhone(memberPhone);
+                    if (u) {
+                      await bomaService.updateUser(u.id, { email: clean });
+                    }
+                  } catch {}
+                }
+                setIsEmailModalOpen(false);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={emailModalInput}
+                  onChange={(e) => setEmailModalInput(e.target.value)}
+                  placeholder="e.g. member@example.com"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-2xs"
+                >
+                  Save Email
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>

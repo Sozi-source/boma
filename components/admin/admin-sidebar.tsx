@@ -113,7 +113,7 @@ export default function AdminSidebar() {
 
   return (
     <aside 
-      className="hidden lg:flex w-64 xl:w-72 flex-col shrink-0 bg-white text-slate-700 border-r border-slate-200 h-screen sticky top-0 z-40 select-none shadow-xs"
+      className="hidden lg:flex w-60 xl:w-64 flex-col shrink-0 bg-white text-slate-700 border-r border-slate-200 h-screen sticky top-0 z-40 select-none shadow-xs"
     >
       {/* Merchant / Organization Account Header */}
       <div className="p-4 border-b border-slate-200 bg-slate-50/60">

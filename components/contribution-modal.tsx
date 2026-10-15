@@ -70,6 +70,8 @@ export default function ContributionModal({
           if (storedPhone) {
             initialPhone = storedPhone;
             const storedName = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_name') : '';
+            const storedEmail = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_email') : '';
+            if (storedEmail) email = storedEmail;
             if (storedName) {
               name = storedName;
             } else {
@@ -78,15 +80,17 @@ export default function ContributionModal({
               const foundUser = users.find((u) => phoneListIncludes(u.phones || [u.phone || ''], storedPhone));
               if (foundUser) {
                 name = foundUser.full_name;
+                if (!email && foundUser.email) email = foundUser.email;
               } else if (boma?.id) {
                 try {
-                  const rosterRaw = localStorage.getItem(`boma_roster_${boma.id}`);
+                  const rosterRaw = localStorage.getItem(`bomapay_roster_${boma.id}`) || localStorage.getItem(`boma_roster_${boma.id}`);
                   if (rosterRaw) {
                     const roster = JSON.parse(rosterRaw);
-                    const match = roster.find((m: { name?: string; phones?: string[] }) =>
+                    const match = roster.find((m: { name?: string; phones?: string[]; email?: string }) =>
                       Array.isArray(m.phones) ? phoneListIncludes(m.phones, storedPhone) : false
                     );
                     if (match?.name) name = match.name;
+                    if (!email && match?.email) email = match.email;
                   }
                 } catch {
                   // ignore
@@ -148,9 +152,28 @@ export default function ContributionModal({
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contributorEmail.trim())) {
-      setErrorMessage('Enter an email address so we can send your receipt.');
+    const rawEmail = contributorEmail.trim();
+    if (rawEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+      setErrorMessage('Please enter a valid email address, or leave it blank.');
       return;
+    }
+
+    const cleanPhone = normalizePhoneNumber(contributorPhone.trim());
+    if (!/^254[17]\d{8}$/.test(cleanPhone)) {
+      setErrorMessage('Enter a valid Kenyan M-Pesa mobile number (07xx or 01xx).');
+      return;
+    }
+
+    // Paystack requires an email format on API level: use user's email, profile email, or fallback receipt address
+    const storedEmail = typeof window !== 'undefined' ? localStorage.getItem('openhand_member_email') || '' : '';
+    const effectiveEmail = rawEmail || currentUserProfile?.email || storedEmail || `${cleanPhone}@openhand.africa`;
+
+    // Persist email to member session & profile if user provided one
+    if (rawEmail && typeof window !== 'undefined') {
+      localStorage.setItem('openhand_member_email', rawEmail);
+      if (currentUserProfile?.id) {
+        void bomaService.updateUser(currentUserProfile.id, { email: rawEmail }).catch(() => {});
+      }
     }
 
     setStep('processing');
@@ -159,13 +182,12 @@ export default function ContributionModal({
     try {
       // Auto-link newly entered phone to user profile if logged in
       if (currentUserProfile && contributorPhone.trim()) {
-        const cleanPhone = contributorPhone.trim();
         const alreadyLinked = userPhones.some(
           (p) => normalizePhoneNumber(p) === normalizePhoneNumber(cleanPhone)
         );
         if (!alreadyLinked) {
           try {
-            await bomaService.addPhoneToUser(currentUserProfile.id, cleanPhone);
+            await bomaService.addPhoneToUser(currentUserProfile.id, contributorPhone.trim());
           } catch {
             // Ignore minor linking error, proceed with payment
           }
@@ -179,7 +201,7 @@ export default function ContributionModal({
           boma_id: boma.id,
           amount: selectedAmount,
           contributor_name: contributorName || 'Member',
-          contributor_email: contributorEmail,
+          contributor_email: effectiveEmail,
           contributor_phone: contributorPhone,
           is_anonymous: isAnonymous,
           currency: boma.currency,
@@ -361,24 +383,20 @@ export default function ContributionModal({
                   />
               </div>
 
-              {!contributorEmail && (
-                <div>
-                  <label className="mb-1 block text-[11px] font-semibold text-slate-700" htmlFor="contribution-email">
-                    Email for your receipt *
-                  </label>
-                  <input
-                    id="contribution-email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    value={contributorEmail}
-                    onChange={(e) => setContributorEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-hidden"
-                  />
-                  <p className="mt-1 text-[10px] text-slate-500">No account needed to contribute.</p>
-                </div>
-              )}
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-slate-700" htmlFor="contribution-email">
+                  Email for your receipt <span className="font-normal text-slate-400">(Optional)</span>
+                </label>
+                <input
+                  id="contribution-email"
+                  type="email"
+                  autoComplete="email"
+                  value={contributorEmail}
+                  onChange={(e) => setContributorEmail(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-hidden"
+                />
+                <p className="mt-1 text-[11px] text-slate-500">Leave blank if you prefer M-Pesa SMS confirmation only.</p>
+              </div>
 
               {/* Contributor Display & Anonymous Option */}
               <div className="rounded-lg bg-slate-50 border border-slate-200 p-2.5 flex items-center justify-between text-xs">
